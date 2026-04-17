@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store';
+import { signOutStaffPortal } from '@/lib/supabaseAdminApi';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin' },
@@ -24,6 +25,11 @@ export const AdminSidebar = () => {
   const location = useLocation();
   const { logout, user } = useAuthStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const handleLogout = async () => {
+    await signOutStaffPortal();
+    logout();
+  };
 
   return (
     <aside 
@@ -80,7 +86,9 @@ export const AdminSidebar = () => {
           </div>
         )}
         <button
-          onClick={logout}
+          onClick={() => {
+            void handleLogout();
+          }}
           className="flex items-center gap-3 px-4 py-3 w-full text-[#A9B1BE] hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
           title={isCollapsed ? 'Logout' : undefined}
         >

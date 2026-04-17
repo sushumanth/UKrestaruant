@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { isSupabaseConfigured } from '@/lib/supabase';
+import { updateBookingStatusInSupabase, updateTableStatusInSupabase } from '@/lib/supabaseAdminApi';
 import type { 
   User, 
   RestaurantTable, 
@@ -78,11 +80,19 @@ export const useBookingStore = create<BookingState>()((set) => ({
   setSelectedTime: (time) => set({ selectedTime: time }),
   setSelectedGuests: (guests) => set({ selectedGuests: guests }),
   setAvailableSlots: (slots) => set({ availableSlots: slots }),
-  updateBookingStatus: (bookingId, status) => set((state) => ({
-    bookings: state.bookings.map((b) =>
-      b.id === bookingId ? { ...b, status } : b
-    ),
-  })),
+  updateBookingStatus: (bookingId, status) => {
+    set((state) => ({
+      bookings: state.bookings.map((b) =>
+        b.id === bookingId ? { ...b, status } : b
+      ),
+    }));
+
+    if (isSupabaseConfigured) {
+      void updateBookingStatusInSupabase(bookingId, status).catch((error: unknown) => {
+        console.warn('Failed to sync booking status to Supabase:', error);
+      });
+    }
+  },
   setIsLoading: (loading) => set({ isLoading: loading }),
 }));
 
@@ -100,11 +110,19 @@ export const useTableStore = create<TableState>()((set) => ({
   tables: [],
   selectedTable: null,
   setTables: (tables) => set({ tables }),
-  updateTableStatus: (tableId, status) => set((state) => ({
-    tables: state.tables.map((t) =>
-      t.id === tableId ? { ...t, status } : t
-    ),
-  })),
+  updateTableStatus: (tableId, status) => {
+    set((state) => ({
+      tables: state.tables.map((t) =>
+        t.id === tableId ? { ...t, status } : t
+      ),
+    }));
+
+    if (isSupabaseConfigured) {
+      void updateTableStatusInSupabase(tableId, status).catch((error: unknown) => {
+        console.warn('Failed to sync table status to Supabase:', error);
+      });
+    }
+  },
   updateTablePosition: (tableId, x, y) => set((state) => ({
     tables: state.tables.map((t) =>
       t.id === tableId ? { ...t, x, y } : t
@@ -172,6 +190,6 @@ interface MockDataState {
 }
 
 export const useMockDataStore = create<MockDataState>()((set) => ({
-  isMockMode: true,
+  isMockMode: !isSupabaseConfigured,
   toggleMockMode: () => set((state) => ({ isMockMode: !state.isMockMode })),
 }));

@@ -1,144 +1,120 @@
-import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useEffect, useState } from 'react';
 import { BookingCard } from './BookingCard';
-import { ArrowRight } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowRight, Sparkles, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
 
-gsap.registerPlugin(ScrollTrigger);
+const heroImages = ['/chef_plating.jpg', '/dessert.jpg', '/cocktail.jpg', '/dining_room.jpg'];
 
 export const HeroSection = () => {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const bgRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const [activeImage, setActiveImage] = useState(0);
+  const [isMobileBookingOpen, setIsMobileBookingOpen] = useState(false);
 
   useEffect(() => {
-    const section = sectionRef.current;
-    const bg = bgRef.current;
-    const content = contentRef.current;
-    const card = cardRef.current;
+    const interval = window.setInterval(() => {
+      setActiveImage((previous) => (previous + 1) % heroImages.length);
+    }, 5200);
 
-    if (!section || !bg || !content || !card) return;
-
-    const ctx = gsap.context(() => {
-      // Initial load animation
-      const loadTl = gsap.timeline();
-      
-      loadTl
-        .fromTo(bg, 
-          { opacity: 0, scale: 1.06 },
-          { opacity: 1, scale: 1, duration: 1.1, ease: 'power2.out' }
-        )
-        .fromTo(content.querySelectorAll('.animate-item'),
-          { y: 28, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: 'power3.out' },
-          '-=0.6'
-        )
-        .fromTo(card,
-          { x: '18vw', opacity: 0, scale: 0.98 },
-          { x: 0, opacity: 1, scale: 1, duration: 0.9, ease: 'power3.out' },
-          '-=0.7'
-        );
-
-      // Scroll-driven exit animation
-      const scrollTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: 'top top',
-          end: '+=130%',
-          pin: true,
-          scrub: 0.6,
-          onLeaveBack: () => {
-            // Reset elements when scrolling back to top
-            gsap.set(content.querySelectorAll('.animate-item'), { x: 0, opacity: 1 });
-            gsap.set(card, { x: 0, opacity: 1 });
-            gsap.set(bg, { scale: 1, y: 0 });
-          }
-        }
-      });
-
-      // ENTRANCE (0-30%): Hold visible state (already animated by load)
-      // SETTLE (30-70%): Static
-      // EXIT (70-100%): Elements exit
-      scrollTl
-        .fromTo(content,
-          { x: 0, opacity: 1 },
-          { x: '-18vw', opacity: 0, ease: 'power2.in' },
-          0.7
-        )
-        .fromTo(card,
-          { x: 0, opacity: 1 },
-          { x: '18vw', opacity: 0, ease: 'power2.in' },
-          0.7
-        )
-        .fromTo(bg,
-          { scale: 1, y: 0 },
-          { scale: 1.06, y: '-6vh', ease: 'none' },
-          0.7
-        );
-    }, section);
-
-    return () => ctx.revert();
+    return () => window.clearInterval(interval);
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative w-full h-screen overflow-hidden z-10"
-    >
-      {/* Background Image */}
-      <div
-        ref={bgRef}
-        className="absolute inset-0 w-full h-full"
-        style={{ opacity: 0 }}
-      >
-        <img
-          src="/hero_street.jpg"
-          alt="Restaurant exterior at night"
-          className="w-full h-full object-cover"
-        />
-        {/* Vignette overlay */}
-        <div className="absolute inset-0 vignette" />
-        {/* Dark gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0B0C0F]/80 via-[#0B0C0F]/40 to-transparent" />
-      </div>
+    <Drawer open={isMobileBookingOpen} onOpenChange={setIsMobileBookingOpen}>
+      <section className="relative min-h-screen overflow-hidden pt-24 pb-24 lg:pt-28 z-10">
+        <div className="absolute inset-0">
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={heroImages[activeImage]}
+              src={heroImages[activeImage]}
+              alt="Luxury dining experience"
+              className="absolute inset-0 w-full h-full object-cover"
+              initial={{ opacity: 0, scale: 1.04 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.01 }}
+              transition={{ duration: 1.35, ease: 'easeOut' }}
+            />
+          </AnimatePresence>
+          <div className="absolute inset-0 animate-gradient-shift bg-[linear-gradient(108deg,rgba(6,9,14,0.78),rgba(8,11,17,0.58),rgba(6,9,14,0.72))]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(212,175,55,0.12),transparent_42%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0)_44%,rgba(0,0,0,0.48)_100%)]" />
+        </div>
 
-      {/* Content */}
-      <div className="relative z-10 h-full flex items-center">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 w-full">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Text Content */}
-            <div ref={contentRef} className="max-w-xl">
-              <span className="animate-item eyebrow block mb-4">
-                Premium Table Booking
-              </span>
-              <h1 className="animate-item font-serif text-[clamp(44px,6vw,84px)] uppercase text-[#F4F6FA] leading-[0.92] mb-6">
-                Reserve the moment.
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 items-center">
+            <motion.div
+              initial={{ opacity: 0, y: 28 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: 'easeOut' }}
+              className="max-w-[44rem]"
+            >
+              <span className="eyebrow block mb-3">Premium Manchester Dining</span>
+              <h1 className="font-serif font-[500] text-[clamp(30px,4.6vw,56px)] leading-[1.01] tracking-[0.005em] text-[#F6F8FC] mb-5 max-w-[11ch] drop-shadow-[0_7px_22px_rgba(0,0,0,0.28)]">
+                Reserve an Evening Worth Remembering
               </h1>
-              <div className="animate-item w-24 h-px bg-[#D4A23A]/30 mb-6" />
-              <p className="animate-item text-lg text-[#A9B1BE] mb-8 leading-relaxed">
-                A curated evening begins with one click. Experience fine dining 
-                at its finest in the heart of Manchester.
+              <p className="text-[clamp(15px,1.6vw,19px)] text-[#D0D7E3] max-w-[31rem] leading-relaxed mb-7">
+                Elegant dining starts with one seamless reservation. Book in seconds with instant confirmation.
               </p>
-              <div className="animate-item flex flex-wrap gap-4">
-                <Link to="/book" className="btn-gold flex items-center gap-2">
-                  Book a Table
-                  <ArrowRight size={18} />
+
+              <div className="flex flex-wrap gap-3.5 mb-7">
+                <Link to="/book" className="btn-gold btn-gold-glow hidden sm:inline-flex items-center gap-2">
+                  Book Now
+                  <ArrowRight size={17} />
                 </Link>
-                <Link to="/" className="btn-ghost">
-                  View Menu
+                <Link to="/menu" className="btn-ghost inline-flex items-center justify-center gap-2 w-full sm:w-auto">
+                  Explore Menu
                 </Link>
               </div>
-            </div>
 
-            {/* Right: Booking Card */}
-            <div ref={cardRef} className="flex justify-end">
+              <div className="flex flex-wrap items-center gap-3.5 text-sm text-[#E4E9F2]">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.2)] bg-[rgba(6,8,12,0.5)] px-3 py-1.5 backdrop-blur">
+                  <Star size={14} className="text-[#D4AF37]" />
+                  4.8 rating | 1200+ happy diners
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.2)] bg-[rgba(6,8,12,0.5)] px-3 py-1.5 backdrop-blur">
+                  <Sparkles size={14} className="text-[#D4AF37]" />
+                  Instant table confirmation
+                </span>
+              </div>
+
+              <div className="mt-7 lg:hidden">
+                <DrawerTrigger asChild>
+                  <button className="btn-gold btn-gold-glow w-full">Book Now</button>
+                </DrawerTrigger>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 28 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.15 }}
+              className="hidden lg:flex justify-end"
+            >
               <BookingCard />
-            </div>
+            </motion.div>
           </div>
         </div>
-      </div>
-    </section>
+
+      </section>
+
+      <DrawerContent className="warm-ambient border-t border-[rgba(255,255,255,0.16)] bg-[rgba(11,15,24,0.92)] max-h-[90vh] overflow-y-auto">
+        <DrawerHeader className="text-left px-5 pb-3">
+          <DrawerTitle className="font-serif text-3xl text-[#F4F6FA]">Book Your Table</DrawerTitle>
+          <DrawerDescription className="text-[#A9B1BE]">
+            Complete your reservation in a few taps.
+          </DrawerDescription>
+        </DrawerHeader>
+        <div className="px-4 pb-8">
+          <BookingCard compact />
+        </div>
+      </DrawerContent>
+    </Drawer>
   );
 };

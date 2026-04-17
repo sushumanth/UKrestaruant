@@ -12,6 +12,7 @@ import {
 import { format } from 'date-fns';
 import { CalendarIcon, Check } from 'lucide-react';
 import { generateBookingId, findOptimalTable } from '@/lib/mockData';
+import { saveBookingToSupabase } from '@/lib/supabaseBookingApi';
 
 const timeSlots = [
   '17:00', '17:30', '18:00', '18:30', 
@@ -74,6 +75,12 @@ export const QuickBookingForm = ({ onSuccess }: { onSuccess?: () => void }) => {
     };
 
     addBooking(newBooking);
+    void saveBookingToSupabase(newBooking).then((result) => {
+      if (!result.ok) {
+        console.warn('Quick booking save to Supabase skipped:', result.error);
+      }
+    });
+
     setIsSubmitting(false);
     onSuccess?.();
   };

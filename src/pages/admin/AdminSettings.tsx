@@ -1,15 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Save, Store, Clock, PoundSterling, Bell, Shield } from 'lucide-react';
 import { useSettingsStore } from '@/store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { isSupabaseConfigured } from '@/lib/supabase';
+import { updateRestaurantSettingsInSupabase } from '@/lib/supabaseAdminApi';
 
 export const AdminSettings = () => {
-  const { settings } = useSettingsStore();
+  const { settings, setSettings } = useSettingsStore();
   const [activeTab, setActiveTab] = useState('general');
   const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
 
   const [formData, setFormData] = useState({
     restaurantName: settings?.name || 'LuxeReserve',
@@ -34,13 +37,62 @@ export const AdminSettings = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    setSaveMessage('');
   };
+
+  useEffect(() => {
+    if (!settings) {
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      restaurantName: settings.name,
+      address: settings.address,
+      phone: settings.phone,
+      email: settings.email,
+      openingTime: settings.openingTime,
+      closingTime: settings.closingTime,
+      timeSlotInterval: settings.timeSlotInterval,
+      depositAmount: settings.defaultDepositAmount,
+      cancellationHours: settings.cancellationDeadlineHours,
+      autoReleaseMinutes: settings.autoReleaseMinutes,
+    }));
+  }, [settings]);
 
   const handleSave = async () => {
     setIsSaving(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsSaving(false);
+    setSaveMessage('');
+
+    try {
+      if (!settings?.id || !isSupabaseConfigured) {
+        await new Promise(resolve => setTimeout(resolve, 600));
+        setSaveMessage('Settings saved in local mode.');
+        return;
+      }
+
+      const updated = await updateRestaurantSettingsInSupabase({
+        id: settings.id,
+        name: formData.restaurantName,
+        address: formData.address,
+        phone: formData.phone,
+        email: formData.email,
+        openingTime: formData.openingTime,
+        closingTime: formData.closingTime,
+        timeSlotInterval: Number(formData.timeSlotInterval),
+        defaultDepositAmount: Number(formData.depositAmount),
+        cancellationDeadlineHours: Number(formData.cancellationHours),
+        autoReleaseMinutes: Number(formData.autoReleaseMinutes),
+      });
+
+      setSettings(updated);
+      setSaveMessage('Settings saved to Supabase successfully.');
+    } catch (error) {
+      console.warn('Failed to save settings:', error);
+      setSaveMessage('Unable to save settings. Please check role access and try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const tabs = [
@@ -339,6 +391,9 @@ export const AdminSettings = () => {
 
         {/* Save Button */}
         <div className="mt-8 pt-6 border-t border-[rgba(244,246,250,0.08)] flex justify-end">
+          {saveMessage && (
+            <p className="mr-auto self-center text-sm text-[#A9B1BE]">{saveMessage}</p>
+          )}
           <Button 
             onClick={handleSave} 
             disabled={isSaving}

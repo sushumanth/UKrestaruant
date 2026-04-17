@@ -17,12 +17,13 @@ export const Navigation = () => {
   }, []);
 
   const isHomePage = location.pathname === '/';
+  const privateDiningHref = isHomePage ? '#popular-tables' : '/#popular-tables';
 
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled || !isHomePage
-          ? 'bg-[#0B0C0F]/90 backdrop-blur-md border-b border-[rgba(244,246,250,0.08)]'
+          ? 'pastel-nav-surface'
           : 'bg-transparent'
       }`}
     >
@@ -30,29 +31,29 @@ export const Navigation = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <span className="font-mono text-xs uppercase tracking-[0.14em] text-[#A9B1BE]">
+            <span className="font-mono text-xs uppercase tracking-[0.14em] text-[#C8AE6A]">
               LUXE
             </span>
-            <span className="font-serif text-xl text-[#F4F6FA]">RESERVE</span>
+            <span className="font-serif text-xl text-[#F6F9FF]">RESERVE</span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             <Link
-              to="/"
-              className="text-sm text-[#A9B1BE] hover:text-[#F4F6FA] transition-colors"
+              to="/menu"
+              className="text-sm text-[#C4CDDB] hover:text-[#FFFFFF] transition-colors"
             >
               Menu
             </Link>
-            <Link
-              to="/"
-              className="text-sm text-[#A9B1BE] hover:text-[#F4F6FA] transition-colors"
+            <a
+              href={privateDiningHref}
+              className="text-sm text-[#C4CDDB] hover:text-[#FFFFFF] transition-colors"
             >
               Private Dining
-            </Link>
+            </a>
             <Link
               to="/book"
-              className="text-sm text-[#A9B1BE] hover:text-[#F4F6FA] transition-colors"
+              className="text-sm text-[#C4CDDB] hover:text-[#FFFFFF] transition-colors"
             >
               Reservations
             </Link>
@@ -62,9 +63,9 @@ export const Navigation = () => {
           <div className="hidden md:block">
             <Link
               to="/book"
-              className="btn-gold-outline text-sm py-2.5 px-5"
+              className="btn-gold btn-gold-glow text-sm py-2.5 px-5"
             >
-              Book a Table
+              Book Now
             </Link>
           </div>
 
@@ -80,35 +81,35 @@ export const Navigation = () => {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-[#0B0C0F]/95 backdrop-blur-md border-t border-[rgba(244,246,250,0.08)]">
+        <div className="md:hidden backdrop-blur-md border-t border-[rgba(255,255,255,0.08)] bg-[rgba(8,11,17,0.96)]">
           <div className="px-6 py-6 space-y-4">
             <Link
-              to="/"
-              className="block text-[#A9B1BE] hover:text-[#F4F6FA] transition-colors"
+              to="/menu"
+              className="block text-[#C4CDDB] hover:text-[#FFFFFF] transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Menu
             </Link>
-            <Link
-              to="/"
-              className="block text-[#A9B1BE] hover:text-[#F4F6FA] transition-colors"
+            <a
+              href={privateDiningHref}
+              className="block text-[#C4CDDB] hover:text-[#FFFFFF] transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Private Dining
-            </Link>
+            </a>
             <Link
               to="/book"
-              className="block text-[#A9B1BE] hover:text-[#F4F6FA] transition-colors"
+              className="block text-[#C4CDDB] hover:text-[#FFFFFF] transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Reservations
             </Link>
             <Link
               to="/book"
-              className="btn-gold text-center block mt-4"
+              className="btn-gold btn-gold-glow text-center block mt-4"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Book a Table
+              Book Now
             </Link>
           </div>
         </div>

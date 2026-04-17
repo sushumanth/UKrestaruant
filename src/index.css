@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,24 +6,24 @@
 
 @layer base {
   :root {
-    --background: 220 14% 4%;
-    --foreground: 220 20% 97%;
-    --card: 220 12% 8%;
-    --card-foreground: 220 20% 97%;
-    --popover: 220 12% 8%;
-    --popover-foreground: 220 20% 97%;
-    --primary: 43 68% 53%;
-    --primary-foreground: 220 14% 4%;
-    --secondary: 220 10% 12%;
-    --secondary-foreground: 220 20% 97%;
-    --muted: 220 10% 16%;
-    --muted-foreground: 215 14% 70%;
-    --accent: 43 68% 53%;
-    --accent-foreground: 220 14% 4%;
+    --background: 220 18% 5%;
+    --foreground: 210 20% 97%;
+    --card: 220 12% 9%;
+    --card-foreground: 210 20% 97%;
+    --popover: 220 12% 9%;
+    --popover-foreground: 210 20% 97%;
+    --primary: 43 64% 53%;
+    --primary-foreground: 220 16% 6%;
+    --secondary: 221 13% 14%;
+    --secondary-foreground: 210 20% 97%;
+    --muted: 220 10% 17%;
+    --muted-foreground: 216 14% 72%;
+    --accent: 30 94% 56%;
+    --accent-foreground: 220 16% 6%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 10% 16%;
-    --input: 220 10% 16%;
+    --border: 220 10% 18%;
+    --input: 220 10% 18%;
     --ring: 43 68% 53%;
     --radius: 1.125rem;
     --sidebar-background: 220 12% 6%;
@@ -35,14 +35,16 @@
     --sidebar-border: 220 10% 16%;
     --sidebar-ring: 43 68% 53%;
     
-    /* Custom luxury colors */
+    /* Luxury palette */
     --gold: 43 68% 53%;
-    --gold-light: 43 68% 63%;
-    --gold-dark: 43 68% 43%;
-    --night: 220 14% 4%;
-    --charcoal: 220 12% 10%;
-    --off-white: 220 20% 97%;
-    --cool-gray: 215 14% 70%;
+    --gold-light: 45 84% 62%;
+    --gold-dark: 40 67% 44%;
+    --ember: 16 91% 58%;
+    --ember-soft: 10 82% 47%;
+    --night: 220 18% 5%;
+    --charcoal: 220 12% 11%;
+    --off-white: 210 20% 97%;
+    --cool-gray: 216 14% 72%;
   }
 }
 
@@ -57,14 +59,18 @@
   
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Manrope', system-ui, sans-serif;
+    background-image:
+      radial-gradient(circle at 18% 8%, rgba(212, 175, 55, 0.14) 0%, rgba(212, 175, 55, 0) 36%),
+      radial-gradient(circle at 82% 12%, rgba(235, 101, 43, 0.08) 0%, rgba(235, 101, 43, 0) 34%),
+      linear-gradient(180deg, #06080c 0%, #0b0f16 48%, #0c1018 100%);
   }
   
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Bodoni Moda', Georgia, serif;
-    font-weight: 500;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 600;
     letter-spacing: 0.02em;
-    line-height: 0.95;
+    line-height: 0.94;
   }
   
   .font-mono {
@@ -72,56 +78,76 @@
   }
   
   .font-serif {
-    font-family: 'Bodoni Moda', Georgia, serif;
+    font-family: 'Cormorant Garamond', Georgia, serif;
   }
   
   .font-sans {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Manrope', system-ui, sans-serif;
   }
 }
 
 @layer components {
   /* Glass card effect */
   .glass-card {
-    @apply bg-[rgba(20,23,28,0.72)] border border-[rgba(244,246,250,0.10)] backdrop-blur-[14px];
+    @apply bg-[linear-gradient(145deg,rgba(15,20,30,0.84),rgba(12,16,25,0.86),rgba(11,15,24,0.9))] border border-[rgba(255,255,255,0.12)] backdrop-blur-[14px];
     border-radius: 18px;
+    box-shadow: 0 14px 40px rgba(1, 5, 14, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .luxury-panel {
+    @apply rounded-2xl border border-[rgba(255,255,255,0.1)] bg-[rgba(10,14,22,0.86)] backdrop-blur-xl;
+    box-shadow: 0 20px 54px rgba(2, 7, 18, 0.52);
   }
   
   /* Gold accent button */
   .btn-gold {
-    @apply bg-[#D4A23A] text-[#0B0C0F] font-medium px-6 py-3 rounded-lg transition-all duration-200;
+    @apply bg-gradient-to-r from-[#D4AF37] via-[#E9C55D] to-[#D4AF37] text-[#0B0C0F] font-semibold px-6 py-3 rounded-xl transition-all duration-300;
+    box-shadow: 0 12px 32px rgba(212, 175, 55, 0.3);
   }
   
   .btn-gold:hover {
-    @apply bg-[#E5B34A] -translate-y-0.5;
+    @apply -translate-y-0.5;
+    box-shadow: 0 18px 36px rgba(212, 175, 55, 0.4);
+  }
+
+  .btn-gold-glow {
+    @apply relative overflow-hidden;
+  }
+
+  .btn-gold-glow::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(115deg, transparent 25%, rgba(255, 255, 255, 0.4) 48%, transparent 72%);
+    transform: translateX(-130%);
+    animation: shimmer-sweep 2.8s ease-in-out infinite;
   }
   
   /* Ghost button */
   .btn-ghost {
-    @apply border border-[rgba(244,246,250,0.20)] text-[#F4F6FA] font-medium px-6 py-3 rounded-lg transition-all duration-200 bg-transparent;
+    @apply border border-[rgba(255,255,255,0.2)] text-[#F4F6FA] font-medium px-6 py-3 rounded-xl transition-all duration-300 bg-[rgba(8,11,17,0.5)] backdrop-blur-sm;
   }
   
   .btn-ghost:hover {
-    @apply border-[#D4A23A] text-[#D4A23A] -translate-y-0.5;
+    @apply border-[#D4AF37] text-[#D4AF37] -translate-y-0.5;
   }
   
   /* Gold outline button */
   .btn-gold-outline {
-    @apply border border-[#D4A23A] text-[#D4A23A] font-medium px-6 py-3 rounded-lg transition-all duration-200 bg-transparent;
+    @apply border border-[#D4AF37] text-[#D4AF37] font-medium px-6 py-3 rounded-xl transition-all duration-300 bg-transparent;
   }
   
   .btn-gold-outline:hover {
-    @apply bg-[#D4A23A] text-[#0B0C0F] -translate-y-0.5;
+    @apply bg-[#D4AF37] text-[#0B0C0F] -translate-y-0.5;
   }
   
   /* Eyebrow label */
   .eyebrow {
-    @apply font-mono text-xs uppercase tracking-[0.14em] text-[#A9B1BE];
+    @apply font-mono text-xs uppercase tracking-[0.18em] text-[#C8AE6A];
   }
   
   /* Section heading */
   .section-heading {
-    @apply font-serif text-[clamp(34px,4.2vw,64px)] uppercase tracking-[0.02em] text-[#F4F6FA];
+    @apply font-serif text-[clamp(30px,3.8vw,56px)] tracking-[0.012em] text-[#F4F6FA];
   }
   
   /* Vignette overlay */
@@ -133,7 +159,7 @@
   .grain-overlay {
     @apply fixed inset-0 pointer-events-none z-50;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    opacity: 0.04;
+    opacity: 0.03;
     mix-blend-mode: overlay;
   }
   
@@ -160,11 +186,122 @@
   
   /* Input styling */
   .input-luxury {
-    @apply bg-[rgba(20,23,28,0.60)] border border-[rgba(244,246,250,0.10)] rounded-lg px-4 py-3 text-[#F4F6FA] placeholder:text-[#A9B1BE] transition-all duration-200;
+    @apply bg-[rgba(10,14,22,0.86)] border border-[rgba(255,255,255,0.13)] rounded-xl px-4 py-3 text-[#F4F6FA] placeholder:text-[#A9B1BE] transition-all duration-300;
   }
   
   .input-luxury:focus {
-    @apply outline-none border-[#D4A23A] ring-1 ring-[#D4A23A]/30;
+    @apply outline-none border-[#D4AF37] ring-2 ring-[#D4AF37]/30;
+  }
+
+  .booking-light-card {
+    @apply rounded-3xl border border-[rgba(255,255,255,0.14)] backdrop-blur-md;
+    background: linear-gradient(145deg, rgba(14, 19, 29, 0.9), rgba(10, 15, 24, 0.88));
+    box-shadow: 0 20px 44px rgba(2, 6, 16, 0.42);
+  }
+
+  .booking-input {
+    @apply rounded-2xl border border-[rgba(255,255,255,0.16)] bg-[rgba(7,10,16,0.72)] px-4 py-3 text-[#F2F4F8] placeholder:text-[#98A2B3] transition-all duration-200;
+  }
+
+  .booking-input:focus {
+    @apply outline-none border-[#D4AF37] ring-2 ring-[#D4AF37]/25;
+  }
+
+  .booking-input:-webkit-autofill,
+  .booking-input:-webkit-autofill:hover,
+  .booking-input:-webkit-autofill:focus,
+  .booking-input:-webkit-autofill:active {
+    -webkit-text-fill-color: #f2f4f8;
+    transition: background-color 9999s ease-in-out 0s;
+    box-shadow: 0 0 0px 1000px rgba(7, 10, 16, 0.72) inset;
+  }
+
+  .booking-trust-chip {
+    @apply inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-[rgba(255,255,255,0.14)] bg-[rgba(15,20,30,0.64)] text-[#D1D7E2] font-medium;
+  }
+
+  .input-luxury:-webkit-autofill,
+  .input-luxury:-webkit-autofill:hover,
+  .input-luxury:-webkit-autofill:focus,
+  .input-luxury:-webkit-autofill:active {
+    -webkit-text-fill-color: #f4f6fa;
+    transition: background-color 9999s ease-in-out 0s;
+    box-shadow: 0 0 0px 1000px rgba(15, 18, 30, 0.82) inset;
+  }
+
+  .step-chip {
+    @apply rounded-xl border border-[rgba(255,255,255,0.16)] bg-[rgba(255,255,255,0.05)] px-3.5 py-2.5 text-sm text-[#D6DCE7] transition-all duration-200;
+  }
+
+  .step-chip:hover {
+    @apply border-[#D4AF37]/70 bg-[rgba(212,175,55,0.12)];
+  }
+
+  .step-chip-active {
+    @apply border-[#D4AF37] bg-[linear-gradient(120deg,rgba(212,175,55,0.26),rgba(235,101,43,0.2))] text-[#FFF9E9];
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.24);
+  }
+
+  .warm-ambient {
+    background:
+      radial-gradient(circle at 15% 22%, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0) 38%),
+      radial-gradient(circle at 78% 14%, rgba(235, 101, 43, 0.1) 0%, rgba(235, 101, 43, 0) 42%),
+      linear-gradient(150deg, rgba(8, 12, 19, 0.96), rgba(10, 15, 24, 0.9));
+  }
+
+  .pastel-luxe-bg {
+    background:
+      radial-gradient(circle at 14% 10%, rgba(212, 175, 55, 0.08) 0%, rgba(212, 175, 55, 0) 34%),
+      radial-gradient(circle at 82% 14%, rgba(235, 101, 43, 0.06) 0%, rgba(235, 101, 43, 0) 34%),
+      linear-gradient(105deg, #06080d 0%, #0a0f18 44%, #0a111b 64%, #0b111a 100%);
+  }
+
+  .pastel-nav-surface {
+    @apply backdrop-blur-md border-b border-[rgba(255,255,255,0.08)];
+    background: linear-gradient(90deg, rgba(8, 12, 20, 0.93), rgba(10, 14, 22, 0.92), rgba(12, 17, 25, 0.93));
+  }
+
+  .booking-shell {
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: linear-gradient(140deg, rgba(10, 14, 22, 0.74), rgba(8, 12, 19, 0.65));
+    box-shadow: 0 26px 56px rgba(2, 7, 18, 0.34);
+    backdrop-filter: blur(10px);
+  }
+
+  .pastel-footer-surface {
+    @apply border-t border-[rgba(255,255,255,0.08)];
+    background: linear-gradient(90deg, rgba(7, 10, 16, 0.98), rgba(9, 13, 21, 0.98), rgba(11, 16, 24, 0.98));
+  }
+
+  .pastel-eyebrow {
+    @apply font-mono text-xs font-semibold uppercase tracking-[0.18em] text-[#C8AE6A];
+  }
+
+  .pastel-section-heading {
+    @apply font-serif text-[clamp(30px,3.8vw,56px)] tracking-[0.012em] text-[#F4F6FA];
+  }
+
+  .pastel-copy {
+    @apply text-[#C8D0DE];
+  }
+
+  .pastel-copy-soft {
+    @apply text-[#AEB7C6];
+  }
+
+  .skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .skeleton-shimmer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+    transform: translateX(-140%);
+    animation: shimmer-sweep 1.8s ease-in-out infinite;
   }
   
   /* Scrollbar styling */
@@ -174,15 +311,15 @@
   }
   
   ::-webkit-scrollbar-track {
-    @apply bg-[#0B0C0F];
+    @apply bg-[#090d14];
   }
   
   ::-webkit-scrollbar-thumb {
-    @apply bg-[#2A2F3A] rounded-full;
+    @apply bg-[#3c4659] rounded-full;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-[#3A4050];
+    @apply bg-[#55607a];
   }
 }
 
@@ -204,6 +341,11 @@
   .animate-slide-in-right {
     animation: slideInRight 0.6s ease-out forwards;
   }
+
+  .animate-gradient-shift {
+    animation: gradientShift 10s ease infinite;
+    background-size: 180% 180%;
+  }
   
   @keyframes fadeIn {
     from { opacity: 0; }
@@ -218,6 +360,17 @@
   @keyframes slideInRight {
     from { opacity: 0; transform: translateX(20px); }
     to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes shimmer-sweep {
+    from { transform: translateX(-130%); }
+    to { transform: translateX(130%); }
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
   
   /* Pin spacer fix for GSAP */

@@ -144,23 +144,17 @@ export const generateReports = (): DailyReport[] => {
 
 // Time slots generation
 export const generateTimeSlots = (_date: string): { time: string; available: boolean; availableTables: number }[] => {
-  const slots = [];
-  const startHour = 17;
-  const endHour = 22;
-  
-  for (let hour = startHour; hour <= endHour; hour++) {
-    for (let minute of ['00', '30']) {
-      if (hour === endHour && minute === '30') continue;
-      
-      const time = `${hour}:${minute}`;
-      const availableTables = Math.floor(Math.random() * 15) + 5;
-      
-      slots.push({
-        time,
-        available: availableTables > 0,
-        availableTables,
-      });
-    }
+  const slots: { time: string; available: boolean; availableTables: number }[] = [];
+
+  for (let hour = 0; hour < 24; hour++) {
+    const time = `${String(hour).padStart(2, '0')}:00`;
+    const availableTables = Math.floor(Math.random() * 15) + 5;
+
+    slots.push({
+      time,
+      available: availableTables > 0,
+      availableTables,
+    });
   }
   
   return slots;
