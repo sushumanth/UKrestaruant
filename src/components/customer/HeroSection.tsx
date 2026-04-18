@@ -18,9 +18,10 @@ export const HeroSection = () => {
   }, []);
 
   return (
-      <section className="relative min-h-screen overflow-hidden pt-24 pb-24 lg:pt-28 z-10">
+      <section className="relative min-h-screen overflow-hidden pt-24 pb-24 lg:pt-28 z-10 bg-[rgba(6,9,14,0.95)]">
         <div className="absolute inset-0">
-          <AnimatePresence mode="wait">
+          <div className="absolute inset-0 bg-[rgba(6,9,14,0.95)]" />
+          <AnimatePresence mode="sync">
             <motion.img
               key={heroImages[activeImage]}
               src={heroImages[activeImage]}

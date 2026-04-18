@@ -4,7 +4,6 @@ import {
   Calendar,
   Clock,
   Users,
-  ChevronLeft,
   CreditCard,
   Check,
   Shield,
@@ -59,47 +58,47 @@ const PaymentForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="booking-light-card p-6 sm:p-7">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="rounded-2xl border border-amber-200/70 bg-white/90 p-5 sm:p-6 shadow-[0_14px_38px_rgba(128,78,24,0.12)]">
         <div className="flex items-center justify-between gap-3 mb-4">
-          <Label className="text-[#E4EAF3] text-base font-semibold block">Card Details</Label>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-300/40 bg-emerald-300/10 text-emerald-200 text-xs uppercase tracking-[0.12em]">
+          <Label className="text-amber-950 text-base font-semibold block">Card Details</Label>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 text-[11px] uppercase tracking-[0.12em]">
             <LockKeyhole size={12} />
             Encrypted
           </span>
         </div>
 
-        <div className="booking-input p-4">
+        <div className="rounded-xl border border-amber-200/80 bg-white px-4 py-4 shadow-inner">
           <CardElement
             options={{
               style: {
                 base: {
                   fontSize: '16px',
-                  color: '#EEF2F9',
+                  color: '#3F2A1D',
                   '::placeholder': {
-                    color: '#93A0B7',
+                    color: '#9C7A60',
                   },
                 },
               },
             }}
           />
         </div>
-        <p className="text-[#9CA8BD] text-xs mt-3">
+        <p className="text-amber-800/70 text-xs mt-3">
           Your payment details are processed securely and never stored on our servers.
         </p>
         {error && (
-          <p className="text-rose-400 text-sm mt-2">{error}</p>
+          <p className="text-rose-600 text-sm mt-2 font-medium">{error}</p>
         )}
       </div>
 
       <Button
         type="submit"
         disabled={!stripe || isProcessing}
-        className="w-full btn-gold disabled:opacity-50"
+        className="w-full h-12 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold shadow-[0_12px_24px_rgba(180,95,25,0.28)] disabled:opacity-50"
       >
         {isProcessing ? (
           <span className="flex items-center gap-2">
-            <span className="w-4 h-4 border-2 border-[#0B0C0F] border-t-transparent rounded-full animate-spin" />
+            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             Processing secure payment...
           </span>
         ) : (
@@ -111,13 +110,13 @@ const PaymentForm = ({
       </Button>
 
       <div className="grid sm:grid-cols-3 gap-2.5 text-xs">
-        <div className="booking-trust-chip">
+        <div className="inline-flex items-center justify-center gap-1.5 rounded-full border border-amber-200/80 bg-white/90 px-3 py-2 text-amber-900/80 font-medium">
           <Shield size={13} /> PCI compliant
         </div>
-        <div className="booking-trust-chip">
+        <div className="inline-flex items-center justify-center gap-1.5 rounded-full border border-amber-200/80 bg-white/90 px-3 py-2 text-amber-900/80 font-medium">
           <LockKeyhole size={13} /> 256-bit SSL
         </div>
-        <div className="booking-trust-chip">
+        <div className="inline-flex items-center justify-center gap-1.5 rounded-full border border-amber-200/80 bg-white/90 px-3 py-2 text-amber-900/80 font-medium">
           <BadgeCheck size={13} /> Verified checkout
         </div>
       </div>
@@ -216,13 +215,13 @@ export const BookingPage = () => {
         
         {/* Full-height decorative rose - left side (mirrored) */}
         <div className="absolute inset-0 opacity-35 pointer-events-none">
-  <img
-    src="/bookfirstpage.png"
-    alt=""
-    className="w-full h-full object-cover"
-    style={{ transform: 'scaleX(-1)' }}
-  />
-</div>
+          <img
+            src="/bookfirstpage.png"
+            alt=""
+            className="w-full h-full object-cover"
+            style={{ transform: 'scaleX(-1)' }}
+          />
+        </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 relative z-10">
           <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6 sm:gap-8 items-start">
@@ -269,8 +268,9 @@ export const BookingPage = () => {
             </div>
             </div>
 
-            {/* RIGHT PANEL - Premium Dark Booking Card */}
-            <div className="rounded-2xl overflow-hidden shadow-2xl sticky top-6 h-fit">
+            {/* RIGHT PANEL - Premium Dark Booking Card 
+                FIX: Removed max-h and overflow-y-auto to prevent cutting off the calendar dropdown */}
+            <div className="rounded-2xl overflow-hidden shadow-2xl sticky top-6 h-fit pb-2">
               {/* Header */}
               <div className="bg-gradient-to-b from-amber-900/95 to-amber-950 px-8 py-6 text-center border-b border-amber-800/40">
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-amber-700/40 border border-amber-600/50 mb-3">
@@ -297,7 +297,7 @@ export const BookingPage = () => {
               </div>
 
               {/* Search Sections - Scrollable */}
-              <div className="bg-amber-50/50 px-6 py-5 space-y-3 max-h-64 overflow-y-auto">
+              <div className="bg-amber-50/50 px-6 py-5 space-y-3">
                 
                 {/* Guests Section */}
                 <div className="bg-white rounded-lg overflow-hidden border border-black/10 hover:border-black/20 transition-colors">
@@ -614,48 +614,54 @@ export const BookingPage = () => {
           </div>
 
           {/* RIGHT PANEL - Form Steps */}
-          <div className="rounded-2xl overflow-hidden shadow-lg h-fit sticky top-6">
+          <div className="rounded-3xl overflow-hidden border border-amber-200/70 bg-[linear-gradient(180deg,rgba(255,252,245,0.95),rgba(255,247,231,0.9))] shadow-[0_18px_40px_rgba(85,54,21,0.16)] h-fit sticky top-6">
             {/* Header */}
-            <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-8 py-6 text-center border-b border-slate-700">
-              <h3 className="text-white font-serif text-lg tracking-wide">Complete Your Details</h3>
-              <p className="text-slate-300 text-xs mt-1 tracking-widest uppercase">Secure Checkout</p>
+            <div className="px-8 py-6 text-center border-b border-amber-200/70 bg-[linear-gradient(130deg,rgba(44,26,15,0.95),rgba(73,45,22,0.96),rgba(27,23,30,0.95))]">
+              <h3 className="text-[#FFF8EE] font-serif text-[1.7rem] leading-none tracking-[0.01em]">Complete Your Details</h3>
+              <p className="text-amber-200/80 text-[11px] mt-2 tracking-[0.18em] uppercase">Secure Checkout</p>
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <span className={`h-2 w-8 rounded-full transition-colors ${step >= 1 ? 'bg-amber-300' : 'bg-white/30'}`} />
+                <span className={`h-2 w-8 rounded-full transition-colors ${step >= 2 ? 'bg-amber-300' : 'bg-white/30'}`} />
+                <span className={`h-2 w-8 rounded-full transition-colors ${step >= 3 || isConfirmed ? 'bg-amber-300' : 'bg-white/30'}`} />
+              </div>
             </div>
 
             {/* Step 1: Contact Details */}
             {step === 1 && (
-              <div className="bg-gradient-to-b from-yellow-50 to-amber-50 px-8 py-8">
-                <h3 className="font-serif text-xl text-amber-900 mb-6">Your Information</h3>
+              <div className="px-8 py-8">
+                <h3 className="font-serif text-[1.8rem] text-amber-950 mb-2 leading-none">Your Information</h3>
+                <p className="text-sm text-amber-900/70 mb-6">Add your contact details to confirm your reservation.</p>
                 
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="firstName" className="text-amber-900 mb-2 block text-sm font-medium">First Name *</Label>
+                      <Label htmlFor="firstName" className="text-amber-900 mb-2 block text-sm font-semibold">First Name *</Label>
                       <Input
                         id="firstName"
                         name="firstName"
                         autoComplete="given-name"
                         value={formData.firstName}
                         onChange={handleInputChange}
-                        className="booking-input bg-white/90 border border-amber-200 text-amber-900 placeholder-amber-600/40"
+                        className="h-11 rounded-xl bg-white border border-amber-200/80 text-amber-950 placeholder:text-amber-700/45 focus-visible:ring-amber-300"
                         placeholder="John"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="lastName" className="text-amber-900 mb-2 block text-sm font-medium">Last Name *</Label>
+                      <Label htmlFor="lastName" className="text-amber-900 mb-2 block text-sm font-semibold">Last Name *</Label>
                       <Input
                         id="lastName"
                         name="lastName"
                         autoComplete="family-name"
                         value={formData.lastName}
                         onChange={handleInputChange}
-                        className="booking-input bg-white/90 border border-amber-200 text-amber-900 placeholder-amber-600/40"
+                        className="h-11 rounded-xl bg-white border border-amber-200/80 text-amber-950 placeholder:text-amber-700/45 focus-visible:ring-amber-300"
                         placeholder="Doe"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="email" className="text-amber-900 mb-2 block text-sm font-medium">Email *</Label>
+                    <Label htmlFor="email" className="text-amber-900 mb-2 block text-sm font-semibold">Email *</Label>
                     <Input
                       id="email"
                       name="email"
@@ -663,16 +669,16 @@ export const BookingPage = () => {
                       autoComplete="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="booking-input bg-white/90 border border-amber-200 text-amber-900 placeholder-amber-600/40"
+                      className="h-11 rounded-xl bg-white border border-amber-200/80 text-amber-950 placeholder:text-amber-700/45 focus-visible:ring-amber-300"
                       placeholder="john@example.com"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="phone" className="text-amber-900 mb-2 block text-sm font-medium">Phone *</Label>
+                    <Label htmlFor="phone" className="text-amber-900 mb-2 block text-sm font-semibold">Phone *</Label>
                     <div className="flex gap-2">
-                      <div className="w-16 pt-2">
-                        <span className="text-amber-900 text-sm font-medium">+ 44</span>
+                      <div className="w-16 pt-2.5">
+                        <span className="text-amber-900 text-sm font-semibold">+ 44</span>
                       </div>
                       <Input
                         id="phone"
@@ -681,14 +687,14 @@ export const BookingPage = () => {
                         autoComplete="tel"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className="booking-input flex-1 bg-white/90 border border-amber-200 text-amber-900 placeholder-amber-600/40"
+                        className="h-11 flex-1 rounded-xl bg-white border border-amber-200/80 text-amber-950 placeholder:text-amber-700/45 focus-visible:ring-amber-300"
                         placeholder="7123 456789"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="specialRequests" className="text-amber-900 mb-2 block text-sm font-medium">
+                    <Label htmlFor="specialRequests" className="text-amber-900 mb-2 block text-sm font-semibold">
                       Special Requests
                     </Label>
                     <textarea
@@ -696,7 +702,7 @@ export const BookingPage = () => {
                       name="specialRequests"
                       value={formData.specialRequests}
                       onChange={handleInputChange}
-                      className="booking-input bg-white/90 border border-amber-200 text-amber-900 placeholder-amber-600/40 w-full h-24 resize-none text-sm"
+                      className="w-full h-24 resize-none rounded-xl bg-white border border-amber-200/80 px-3 py-2 text-sm text-amber-950 placeholder:text-amber-700/45 outline-none focus:ring-2 focus:ring-amber-300"
                       placeholder="e.g., dietary requirements, special occasion"
                     />
                   </div>
@@ -705,7 +711,7 @@ export const BookingPage = () => {
                 <Button
                   onClick={() => setStep(2)}
                   disabled={!isDetailsValid}
-                  className="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium py-3 rounded-lg mt-6 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="w-full h-12 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold mt-6 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   Continue to Payment
                 </Button>
@@ -716,7 +722,7 @@ export const BookingPage = () => {
                     setSelectedTime('');
                     setSelectedGuests(0);
                   }}
-                  className="w-full text-center text-amber-700 hover:text-amber-900 transition-colors mt-3 text-sm font-medium"
+                  className="w-full text-center text-amber-700 hover:text-amber-900 transition-colors mt-3 text-sm font-semibold"
                 >
                   Back to booking
                 </button>
@@ -725,8 +731,9 @@ export const BookingPage = () => {
 
             {/* Step 2: Payment */}
             {step === 2 && (
-              <div className="bg-gradient-to-b from-yellow-50 to-amber-50 px-8 py-8">
-                <h3 className="font-serif text-xl text-amber-900 mb-6">Payment Details</h3>
+              <div className="px-8 py-8">
+                <h3 className="font-serif text-[1.8rem] text-amber-950 mb-2 leading-none">Payment Details</h3>
+                <p className="text-sm text-amber-900/70 mb-6">Secure your table with a fully refundable deposit.</p>
                 
                 <Elements stripe={stripePromise}>
                   <PaymentForm 
@@ -736,12 +743,12 @@ export const BookingPage = () => {
                 </Elements>
                 
                 {saveError && (
-                  <p className="mt-4 text-center text-sm text-red-600 font-medium">{saveError}</p>
+                  <p className="mt-4 text-center text-sm text-red-600 font-semibold">{saveError}</p>
                 )}
                 
                 <button
                   onClick={() => setStep(1)}
-                  className="w-full text-center text-amber-700 hover:text-amber-900 transition-colors mt-4 font-medium"
+                  className="w-full text-center text-amber-700 hover:text-amber-900 transition-colors mt-4 font-semibold"
                 >
                   Back to details
                 </button>
@@ -750,7 +757,7 @@ export const BookingPage = () => {
 
             {/* Step 3: Confirmation */}
             {isConfirmed && (
-              <div className="bg-gradient-to-b from-yellow-50 to-amber-50 px-8 py-12 text-center">
+              <div className="px-8 py-12 text-center">
                 <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
                   <Check size={32} className="text-emerald-600" />
                 </div>

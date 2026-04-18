@@ -169,23 +169,25 @@ export const BookingConfirmationPage = () => {
         </div>
 
         {/* Booking Card */}
-        <div className="rounded-xl border border-amber-200/50 p-8 mb-8 bg-gradient-to-br from-amber-50/80 to-yellow-50/80 relative overflow-hidden" style={{
+        <div className="rounded-xl border border-amber-100/10 p-8 mb-8 bg-gradient-to-br from-amber-50/90 to-yellow-50/85 relative overflow-hidden" style={{
           backgroundImage: 'url(/artimage.png)',
           backgroundSize: 'cover',
-          backgroundPosition: 'center'
+          backgroundPosition: 'center',
+          backgroundColor: '#f8ecd8'
         }}>
           {/* Overlay for readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-white/35 via-white/40 to-white/92 rounded-xl" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#fff6e2]/90 via-[#fff8ed]/50 to-[#fff3e0]/99 rounded-xl" />
+          <div className="absolute inset-0 bg-[rgba(255,247,232,0.5)] backdrop-blur-[1.5px] rounded-xl" />
           
           {/* Content wrapper */}
           <div className="relative z-10">
-          <div className="flex items-center justify-between mb-6 pb-6 border-b border-amber-200/60">
+          <div className="flex items-center justify-between mb-6 pb-6 border-b border-amber-300/70">
             <div>
-              <p className="text-amber-700/70 text-sm font-medium mb-1">Booking Reference</p>
-              <p className="font-mono text-2xl text-amber-700 font-bold">{booking.bookingId}</p>
+              <p className="text-amber-900/80 text-sm font-medium mb-1">Booking Reference</p>
+              <p className="font-mono text-2xl text-amber-800 font-bold">{booking.bookingId}</p>
             </div>
             <div className="text-right">
-              <p className="text-amber-700/70 text-sm font-medium mb-1">Status</p>
+              <p className="text-amber-900/80 text-sm font-medium mb-1">Status</p>
               <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 text-emerald-700 text-sm border border-emerald-300/50 font-medium">
                 <span className="w-2 h-2 rounded-full bg-emerald-600" />
                 Confirmed
@@ -194,40 +196,40 @@ export const BookingConfirmationPage = () => {
           </div>
 
           <div className="grid sm:grid-cols-2 gap-6 mb-6">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 rounded-xl border border-amber-200/70 bg-white/72 px-3.5 py-3 backdrop-blur-sm">
               <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
                 <Calendar size={22} className="text-amber-700" />
               </div>
               <div>
-                <p className="text-amber-700/60 text-xs font-semibold uppercase">Date</p>
-                <p className="text-amber-900 font-medium mt-1">{formatDate(booking.date)}</p>
+                <p className="text-amber-900/70 text-xs font-semibold uppercase">Date</p>
+                <p className="text-amber-950 font-semibold mt-1">{formatDate(booking.date)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 rounded-xl border border-amber-200/70 bg-white/72 px-3.5 py-3 backdrop-blur-sm">
               <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
                 <Clock size={22} className="text-amber-700" />
               </div>
               <div>
-                <p className="text-amber-700/60 text-xs font-semibold uppercase">Time</p>
-                <p className="text-amber-900 font-medium mt-1">{formatTime(booking.time)}</p>
+                <p className="text-amber-900/70 text-xs font-semibold uppercase">Time</p>
+                <p className="text-amber-950 font-semibold mt-1">{formatTime(booking.time)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 rounded-xl border border-amber-200/70 bg-white/72 px-3.5 py-3 backdrop-blur-sm">
               <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
                 <Users size={22} className="text-amber-700" />
               </div>
               <div>
-                <p className="text-amber-700/60 text-xs font-semibold uppercase">Party Size</p>
-                <p className="text-amber-900 font-medium mt-1">{booking.guests} {booking.guests === 1 ? 'guest' : 'guests'}</p>
+                <p className="text-amber-900/70 text-xs font-semibold uppercase">Party Size</p>
+                <p className="text-amber-950 font-semibold mt-1">{booking.guests} {booking.guests === 1 ? 'guest' : 'guests'}</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 rounded-xl border border-amber-200/70 bg-white/72 px-3.5 py-3 backdrop-blur-sm">
               <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
                 <MapPin size={22} className="text-amber-700" />
               </div>
               <div>
-                <p className="text-amber-700/60 text-xs font-semibold uppercase">Table</p>
-                <p className="text-amber-900 font-medium mt-1">
+                <p className="text-amber-900/70 text-xs font-semibold uppercase">Table</p>
+                <p className="text-amber-950 font-semibold mt-1">
                   {booking.tableNumber ? `Table ${booking.tableNumber}` : 'To be assigned'}
                 </p>
               </div>
@@ -235,9 +237,11 @@ export const BookingConfirmationPage = () => {
           </div>
 
           {booking.specialRequests && (
-            <div className="pt-6 border-t border-amber-200/60">
-              <p className="text-amber-700/70 text-sm font-semibold mb-2 uppercase">Special Requests</p>
-              <p className="text-amber-900">{booking.specialRequests}</p>
+            <div className="pt-6 border-t border-amber-300/70">
+              <div className="rounded-xl border border-amber-200/70 bg-white/72 px-4 py-3 backdrop-blur-sm">
+                <p className="text-amber-900/80 text-sm font-semibold mb-2 uppercase">Special Requests</p>
+                <p className="text-amber-950">{booking.specialRequests}</p>
+              </div>
             </div>
           )}
           </div>
