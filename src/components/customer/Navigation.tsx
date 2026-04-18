@@ -23,7 +23,7 @@ export const Navigation = () => {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled || !isHomePage
-          ? 'pastel-nav-surface'
+          ? 'bg-white shadow-sm border-b border-amber-200'
           : 'bg-transparent'
       }`}
     >
@@ -31,29 +31,29 @@ export const Navigation = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <span className="font-mono text-xs uppercase tracking-[0.14em] text-[#C8AE6A]">
+            <span className="font-mono text-xs uppercase tracking-[0.14em] text-amber-700">
               LUXE
             </span>
-            <span className="font-serif text-xl text-[#F6F9FF]">RESERVE</span>
+            <span className="font-serif text-xl text-amber-900">RESERVE</span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             <Link
               to="/menu"
-              className="text-sm text-[#C4CDDB] hover:text-[#FFFFFF] transition-colors"
+              className="text-sm text-amber-700/70 hover:text-amber-900 transition-colors"
             >
               Menu
             </Link>
             <a
               href={privateDiningHref}
-              className="text-sm text-[#C4CDDB] hover:text-[#FFFFFF] transition-colors"
+              className="text-sm text-amber-700/70 hover:text-amber-900 transition-colors"
             >
               Private Dining
             </a>
             <Link
               to="/book"
-              className="text-sm text-[#C4CDDB] hover:text-[#FFFFFF] transition-colors"
+              className="text-sm text-amber-700/70 hover:text-amber-900 transition-colors"
             >
               Reservations
             </Link>
@@ -63,7 +63,7 @@ export const Navigation = () => {
           <div className="hidden md:block">
             <Link
               to="/book"
-              className="btn-gold btn-gold-glow text-sm py-2.5 px-5"
+              className="bg-amber-700 hover:bg-amber-800 text-white text-sm py-2.5 px-5 rounded-lg transition-colors"
             >
               Book Now
             </Link>
@@ -71,7 +71,7 @@ export const Navigation = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-[#F4F6FA]"
+            className="md:hidden text-amber-900"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}

@@ -351,6 +351,29 @@ $$;
 
 grant execute on function public.get_available_slots(date, integer) to anon, authenticated;
 
+-- 9b) RPC: occupied table ids by date/time (public-safe projection)
+create or replace function public.get_occupied_table_ids(
+  p_date date,
+  p_time time
+)
+returns table (
+  table_id text
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+select distinct b.table_id
+from public.bookings b
+where b.booking_date = p_date
+  and b.booking_time = p_time
+  and b.table_id is not null
+  and b.status in ('pending', 'confirmed', 'arrived', 'seated');
+$$;
+
+grant execute on function public.get_occupied_table_ids(date, time) to anon, authenticated;
+
 -- 10) RLS and policies
 alter table public.user_roles enable row level security;
 alter table public.bookings enable row level security;

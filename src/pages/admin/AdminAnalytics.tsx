@@ -77,20 +77,20 @@ export const AdminAnalytics = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-serif text-3xl text-[#F4F6FA] mb-2">Analytics</h1>
-          <p className="text-[#A9B1BE]">Track performance and key metrics.</p>
+          <h1 className="font-serif text-3xl text-amber-900 mb-2">Analytics</h1>
+          <p className="text-amber-700/60">Track performance and key metrics.</p>
         </div>
         <div className="flex items-center gap-3">
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="input-luxury"
+            className="border border-amber-200 bg-white text-amber-900 px-4 py-2 rounded-lg font-medium hover:bg-amber-50 transition-colors"
           >
             <option value="7">Last 7 days</option>
             <option value="14">Last 14 days</option>
             <option value="30">Last 30 days</option>
           </select>
-          <Button className="btn-gold-outline flex items-center gap-2">
+          <Button className="bg-amber-700 hover:bg-amber-800 text-white flex items-center gap-2">
             <Download size={18} />
             Export
           </Button>
@@ -99,75 +99,75 @@ export const AdminAnalytics = () => {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="glass-card p-6">
+        <div className="bg-white rounded-2xl border border-amber-200/50 p-6 shadow-lg">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-[#D4A23A]/10 flex items-center justify-center">
-              <Calendar size={18} className="text-[#D4A23A]" />
+            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+              <Calendar size={18} className="text-amber-700" />
             </div>
-            <span className="text-[#A9B1BE] text-sm">Total Bookings</span>
+            <span className="text-amber-700/60 text-sm">Total Bookings</span>
           </div>
-          <p className="font-serif text-3xl text-[#F4F6FA]">{totals.bookings}</p>
-          <p className="text-emerald-400 text-sm mt-1">+12% vs last period</p>
+          <p className="font-serif text-3xl text-amber-900">{totals.bookings}</p>
+          <p className="text-emerald-600 text-sm mt-1 font-medium">+12% vs last period</p>
         </div>
 
-        <div className="glass-card p-6">
+        <div className="bg-white rounded-2xl border border-amber-200/50 p-6 shadow-lg">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-[#D4A23A]/10 flex items-center justify-center">
-              <Users size={18} className="text-[#D4A23A]" />
+            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+              <Users size={18} className="text-amber-700" />
             </div>
-            <span className="text-[#A9B1BE] text-sm">Total Guests</span>
+            <span className="text-amber-700/60 text-sm">Total Guests</span>
           </div>
-          <p className="font-serif text-3xl text-[#F4F6FA]">{totals.guests}</p>
-          <p className="text-emerald-400 text-sm mt-1">+8% vs last period</p>
+          <p className="font-serif text-3xl text-amber-900">{totals.guests}</p>
+          <p className="text-emerald-600 text-sm mt-1 font-medium">+8% vs last period</p>
         </div>
 
-        <div className="glass-card p-6">
+        <div className="bg-white rounded-2xl border border-amber-200/50 p-6 shadow-lg">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-[#D4A23A]/10 flex items-center justify-center">
-              <PoundSterling size={18} className="text-[#D4A23A]" />
+            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+              <PoundSterling size={18} className="text-amber-700" />
             </div>
-            <span className="text-[#A9B1BE] text-sm">Revenue</span>
+            <span className="text-amber-700/60 text-sm">Revenue</span>
           </div>
-          <p className="font-serif text-3xl text-[#F4F6FA]">{formatCurrency(totals.revenue)}</p>
-          <p className="text-emerald-400 text-sm mt-1">+15% vs last period</p>
+          <p className="font-serif text-3xl text-amber-900">{formatCurrency(totals.revenue)}</p>
+          <p className="text-emerald-600 text-sm mt-1 font-medium">+15% vs last period</p>
         </div>
 
-        <div className="glass-card p-6">
+        <div className="bg-white rounded-2xl border border-amber-200/50 p-6 shadow-lg">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center">
-              <Clock size={18} className="text-rose-500" />
+            <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center">
+              <Clock size={18} className="text-rose-600" />
             </div>
-            <span className="text-[#A9B1BE] text-sm">No Shows</span>
+            <span className="text-amber-700/60 text-sm">No Shows</span>
           </div>
-          <p className="font-serif text-3xl text-[#F4F6FA]">{totals.noShows}</p>
-          <p className="text-rose-400 text-sm mt-1">{((totals.noShows / totals.bookings) * 100).toFixed(1)}% rate</p>
+          <p className="font-serif text-3xl text-amber-900">{totals.noShows}</p>
+          <p className="text-rose-600 text-sm mt-1 font-medium">{((totals.noShows / totals.bookings) * 100).toFixed(1)}% rate</p>
         </div>
       </div>
 
       {/* Charts Row 1 */}
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Bookings Trend */}
-        <div className="glass-card p-6">
-          <h3 className="font-serif text-xl text-[#F4F6FA] mb-6">Bookings Trend</h3>
+        <div className="bg-white rounded-2xl border border-amber-200/50 p-6 shadow-lg">
+          <h3 className="font-serif text-xl text-amber-900 mb-6">Bookings Trend</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={bookingsData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2A2F3A" />
-                <XAxis dataKey="date" stroke="#A9B1BE" fontSize={12} />
-                <YAxis stroke="#A9B1BE" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2d1b5" />
+                <XAxis dataKey="date" stroke="#a18863" fontSize={12} />
+                <YAxis stroke="#a18863" fontSize={12} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#14171C', 
-                    border: '1px solid rgba(244,246,250,0.10)',
+                    backgroundColor: '#f5f1ed', 
+                    border: '1px solid rgba(217, 119, 6, 0.2)',
                     borderRadius: '8px'
                   }}
                 />
                 <Line 
                   type="monotone" 
                   dataKey="bookings" 
-                  stroke="#D4A23A" 
+                  stroke="#d4a574" 
                   strokeWidth={2}
-                  dot={{ fill: '#D4A23A', strokeWidth: 0 }}
+                  dot={{ fill: '#d4a574', strokeWidth: 0 }}
                 />
                 <Line 
                   type="monotone" 
@@ -182,23 +182,23 @@ export const AdminAnalytics = () => {
         </div>
 
         {/* Revenue Chart */}
-        <div className="glass-card p-6">
-          <h3 className="font-serif text-xl text-[#F4F6FA] mb-6">Revenue</h3>
+        <div className="bg-white rounded-2xl border border-amber-200/50 p-6 shadow-lg">
+          <h3 className="font-serif text-xl text-amber-900 mb-6">Revenue</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2A2F3A" />
-                <XAxis dataKey="date" stroke="#A9B1BE" fontSize={12} />
-                <YAxis stroke="#A9B1BE" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2d1b5" />
+                <XAxis dataKey="date" stroke="#a18863" fontSize={12} />
+                <YAxis stroke="#a18863" fontSize={12} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#14171C', 
-                    border: '1px solid rgba(244,246,250,0.10)',
+                    backgroundColor: '#f5f1ed', 
+                    border: '1px solid rgba(217, 119, 6, 0.2)',
                     borderRadius: '8px'
                   }}
                   formatter={(value: number) => formatCurrency(value)}
                 />
-                <Bar dataKey="revenue" fill="#D4A23A" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="revenue" fill="#d4a574" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -208,18 +208,18 @@ export const AdminAnalytics = () => {
       {/* Charts Row 2 */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Occupancy Rate */}
-        <div className="glass-card p-6">
-          <h3 className="font-serif text-xl text-[#F4F6FA] mb-6">Occupancy Rate</h3>
+        <div className="bg-white rounded-2xl border border-amber-200/50 p-6 shadow-lg">
+          <h3 className="font-serif text-xl text-amber-900 mb-6">Occupancy Rate</h3>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={occupancyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2A2F3A" />
-                <XAxis dataKey="date" stroke="#A9B1BE" fontSize={10} />
-                <YAxis stroke="#A9B1BE" fontSize={12} domain={[0, 100]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2d1b5" />
+                <XAxis dataKey="date" stroke="#a18863" fontSize={10} />
+                <YAxis stroke="#a18863" fontSize={12} domain={[0, 100]} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#14171C', 
-                    border: '1px solid rgba(244,246,250,0.10)',
+                    backgroundColor: '#f5f1ed', 
+                    border: '1px solid rgba(217, 119, 6, 0.2)',
                     borderRadius: '8px'
                   }}
                   formatter={(value: number) => `${value}%`}
@@ -237,18 +237,18 @@ export const AdminAnalytics = () => {
         </div>
 
         {/* Peak Hours */}
-        <div className="glass-card p-6">
-          <h3 className="font-serif text-xl text-[#F4F6FA] mb-6">Peak Hours</h3>
+        <div className="bg-white rounded-2xl border border-amber-200/50 p-6 shadow-lg">
+          <h3 className="font-serif text-xl text-amber-900 mb-6">Peak Hours</h3>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={peakHoursData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2A2F3A" />
-                <XAxis dataKey="hour" stroke="#A9B1BE" fontSize={10} />
-                <YAxis stroke="#A9B1BE" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2d1b5" />
+                <XAxis dataKey="hour" stroke="#a18863" fontSize={10} />
+                <YAxis stroke="#a18863" fontSize={12} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#14171C', 
-                    border: '1px solid rgba(244,246,250,0.10)',
+                    backgroundColor: '#f5f1ed', 
+                    border: '1px solid rgba(217, 119, 6, 0.2)',
                     borderRadius: '8px'
                   }}
                 />
@@ -259,8 +259,8 @@ export const AdminAnalytics = () => {
         </div>
 
         {/* Booking Status Distribution */}
-        <div className="glass-card p-6">
-          <h3 className="font-serif text-xl text-[#F4F6FA] mb-6">Status Distribution</h3>
+        <div className="bg-white rounded-2xl border border-amber-200/50 p-6 shadow-lg">
+          <h3 className="font-serif text-xl text-amber-900 mb-6">Status Distribution</h3>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -279,8 +279,8 @@ export const AdminAnalytics = () => {
                 </Pie>
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#14171C', 
-                    border: '1px solid rgba(244,246,250,0.10)',
+                    backgroundColor: '#f5f1ed', 
+                    border: '1px solid rgba(217, 119, 6, 0.2)',
                     borderRadius: '8px'
                   }}
                 />
@@ -291,7 +291,7 @@ export const AdminAnalytics = () => {
             {statusData.map((item) => (
               <div key={item.name} className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="text-[#A9B1BE] text-xs">{item.name}</span>
+                <span className="text-amber-700/60 text-xs">{item.name}</span>
               </div>
             ))}
           </div>

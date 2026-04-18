@@ -54,11 +54,11 @@ export const AdminBookings = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-serif text-3xl text-[#F4F6FA] mb-2">Bookings</h1>
-          <p className="text-[#A9B1BE]">Manage all reservations and their status.</p>
+          <h1 className="font-serif text-3xl text-amber-900 mb-2">Bookings</h1>
+          <p className="text-amber-700/60">Manage all reservations and their status.</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[#A9B1BE] text-sm">
+          <span className="text-amber-700/60 text-sm">
             {filteredBookings.length} bookings
           </span>
         </div>
@@ -68,13 +68,13 @@ export const AdminBookings = () => {
       <div className="flex flex-wrap gap-4">
         <div className="flex-1 min-w-[200px] max-w-md">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A9B1BE]" size={18} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-700/60" size={18} />
             <Input
               type="text"
               placeholder="Search by name, booking ID, or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="input-luxury pl-10 w-full"
+              className="border border-amber-200 bg-white text-amber-900 placeholder:text-amber-700/50 focus:ring-amber-200 focus:border-amber-300 pl-10 w-full rounded-lg"
             />
           </div>
         </div>
@@ -82,7 +82,7 @@ export const AdminBookings = () => {
         <select
           value={dateFilter}
           onChange={(e) => setDateFilter(e.target.value)}
-          className="input-luxury"
+          className="border border-amber-200 bg-white text-amber-900 px-4 py-2 rounded-lg font-medium hover:bg-amber-50 transition-colors"
         >
           <option value="all">All Dates</option>
           <option value="today">Today</option>
@@ -93,7 +93,7 @@ export const AdminBookings = () => {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as BookingStatus | 'all')}
-          className="input-luxury"
+          className="border border-amber-200 bg-white text-amber-900 px-4 py-2 rounded-lg font-medium hover:bg-amber-50 transition-colors"
         >
           <option value="all">All Statuses</option>
           {statusFilters.map((status) => (
@@ -105,67 +105,67 @@ export const AdminBookings = () => {
       </div>
 
       {/* Bookings Table */}
-      <div className="glass-card overflow-hidden">
+      <div className="bg-white rounded-2xl border border-amber-200/50 overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[rgba(244,246,250,0.08)] bg-[rgba(244,246,250,0.02)]">
-                <th className="text-left py-4 px-6 text-[#A9B1BE] text-sm font-medium">Booking ID</th>
-                <th className="text-left py-4 px-6 text-[#A9B1BE] text-sm font-medium">Customer</th>
-                <th className="text-left py-4 px-6 text-[#A9B1BE] text-sm font-medium">Date & Time</th>
-                <th className="text-left py-4 px-6 text-[#A9B1BE] text-sm font-medium">Guests</th>
-                <th className="text-left py-4 px-6 text-[#A9B1BE] text-sm font-medium">Table</th>
-                <th className="text-left py-4 px-6 text-[#A9B1BE] text-sm font-medium">Status</th>
-                <th className="text-left py-4 px-6 text-[#A9B1BE] text-sm font-medium">Payment</th>
-                <th className="text-left py-4 px-6 text-[#A9B1BE] text-sm font-medium">Actions</th>
+              <tr className="border-b border-amber-200 bg-amber-50/30">
+                <th className="text-left py-4 px-6 text-amber-700/70 text-sm font-medium">Booking ID</th>
+                <th className="text-left py-4 px-6 text-amber-700/70 text-sm font-medium">Customer</th>
+                <th className="text-left py-4 px-6 text-amber-700/70 text-sm font-medium">Date & Time</th>
+                <th className="text-left py-4 px-6 text-amber-700/70 text-sm font-medium">Guests</th>
+                <th className="text-left py-4 px-6 text-amber-700/70 text-sm font-medium">Table</th>
+                <th className="text-left py-4 px-6 text-amber-700/70 text-sm font-medium">Status</th>
+                <th className="text-left py-4 px-6 text-amber-700/70 text-sm font-medium">Payment</th>
+                <th className="text-left py-4 px-6 text-amber-700/70 text-sm font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredBookings.map((booking) => (
                 <tr 
                   key={booking.id} 
-                  className="border-b border-[rgba(244,246,250,0.05)] hover:bg-[rgba(244,246,250,0.02)] transition-colors"
+                  className="border-b border-amber-100 hover:bg-amber-50/30 transition-colors"
                 >
                   <td className="py-4 px-6">
-                    <span className="font-mono text-[#D4A23A]">{booking.bookingId}</span>
+                    <span className="font-mono text-amber-700 font-semibold">{booking.bookingId}</span>
                   </td>
                   <td className="py-4 px-6">
                     <div>
-                      <p className="text-[#F4F6FA] font-medium">{booking.customerName}</p>
-                      <p className="text-[#A9B1BE] text-sm">{booking.customerEmail}</p>
+                      <p className="text-amber-900 font-medium">{booking.customerName}</p>
+                      <p className="text-amber-700/60 text-sm">{booking.customerEmail}</p>
                     </div>
                   </td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
-                      <Calendar size={14} className="text-[#A9B1BE]" />
-                      <span className="text-[#F4F6FA]">{formatDate(booking.date)}</span>
-                      <Clock size={14} className="text-[#A9B1BE] ml-2" />
-                      <span className="text-[#A9B1BE]">{booking.time}</span>
+                      <Calendar size={14} className="text-amber-700/60" />
+                      <span className="text-amber-900">{formatDate(booking.date)}</span>
+                      <Clock size={14} className="text-amber-700/60 ml-2" />
+                      <span className="text-amber-700/60">{booking.time}</span>
                     </div>
                   </td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
-                      <Users size={14} className="text-[#A9B1BE]" />
-                      <span className="text-[#F4F6FA]">{booking.guests}</span>
+                      <Users size={14} className="text-amber-700/60" />
+                      <span className="text-amber-900">{booking.guests}</span>
                     </div>
                   </td>
                   <td className="py-4 px-6">
-                    <span className="text-[#F4F6FA]">
+                    <span className="text-amber-900">
                       {booking.tableNumber ? `T${booking.tableNumber}` : 'Unassigned'}
                     </span>
                   </td>
                   <td className="py-4 px-6">
-                    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs ${
+                    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${
                       statusColors.booking[booking.status]
-                    }/20 text-${statusColors.booking[booking.status].replace('bg-', '')}-400`}>
+                    } bg-opacity-20`}>
                       <span className={`w-2 h-2 rounded-full ${statusColors.booking[booking.status]}`} />
                       {statusLabels.booking[booking.status]}
                     </span>
                   </td>
                   <td className="py-4 px-6">
-                    <span className={`text-sm ${
-                      booking.paymentStatus === 'paid' ? 'text-emerald-400' : 
-                      booking.paymentStatus === 'refunded' ? 'text-amber-400' : 'text-rose-400'
+                    <span className={`text-sm font-medium ${
+                      booking.paymentStatus === 'paid' ? 'text-emerald-600' : 
+                      booking.paymentStatus === 'refunded' ? 'text-amber-700' : 'text-rose-600'
                     }`}>
                       {booking.paymentStatus.charAt(0).toUpperCase() + booking.paymentStatus.slice(1)}
                     </span>
@@ -173,14 +173,14 @@ export const AdminBookings = () => {
                   <td className="py-4 px-6">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="p-2 hover:bg-[rgba(244,246,250,0.05)] rounded-lg transition-colors">
-                          <MoreHorizontal size={18} className="text-[#A9B1BE]" />
+                        <button className="p-2 hover:bg-amber-100 rounded-lg transition-colors">
+                          <MoreHorizontal size={18} className="text-amber-700/70" />
                         </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent className="bg-[#14171C] border border-[rgba(244,246,250,0.10)]">
+                      <DropdownMenuContent className="bg-white border border-amber-200">
                         <DropdownMenuItem 
                           onClick={() => setSelectedBooking(booking)}
-                          className="text-[#F4F6FA] hover:bg-[rgba(244,246,250,0.05)] cursor-pointer"
+                          className="text-amber-900 hover:bg-amber-50 cursor-pointer"
                         >
                           <Edit size={14} className="mr-2" />
                           Edit Status
@@ -188,7 +188,7 @@ export const AdminBookings = () => {
                         {booking.status !== 'cancelled' && (
                           <DropdownMenuItem 
                             onClick={() => handleStatusChange(booking.id, 'cancelled')}
-                            className="text-rose-400 hover:bg-rose-500/10 cursor-pointer"
+                            className="text-rose-600 hover:bg-rose-50 cursor-pointer"
                           >
                             <X size={14} className="mr-2" />
                             Cancel
@@ -205,26 +205,26 @@ export const AdminBookings = () => {
 
         {filteredBookings.length === 0 && (
           <div className="py-16 text-center">
-            <p className="text-[#A9B1BE]">No bookings found matching your criteria.</p>
+            <p className="text-amber-700/60">No bookings found matching your criteria.</p>
           </div>
         )}
       </div>
 
       {/* Edit Status Dialog */}
       <Dialog open={!!selectedBooking} onOpenChange={() => setSelectedBooking(null)}>
-        <DialogContent className="bg-[#14171C] border border-[rgba(244,246,250,0.10)]">
+        <DialogContent className="bg-white border border-amber-200">
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl text-[#F4F6FA]">
+            <DialogTitle className="font-serif text-xl text-amber-900">
               Update Booking Status
             </DialogTitle>
           </DialogHeader>
           
           {selectedBooking && (
             <div className="space-y-4">
-              <div className="glass-card p-4">
-                <p className="text-[#A9B1BE] text-sm mb-1">Booking</p>
-                <p className="text-[#F4F6FA] font-medium">{selectedBooking.bookingId}</p>
-                <p className="text-[#A9B1BE]">{selectedBooking.customerName}</p>
+              <div className="bg-amber-50 border border-amber-200/50 rounded-lg p-4">
+                <p className="text-amber-700/60 text-sm mb-1">Booking</p>
+                <p className="text-amber-900 font-medium">{selectedBooking.bookingId}</p>
+                <p className="text-amber-700/60">{selectedBooking.customerName}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -234,8 +234,8 @@ export const AdminBookings = () => {
                     onClick={() => handleStatusChange(selectedBooking.id, status)}
                     className={`p-3 rounded-lg border transition-all ${
                       selectedBooking.status === status
-                        ? 'border-[#D4A23A] bg-[#D4A23A]/10 text-[#D4A23A]'
-                        : 'border-[rgba(244,246,250,0.10)] text-[#A9B1BE] hover:bg-[rgba(244,246,250,0.05)]'
+                        ? 'border-amber-700 bg-amber-100 text-amber-700 font-medium'
+                        : 'border-amber-200 text-amber-700/60 hover:bg-amber-50 hover:text-amber-700'
                     }`}
                   >
                     {statusLabels.booking[status]}

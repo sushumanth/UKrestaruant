@@ -33,23 +33,23 @@ export const AdminSidebar = () => {
 
   return (
     <aside 
-      className={`fixed left-0 top-0 h-full bg-[#14171C] border-r border-[rgba(244,246,250,0.08)] z-50 transition-all duration-300 ${
+      className={`fixed left-0 top-0 h-full bg-white border-r border-amber-200 z-50 transition-all duration-300 ${
         isCollapsed ? 'w-20' : 'w-64'
       }`}
     >
       {/* Logo */}
-      <div className="h-20 flex items-center justify-between px-6 border-b border-[rgba(244,246,250,0.08)]">
+      <div className="h-20 flex items-center justify-between px-6 border-b border-amber-200">
         {!isCollapsed && (
           <Link to="/admin" className="flex items-center gap-2">
-            <span className="font-mono text-xs uppercase tracking-[0.14em] text-[#A9B1BE]">
+            <span className="font-mono text-xs uppercase tracking-[0.14em] text-amber-700/70">
               LUXE
             </span>
-            <span className="font-serif text-lg text-[#F4F6FA]">RESERVE</span>
+            <span className="font-serif text-lg text-amber-900">RESERVE</span>
           </Link>
         )}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="text-[#A9B1BE] hover:text-[#F4F6FA] transition-colors"
+          className="text-amber-700/70 hover:text-amber-700 transition-colors"
         >
           {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>
@@ -65,8 +65,8 @@ export const AdminSidebar = () => {
               to={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                 isActive
-                  ? 'bg-[#D4A23A]/20 text-[#D4A23A] border border-[#D4A23A]/30'
-                  : 'text-[#A9B1BE] hover:bg-[rgba(244,246,250,0.05)] hover:text-[#F4F6FA]'
+                  ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                  : 'text-amber-700/60 hover:bg-amber-50 hover:text-amber-700'
               }`}
               title={isCollapsed ? item.label : undefined}
             >
@@ -78,18 +78,18 @@ export const AdminSidebar = () => {
       </nav>
 
       {/* User & Logout */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[rgba(244,246,250,0.08)]">
+      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-amber-200">
         {!isCollapsed && (
           <div className="mb-4 px-4">
-            <p className="text-[#F4F6FA] font-medium text-sm">{user?.firstName} {user?.lastName}</p>
-            <p className="text-[#A9B1BE] text-xs capitalize">{user?.role}</p>
+            <p className="text-amber-900 font-medium text-sm">{user?.firstName} {user?.lastName}</p>
+            <p className="text-amber-700/60 text-xs capitalize">{user?.role}</p>
           </div>
         )}
         <button
           onClick={() => {
             void handleLogout();
           }}
-          className="flex items-center gap-3 px-4 py-3 w-full text-[#A9B1BE] hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
+          className="flex items-center gap-3 px-4 py-3 w-full text-amber-700/60 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
           title={isCollapsed ? 'Logout' : undefined}
         >
           <LogOut size={20} />

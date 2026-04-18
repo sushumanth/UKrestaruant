@@ -12,6 +12,10 @@ export interface SupabaseSlotResult {
   availableTables: number;
 }
 
+export interface SupabaseOccupiedTableResult {
+  tableIds: string[];
+}
+
 export const saveBookingToSupabase = async (booking: Booking): Promise<SupabaseSaveResult> => {
   if (!isSupabaseConfigured || !supabase) {
     return {
@@ -84,5 +88,42 @@ export const getAvailableSlotsFromSupabase = async (
   return {
     ok: true,
     slots,
+  };
+};
+
+export const getOccupiedTableIdsFromSupabase = async (
+  date: string,
+  time: string
+): Promise<{ ok: boolean; tableIds: string[]; error?: string }> => {
+  if (!isSupabaseConfigured || !supabase) {
+    return {
+      ok: false,
+      tableIds: [],
+      error: 'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.',
+    };
+  }
+
+  const normalizedTime = time.slice(0, 5);
+
+  const { data, error } = await supabase.rpc('get_occupied_table_ids', {
+    p_date: date,
+    p_time: normalizedTime,
+  });
+
+  if (error) {
+    return {
+      ok: false,
+      tableIds: [],
+      error: error.message,
+    };
+  }
+
+  const tableIds = ((data ?? []) as Array<{ table_id: string | null }>)
+    .map((row) => row.table_id)
+    .filter((tableId): tableId is string => Boolean(tableId));
+
+  return {
+    ok: true,
+    tableIds,
   };
 };

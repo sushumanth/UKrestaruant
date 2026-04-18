@@ -3,20 +3,11 @@ import { BookingCard } from './BookingCard';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, Sparkles, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer';
 
 const heroImages = ['/chef_plating.jpg', '/dessert.jpg', '/cocktail.jpg', '/dining_room.jpg'];
 
 export const HeroSection = () => {
   const [activeImage, setActiveImage] = useState(0);
-  const [isMobileBookingOpen, setIsMobileBookingOpen] = useState(false);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -27,7 +18,6 @@ export const HeroSection = () => {
   }, []);
 
   return (
-    <Drawer open={isMobileBookingOpen} onOpenChange={setIsMobileBookingOpen}>
       <section className="relative min-h-screen overflow-hidden pt-24 pb-24 lg:pt-28 z-10">
         <div className="absolute inset-0">
           <AnimatePresence mode="wait">
@@ -85,9 +75,9 @@ export const HeroSection = () => {
               </div>
 
               <div className="mt-7 lg:hidden">
-                <DrawerTrigger asChild>
-                  <button className="btn-gold btn-gold-glow w-full">Book Now</button>
-                </DrawerTrigger>
+                <Link to="/book" className="btn-gold btn-gold-glow w-full inline-flex items-center justify-center">
+                  Book Now
+                </Link>
               </div>
             </motion.div>
 
@@ -95,7 +85,7 @@ export const HeroSection = () => {
               initial={{ opacity: 0, x: 28 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.15 }}
-              className="hidden lg:flex justify-end"
+              className="w-full lg:justify-end"
             >
               <BookingCard />
             </motion.div>
@@ -103,18 +93,5 @@ export const HeroSection = () => {
         </div>
 
       </section>
-
-      <DrawerContent className="warm-ambient border-t border-[rgba(255,255,255,0.16)] bg-[rgba(11,15,24,0.92)] max-h-[90vh] overflow-y-auto">
-        <DrawerHeader className="text-left px-5 pb-3">
-          <DrawerTitle className="font-serif text-3xl text-[#F4F6FA]">Book Your Table</DrawerTitle>
-          <DrawerDescription className="text-[#A9B1BE]">
-            Complete your reservation in a few taps.
-          </DrawerDescription>
-        </DrawerHeader>
-        <div className="px-4 pb-8">
-          <BookingCard compact />
-        </div>
-      </DrawerContent>
-    </Drawer>
   );
 };

@@ -107,20 +107,20 @@ export const AdminSettings = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="font-serif text-3xl text-[#F4F6FA] mb-2">Settings</h1>
-        <p className="text-[#A9B1BE]">Manage your restaurant configuration.</p>
+        <h1 className="font-serif text-3xl text-amber-900 mb-2">Settings</h1>
+        <p className="text-amber-700/60">Manage your restaurant configuration.</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-[rgba(244,246,250,0.08)] pb-4">
+      <div className="flex flex-wrap gap-2 border-b border-amber-200/30 pb-4">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
               activeTab === tab.id
-                ? 'bg-[#D4A23A]/20 text-[#D4A23A]'
-                : 'text-[#A9B1BE] hover:bg-[rgba(244,246,250,0.05)] hover:text-[#F4F6FA]'
+                ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                : 'text-amber-700/60 hover:bg-amber-50 hover:text-amber-700'
             }`}
           >
             <tab.icon size={18} />
@@ -130,15 +130,15 @@ export const AdminSettings = () => {
       </div>
 
       {/* Content */}
-      <div className="glass-card p-8">
+      <div className="bg-white rounded-2xl border border-amber-200/50 p-8 shadow-lg">
         {/* General Settings */}
         {activeTab === 'general' && (
           <div className="space-y-6">
-            <h3 className="font-serif text-xl text-[#F4F6FA] mb-6">General Information</h3>
+            <h3 className="font-serif text-xl text-amber-900 mb-6">General Information</h3>
             
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="restaurantName" className="text-[#A9B1BE] mb-2 block">
+                <Label htmlFor="restaurantName" className="text-amber-700/60 mb-2 block">
                   Restaurant Name
                 </Label>
                 <Input
@@ -146,12 +146,12 @@ export const AdminSettings = () => {
                   name="restaurantName"
                   value={formData.restaurantName}
                   onChange={handleInputChange}
-                  className="input-luxury"
+                  className="border border-amber-200 bg-white text-amber-900 placeholder:text-amber-700/50 px-4 py-2 rounded-lg"
                 />
               </div>
               
               <div>
-                <Label htmlFor="email" className="text-[#A9B1BE] mb-2 block">
+                <Label htmlFor="email" className="text-amber-700/60 mb-2 block">
                   Contact Email
                 </Label>
                 <Input
@@ -160,12 +160,12 @@ export const AdminSettings = () => {
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="input-luxury"
+                  className="border border-amber-200 bg-white text-amber-900 placeholder:text-amber-700/50 px-4 py-2 rounded-lg"
                 />
               </div>
               
               <div className="md:col-span-2">
-                <Label htmlFor="address" className="text-[#A9B1BE] mb-2 block">
+                <Label htmlFor="address" className="text-amber-700/60 mb-2 block">
                   Address
                 </Label>
                 <Input
@@ -173,12 +173,12 @@ export const AdminSettings = () => {
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
-                  className="input-luxury"
+                  className="border border-amber-200 bg-white text-amber-900 placeholder:text-amber-700/50 px-4 py-2 rounded-lg"
                 />
               </div>
               
               <div>
-                <Label htmlFor="phone" className="text-[#A9B1BE] mb-2 block">
+                <Label htmlFor="phone" className="text-amber-700/60 mb-2 block">
                   Phone Number
                 </Label>
                 <Input
@@ -186,7 +186,7 @@ export const AdminSettings = () => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="input-luxury"
+                  className="border border-amber-200 bg-white text-amber-900 placeholder:text-amber-700/50 px-4 py-2 rounded-lg"
                 />
               </div>
             </div>
@@ -196,11 +196,11 @@ export const AdminSettings = () => {
         {/* Hours & Slots */}
         {activeTab === 'hours' && (
           <div className="space-y-6">
-            <h3 className="font-serif text-xl text-[#F4F6FA] mb-6">Operating Hours & Time Slots</h3>
+            <h3 className="font-serif text-xl text-amber-900 mb-6">Operating Hours & Time Slots</h3>
             
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="openingTime" className="text-[#A9B1BE] mb-2 block">
+                <Label htmlFor="openingTime" className="text-amber-700/60 mb-2 block">
                   Opening Time
                 </Label>
                 <Input
@@ -209,12 +209,12 @@ export const AdminSettings = () => {
                   type="time"
                   value={formData.openingTime}
                   onChange={handleInputChange}
-                  className="input-luxury"
+                  className="border border-amber-200 bg-white text-amber-900 placeholder:text-amber-700/50 px-4 py-2 rounded-lg"
                 />
               </div>
               
               <div>
-                <Label htmlFor="closingTime" className="text-[#A9B1BE] mb-2 block">
+                <Label htmlFor="closingTime" className="text-amber-700/60 mb-2 block">
                   Closing Time
                 </Label>
                 <Input
@@ -223,12 +223,12 @@ export const AdminSettings = () => {
                   type="time"
                   value={formData.closingTime}
                   onChange={handleInputChange}
-                  className="input-luxury"
+                  className="border border-amber-200 bg-white text-amber-900 placeholder:text-amber-700/50 px-4 py-2 rounded-lg"
                 />
               </div>
               
               <div>
-                <Label htmlFor="timeSlotInterval" className="text-[#A9B1BE] mb-2 block">
+                <Label htmlFor="timeSlotInterval" className="text-amber-700/60 mb-2 block">
                   Time Slot Interval (minutes)
                 </Label>
                 <select
@@ -236,7 +236,7 @@ export const AdminSettings = () => {
                   name="timeSlotInterval"
                   value={formData.timeSlotInterval}
                   onChange={handleInputChange}
-                  className="input-luxury w-full"
+                  className="border border-amber-200 bg-white text-amber-900 px-4 py-2 rounded-lg w-full"
                 >
                   <option value={15}>15 minutes</option>
                   <option value={30}>30 minutes</option>
@@ -245,7 +245,7 @@ export const AdminSettings = () => {
               </div>
               
               <div>
-                <Label htmlFor="autoReleaseMinutes" className="text-[#A9B1BE] mb-2 block">
+                <Label htmlFor="autoReleaseMinutes" className="text-amber-700/60 mb-2 block">
                   Auto-release Table (minutes after no-show)
                 </Label>
                 <Input
@@ -254,7 +254,7 @@ export const AdminSettings = () => {
                   type="number"
                   value={formData.autoReleaseMinutes}
                   onChange={handleInputChange}
-                  className="input-luxury"
+                  className="border border-amber-200 bg-white text-amber-900 placeholder:text-amber-700/50 px-4 py-2 rounded-lg"
                 />
               </div>
             </div>
@@ -264,11 +264,11 @@ export const AdminSettings = () => {
         {/* Payments */}
         {activeTab === 'payments' && (
           <div className="space-y-6">
-            <h3 className="font-serif text-xl text-[#F4F6FA] mb-6">Payment Settings</h3>
+            <h3 className="font-serif text-xl text-amber-900 mb-6">Payment Settings</h3>
             
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="depositAmount" className="text-[#A9B1BE] mb-2 block">
+                <Label htmlFor="depositAmount" className="text-amber-700/60 mb-2 block">
                   Default Deposit Amount (£)
                 </Label>
                 <Input
@@ -278,12 +278,12 @@ export const AdminSettings = () => {
                   min={0}
                   value={formData.depositAmount}
                   onChange={handleInputChange}
-                  className="input-luxury"
+                  className="border border-amber-200 bg-white text-amber-900 placeholder:text-amber-700/50 px-4 py-2 rounded-lg"
                 />
               </div>
               
               <div>
-                <Label htmlFor="cancellationHours" className="text-[#A9B1BE] mb-2 block">
+                <Label htmlFor="cancellationHours" className="text-amber-700/60 mb-2 block">
                   Cancellation Deadline (hours before)
                 </Label>
                 <Input
@@ -293,14 +293,14 @@ export const AdminSettings = () => {
                   min={0}
                   value={formData.cancellationHours}
                   onChange={handleInputChange}
-                  className="input-luxury"
+                  className="border border-amber-200 bg-white text-amber-900 placeholder:text-amber-700/50 px-4 py-2 rounded-lg"
                 />
               </div>
             </div>
             
-            <div className="p-4 bg-[#D4A23A]/10 border border-[#D4A23A]/20 rounded-lg">
-              <p className="text-[#F4F6FA] font-medium mb-2">Stripe Integration</p>
-              <p className="text-[#A9B1BE] text-sm">
+            <div className="p-4 bg-amber-100 border border-amber-200 rounded-lg">
+              <p className="text-amber-900 font-medium mb-2">Stripe Integration</p>
+              <p className="text-amber-700/60 text-sm">
                 Connected to Stripe account. Deposits are processed automatically.
               </p>
             </div>
@@ -310,13 +310,13 @@ export const AdminSettings = () => {
         {/* Notifications */}
         {activeTab === 'notifications' && (
           <div className="space-y-6">
-            <h3 className="font-serif text-xl text-[#F4F6FA] mb-6">Notification Preferences</h3>
+            <h3 className="font-serif text-xl text-amber-900 mb-6">Notification Preferences</h3>
             
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border border-[rgba(244,246,250,0.08)] rounded-lg">
+              <div className="flex items-center justify-between p-4 border border-amber-200/30 rounded-lg">
                 <div>
-                  <p className="text-[#F4F6FA] font-medium">Email Notifications</p>
-                  <p className="text-[#A9B1BE] text-sm">Send booking confirmations and reminders via email</p>
+                  <p className="text-amber-900 font-medium">Email Notifications</p>
+                  <p className="text-amber-700/60 text-sm">Send booking confirmations and reminders via email</p>
                 </div>
                 <Switch
                   checked={formData.emailNotifications}
@@ -326,10 +326,10 @@ export const AdminSettings = () => {
                 />
               </div>
               
-              <div className="flex items-center justify-between p-4 border border-[rgba(244,246,250,0.08)] rounded-lg">
+              <div className="flex items-center justify-between p-4 border border-amber-200/30 rounded-lg">
                 <div>
-                  <p className="text-[#F4F6FA] font-medium">SMS Notifications</p>
-                  <p className="text-[#A9B1BE] text-sm">Send booking reminders via SMS</p>
+                  <p className="text-amber-900 font-medium">SMS Notifications</p>
+                  <p className="text-amber-700/60 text-sm">Send booking reminders via SMS</p>
                 </div>
                 <Switch
                   checked={formData.smsNotifications}
@@ -339,10 +339,10 @@ export const AdminSettings = () => {
                 />
               </div>
               
-              <div className="flex items-center justify-between p-4 border border-[rgba(244,246,250,0.08)] rounded-lg">
+              <div className="flex items-center justify-between p-4 border border-amber-200/30 rounded-lg">
                 <div>
-                  <p className="text-[#F4F6FA] font-medium">Auto-confirm Bookings</p>
-                  <p className="text-[#A9B1BE] text-sm">Automatically confirm bookings after payment</p>
+                  <p className="text-amber-900 font-medium">Auto-confirm Bookings</p>
+                  <p className="text-amber-700/60 text-sm">Automatically confirm bookings after payment</p>
                 </div>
                 <Switch
                   checked={formData.autoConfirm}
@@ -358,50 +358,50 @@ export const AdminSettings = () => {
         {/* Security */}
         {activeTab === 'security' && (
           <div className="space-y-6">
-            <h3 className="font-serif text-xl text-[#F4F6FA] mb-6">Security Settings</h3>
+            <h3 className="font-serif text-xl text-amber-900 mb-6">Security Settings</h3>
             
             <div className="space-y-4">
-              <div className="p-4 border border-[rgba(244,246,250,0.08)] rounded-lg">
-                <p className="text-[#F4F6FA] font-medium mb-2">Change Password</p>
+              <div className="p-4 border border-amber-200/30 rounded-lg">
+                <p className="text-amber-900 font-medium mb-2">Change Password</p>
                 <div className="grid md:grid-cols-2 gap-4 mt-4">
                   <Input
                     type="password"
                     placeholder="Current password"
-                    className="input-luxury"
+                    className="border border-amber-200 bg-white text-amber-900 placeholder:text-amber-700/50 px-4 py-2 rounded-lg"
                   />
                   <Input
                     type="password"
                     placeholder="New password"
-                    className="input-luxury"
+                    className="border border-amber-200 bg-white text-amber-900 placeholder:text-amber-700/50 px-4 py-2 rounded-lg"
                   />
                 </div>
-                <Button className="btn-gold mt-4">Update Password</Button>
+                <Button className="bg-amber-700 hover:bg-amber-800 text-white mt-4">Update Password</Button>
               </div>
               
-              <div className="p-4 border border-[rgba(244,246,250,0.08)] rounded-lg">
-                <p className="text-[#F4F6FA] font-medium mb-2">Two-Factor Authentication</p>
-                <p className="text-[#A9B1BE] text-sm mb-4">
+              <div className="p-4 border border-amber-200/30 rounded-lg">
+                <p className="text-amber-900 font-medium mb-2">Two-Factor Authentication</p>
+                <p className="text-amber-700/60 text-sm mb-4">
                   Add an extra layer of security to your account
                 </p>
-                <Button className="btn-gold-outline">Enable 2FA</Button>
+                <Button className="border border-amber-700 text-amber-700 hover:bg-amber-50">Enable 2FA</Button>
               </div>
             </div>
           </div>
         )}
 
         {/* Save Button */}
-        <div className="mt-8 pt-6 border-t border-[rgba(244,246,250,0.08)] flex justify-end">
+        <div className="mt-8 pt-6 border-t border-amber-200/30 flex justify-end">
           {saveMessage && (
-            <p className="mr-auto self-center text-sm text-[#A9B1BE]">{saveMessage}</p>
+            <p className="mr-auto self-center text-sm text-amber-700/60">{saveMessage}</p>
           )}
           <Button 
             onClick={handleSave} 
             disabled={isSaving}
-            className="btn-gold flex items-center gap-2"
+            className="bg-amber-700 hover:bg-amber-800 text-white flex items-center gap-2"
           >
             {isSaving ? (
               <>
-                <span className="w-4 h-4 border-2 border-[#0B0C0F] border-t-transparent rounded-full animate-spin" />
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 Saving...
               </>
             ) : (

@@ -21,7 +21,7 @@ import { useTableStore } from '@/store';
 import { formatTime, generateTimeSlots } from '@/lib/mockData';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
-import { getAvailableSlotsFromSupabase } from '@/lib/supabaseBookingApi';
+import { getAvailableSlotsFromSupabase, getOccupiedTableIdsFromSupabase } from '@/lib/supabaseBookingApi';
 import type { BookingCardProps } from '@/types';
 
 const guestOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -58,10 +58,12 @@ const getEstimatedWait = (availableTables: number) => {
   return 3;
 };
 
+const normalizeTimeKey = (value: string) => value.slice(0, 5);
+
 export const BookingCard = ({ compact = false }: BookingCardProps) => {
   const navigate = useNavigate();
-  const { setSelectedDate, setSelectedTime, setSelectedGuests, setAvailableSlots } = useBookingStore();
-  const { tables } = useTableStore();
+  const { bookings, setSelectedDate, setSelectedTime, setSelectedGuests, setAvailableSlots } = useBookingStore();
+  const { tables, setSelectedTable } = useTableStore();
   
   const [date, setDate] = useState<Date>(() => getNextOpenDate());
   const [time, setTime] = useState('');
@@ -74,6 +76,8 @@ export const BookingCard = ({ compact = false }: BookingCardProps) => {
   const [isChecking, setIsChecking] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [recentBookings, setRecentBookings] = useState(15);
+  const [occupiedTableIds, setOccupiedTableIds] = useState<string[]>([]);
+  const [occupancyRefreshTick, setOccupancyRefreshTick] = useState(0);
 
   const scrollToTopAfterContinue = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -102,28 +106,44 @@ export const BookingCard = ({ compact = false }: BookingCardProps) => {
 
   const bestSlot = useMemo(() => getBestSlot(timeSlots), [timeSlots]);
 
-  const tableOptions = useMemo(() => {
-    const matchingTables = tables
-      .filter((table) => table.status !== 'blocked' && table.capacity >= guests)
-      .sort((a, b) => a.capacity - b.capacity)
-      .slice(0, 4)
-      .map((table, index) => ({
-        id: table.id,
-        tableNumber: table.tableNumber,
-        capacity: table.capacity,
-        ambiance: ['Window lighting', 'Chef counter view', 'Private corner', 'Garden side'][index] ?? 'Main dining',
-      }));
+  const tableSeatMap = useMemo(() => {
+    const dateString = date ? format(date, 'yyyy-MM-dd') : '';
+    const activeStatuses = ['pending', 'confirmed', 'arrived', 'seated'];
+    const selectedTime = normalizeTimeKey(time);
+    const occupiedSet = new Set(occupiedTableIds);
 
-    if (matchingTables.length > 0) {
-      return matchingTables;
-    }
+    return tables
+      .slice()
+      .sort((a, b) => a.tableNumber - b.tableNumber)
+      .map((table) => {
+        const hasActiveBooking = bookings.some(
+          (booking) =>
+            booking.tableId === table.id &&
+            booking.date === dateString &&
+            normalizeTimeKey(booking.time) === selectedTime &&
+            activeStatuses.includes(booking.status)
+        );
 
-    return [
-      { id: 'fallback-1', tableNumber: 12, capacity: Math.max(guests, 2), ambiance: 'Window lighting' },
-      { id: 'fallback-2', tableNumber: 22, capacity: Math.max(guests, 4), ambiance: 'Private corner' },
-      { id: 'fallback-3', tableNumber: 6, capacity: Math.max(guests, 2), ambiance: 'Main dining' },
-    ];
-  }, [tables, guests]);
+        const isTableOccupiedInSupabase = occupiedSet.has(table.id);
+
+        const isBlocked = ['blocked', 'booked', 'reserved', 'seated'].includes(table.status);
+        const canFitParty = table.capacity >= guests;
+        const isUnavailable = isBlocked || isTableOccupiedInSupabase || hasActiveBooking || !canFitParty;
+
+        return {
+          ...table,
+          isTableOccupiedInSupabase,
+          hasActiveBooking,
+          canFitParty,
+          isUnavailable,
+        };
+      });
+  }, [bookings, date, guests, occupiedTableIds, tables, time]);
+
+  const availableTableCount = useMemo(
+    () => tableSeatMap.filter((table) => !table.isUnavailable).length,
+    [tableSeatMap]
+  );
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -137,6 +157,43 @@ export const BookingCard = ({ compact = false }: BookingCardProps) => {
   }, []);
 
   useEffect(() => {
+    if (!date || !time) {
+      setOccupiedTableIds([]);
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadOccupiedTables = async () => {
+      if (!isSupabaseConfigured) {
+        setOccupiedTableIds([]);
+        return;
+      }
+
+      const dateString = format(date, 'yyyy-MM-dd');
+      const occupiedResult = await getOccupiedTableIdsFromSupabase(dateString, time);
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (!occupiedResult.ok) {
+        console.warn('Failed to fetch occupied tables from Supabase:', occupiedResult.error);
+        setOccupiedTableIds([]);
+        return;
+      }
+
+      setOccupiedTableIds(occupiedResult.tableIds);
+    };
+
+    void loadOccupiedTables();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [date, occupancyRefreshTick, time]);
+
+  useEffect(() => {
     const client = supabase;
 
     if (!client) {
@@ -147,8 +204,14 @@ export const BookingCard = ({ compact = false }: BookingCardProps) => {
       .channel('booking-feed')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'bookings' },
-        () => setRecentBookings((prev) => Math.min(prev + 1, 40))
+        { event: '*', schema: 'public', table: 'bookings' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setRecentBookings((prev) => Math.min(prev + 1, 40));
+          }
+
+          setOccupancyRefreshTick((prev) => prev + 1);
+        }
       )
       .subscribe();
 
@@ -240,10 +303,29 @@ export const BookingCard = ({ compact = false }: BookingCardProps) => {
   }, [step]);
 
   useEffect(() => {
-    if (!selectedTableId && tableOptions.length > 0) {
-      setSelectedTableId(tableOptions[0].id);
+    if (step !== 4) {
+      return;
     }
-  }, [selectedTableId, tableOptions]);
+
+    const currentSelection = tableSeatMap.find((table) => table.id === selectedTableId);
+
+    if (currentSelection && !currentSelection.isUnavailable) {
+      return;
+    }
+
+    const firstAvailable = tableSeatMap.find((table) => !table.isUnavailable);
+    setSelectedTableId(firstAvailable?.id ?? '');
+  }, [selectedTableId, step, tableSeatMap]);
+
+  useEffect(() => {
+    if (!selectedTableId) {
+      setSelectedTable(null);
+      return;
+    }
+
+    const selected = tables.find((table) => table.id === selectedTableId) ?? null;
+    setSelectedTable(selected);
+  }, [selectedTableId, setSelectedTable, tables]);
 
   const handleCheckAvailability = () => {
     if (!date || !time) return;
@@ -443,29 +525,57 @@ export const BookingCard = ({ compact = false }: BookingCardProps) => {
               ))}
             </div>
           ) : (
-            <div className="space-y-3">
-              {tableOptions.map((table) => (
-                <button
-                  key={table.id}
-                  onClick={() => setSelectedTableId(table.id)}
-                  className={`w-full rounded-xl border p-4 text-left transition-all duration-200 ${
-                    selectedTableId === table.id
-                      ? 'border-[#D4AF37] bg-[rgba(212,175,55,0.13)]'
-                      : 'border-[rgba(255,255,255,0.13)] bg-[rgba(255,255,255,0.05)] hover:border-[#D4AF37]/60'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[#F4F6FA] font-semibold">
-                        Table {table.tableNumber} <span className="text-[#A9B1BE] font-normal">for {table.capacity}</span>
-                      </p>
-                      <p className="text-xs text-[#A9B1BE] mt-0.5">{table.ambiance}</p>
-                    </div>
-                    {selectedTableId === table.id && <Check size={18} className="text-[#D4AF37]" />}
-                  </div>
-                </button>
-              ))}
-            </div>
+            <>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <p className="text-[#A9B1BE]">
+                  {availableTableCount} of {tableSeatMap.length} tables available for {guests} guests at {time || '--:--'}.
+                </p>
+                <div className="flex flex-wrap items-center gap-3 text-[#A9B1BE]">
+                  <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-400/70" /> Available</span>
+                  <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#D4AF37]" /> Selected</span>
+                  <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-rose-400/70" /> Unavailable</span>
+                </div>
+              </div>
+
+              <div className="max-h-80 overflow-y-auto pr-1">
+                <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-7 gap-2.5">
+                  {tableSeatMap.map((table) => {
+                    const isSelected = selectedTableId === table.id;
+                    const isDisabled = table.isUnavailable;
+
+                    return (
+                      <button
+                        key={table.id}
+                        type="button"
+                        disabled={isDisabled}
+                        onClick={() => {
+                          if (!isDisabled) {
+                            setSelectedTableId(table.id);
+                          }
+                        }}
+                        className={`rounded-lg border px-2 py-2.5 text-center transition-all duration-200 ${
+                          isSelected
+                            ? 'border-[#D4AF37] bg-[rgba(212,175,55,0.22)] text-[#F8E8B2]'
+                            : isDisabled
+                              ? 'cursor-not-allowed border-rose-500/30 bg-rose-500/10 text-rose-200/70'
+                              : 'border-[rgba(255,255,255,0.13)] bg-[rgba(255,255,255,0.05)] text-[#DDE3ED] hover:border-emerald-400/70 hover:bg-emerald-400/10'
+                        }`}
+                        title={`Table ${table.tableNumber} · capacity ${table.capacity}`}
+                      >
+                        <p className="text-xs font-semibold leading-none">T{table.tableNumber}</p>
+                        <p className="mt-1 text-[10px] opacity-80">{table.capacity}p</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {selectedTableId && (
+                <p className="mt-3 text-xs text-[#D7DDEA]">
+                  Selected: Table {tableSeatMap.find((table) => table.id === selectedTableId)?.tableNumber ?? '--'}
+                </p>
+              )}
+            </>
           )}
 
           <p className="text-xs text-[#A9B1BE] text-center">

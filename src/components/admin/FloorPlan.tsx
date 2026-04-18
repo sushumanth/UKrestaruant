@@ -47,9 +47,9 @@ export const FloorPlan = ({
   return (
     <div className="relative">
       {/* Floor Plan Grid */}
-      <div className="relative bg-[#0B0C0F] rounded-lg overflow-hidden" style={{ minHeight: '500px' }}>
+      <div className="relative bg-gradient-to-br from-amber-50 to-yellow-50 rounded-lg overflow-hidden border border-amber-200/30" style={{ minHeight: '500px' }}>
         {/* Room outline */}
-        <div className="absolute inset-4 border-2 border-dashed border-[#2A2F3A] rounded-lg" />
+        <div className="absolute inset-4 border-2 border-dashed border-amber-200/50 rounded-lg" />
         
         {/* Tables */}
         {tables.map((table) => {
@@ -63,7 +63,7 @@ export const FloorPlan = ({
               className={`
                 absolute cursor-pointer transition-all duration-200
                 ${readOnly ? 'pointer-events-none' : 'hover:-translate-y-0.5'}
-                ${isSelected ? 'ring-2 ring-[#D4A23A] ring-offset-2 ring-offset-[#0B0C0F]' : ''}
+                ${isSelected ? 'ring-2 ring-amber-700 ring-offset-2 ring-offset-amber-50' : ''}
               `}
               style={{
                 left: `${table.x}px`,
@@ -74,18 +74,18 @@ export const FloorPlan = ({
             >
               <div
                 className={`
-                  w-full h-full rounded-lg border-2 flex flex-col items-center justify-center
+                  w-full h-full rounded-lg border-2 flex flex-col items-center justify-center shadow-md
                   ${getStatusColor(table.status)}
                   ${table.shape === 'round' ? 'rounded-full' : 'rounded-lg'}
                 `}
               >
-                <span className="font-mono text-xs text-white/80">T{table.tableNumber}</span>
-                <span className="text-[10px] text-white/60">{table.capacity}</span>
+                <span className="font-mono text-xs text-white/90">T{table.tableNumber}</span>
+                <span className="text-[10px] text-white/70">{table.capacity}</span>
               </div>
               
               {/* Booking indicator */}
               {booking && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-[#0B0C0F]" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-white shadow-md" />
               )}
             </div>
           );
@@ -93,7 +93,7 @@ export const FloorPlan = ({
 
         {/* Entrance */}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2">
-          <div className="px-4 py-1 bg-[#2A2F3A] rounded text-xs text-[#A9B1BE] font-mono">
+          <div className="px-4 py-1 bg-amber-100 border border-amber-200 rounded text-xs text-amber-700 font-mono shadow-md">
             ENTRANCE
           </div>
         </div>
@@ -102,32 +102,32 @@ export const FloorPlan = ({
       {/* Table Detail Dialog */}
       {!readOnly && selectedTable && (
         <Dialog open={!!selectedTable} onOpenChange={() => setSelectedTable(null)}>
-          <DialogContent className="bg-[#14171C] border border-[rgba(244,246,250,0.10)]">
+          <DialogContent className="bg-white border border-amber-200">
             <DialogHeader>
-              <DialogTitle className="font-serif text-xl text-[#F4F6FA]">
+              <DialogTitle className="font-serif text-xl text-amber-900">
                 Table {selectedTable.tableNumber}
               </DialogTitle>
             </DialogHeader>
             
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="glass-card p-4">
-                  <p className="text-[#A9B1BE] text-sm mb-1">Capacity</p>
-                  <p className="text-[#F4F6FA] font-medium">{selectedTable.capacity} guests</p>
+                <div className="bg-amber-50 border border-amber-200/50 rounded-lg p-4">
+                  <p className="text-amber-700/60 text-sm mb-1">Capacity</p>
+                  <p className="text-amber-900 font-medium">{selectedTable.capacity} guests</p>
                 </div>
-                <div className="glass-card p-4">
-                  <p className="text-[#A9B1BE] text-sm mb-1">Status</p>
-                  <p className="text-[#F4F6FA] font-medium capitalize">{selectedTable.status}</p>
+                <div className="bg-amber-50 border border-amber-200/50 rounded-lg p-4">
+                  <p className="text-amber-700/60 text-sm mb-1">Status</p>
+                  <p className="text-amber-900 font-medium capitalize">{selectedTable.status}</p>
                 </div>
               </div>
 
               {getTableBooking(selectedTable.id) && (
-                <div className="glass-card p-4">
-                  <p className="text-[#A9B1BE] text-sm mb-2">Current Booking</p>
-                  <p className="text-[#F4F6FA]">
+                <div className="bg-amber-50 border border-amber-200/50 rounded-lg p-4">
+                  <p className="text-amber-700/60 text-sm mb-2">Current Booking</p>
+                  <p className="text-amber-900">
                     {getTableBooking(selectedTable.id)?.customerName}
                   </p>
-                  <p className="text-[#A9B1BE] text-sm">
+                  <p className="text-amber-700/60 text-sm">
                     {getTableBooking(selectedTable.id)?.guests} guests • {getTableBooking(selectedTable.id)?.time}
                   </p>
                 </div>
@@ -135,7 +135,7 @@ export const FloorPlan = ({
 
               <div className="flex gap-3">
                 <Button 
-                  className="flex-1 btn-gold"
+                  className="flex-1 bg-amber-700 hover:bg-amber-800 text-white"
                   onClick={() => {
                     // Update table status logic
                     setSelectedTable(null);
@@ -144,7 +144,7 @@ export const FloorPlan = ({
                   Mark as Seated
                 </Button>
                 <Button 
-                  className="flex-1 btn-ghost"
+                  className="flex-1 border border-amber-200 text-amber-700 hover:bg-amber-50"
                   onClick={() => setSelectedTable(null)}
                 >
                   Close

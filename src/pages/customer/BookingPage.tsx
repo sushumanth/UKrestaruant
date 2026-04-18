@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Calendar,
@@ -10,11 +10,13 @@ import {
   Shield,
   LockKeyhole,
   BadgeCheck,
+  ChevronDown,
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { BookingCard } from '@/components/customer/BookingCard';
+import { Calendar as DateCalendar } from '@/components/ui/calendar';
 import { useBookingStore, useTableStore } from '@/store';
 import { formatDate, formatTime, generateBookingId, findOptimalTable, formatCurrency } from '@/lib/mockData';
 import { saveBookingToSupabase } from '@/lib/supabaseBookingApi';
@@ -129,10 +131,14 @@ export const BookingPage = () => {
     selectedDate, 
     selectedTime, 
     selectedGuests, 
-    addBooking 
+    addBooking,
+    setSelectedDate,
+    setSelectedTime,
+    setSelectedGuests,
   } = useBookingStore();
-  const { tables } = useTableStore();
+  const { tables, selectedTable, setSelectedTable } = useTableStore();
 
+  // Form state - MUST be before early return
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -144,42 +150,6 @@ export const BookingPage = () => {
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [saveError, setSaveError] = useState('');
 
-  // If no slot is selected yet, present an actionable booking entry point instead of a dead-end state.
-  if (!selectedDate || !selectedTime) {
-    return (
-      <div className="min-h-screen pastel-luxe-bg pt-32 pb-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="booking-shell px-5 py-8 sm:px-8 sm:py-10 lg:px-10">
-            <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-10 items-start">
-              <div className="max-w-2xl">
-                <span className="pastel-eyebrow block mb-3">Start Your Reservation</span>
-                <h1 className="pastel-section-heading text-[clamp(38px,5vw,70px)] leading-[0.92] mb-4">
-                  Choose date, time and guests
-                </h1>
-                <p className="pastel-copy text-lg max-w-xl">
-                  Pick your preferred slot below and continue to secure your table with instant confirmation.
-                </p>
-
-                <div className="mt-7 flex flex-wrap gap-3">
-                  <Button onClick={() => navigate('/')} className="btn-gold btn-gold-glow">
-                    Return to Home
-                  </Button>
-                  <Button onClick={() => navigate('/menu')} className="btn-ghost">
-                    View Menu
-                  </Button>
-                </div>
-              </div>
-
-              <div className="lg:justify-self-end w-full max-w-[560px]">
-                <BookingCard />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
       ...prev,
@@ -187,17 +157,292 @@ export const BookingPage = () => {
     }));
   };
 
+  // Booking entry state
+  const [activeSearchSection, setActiveSearchSection] = useState<'guests' | 'date' | 'time' | null>('guests');
+  const [draftGuests, setDraftGuests] = useState(2);
+  const [draftDate, setDraftDate] = useState(new Date());
+  const [draftTimeFilter, setDraftTimeFilter] = useState('All Times');
+  const [selectedSlotTime, setSelectedSlotTime] = useState('');
+
+  // Time slot generation
+  const guestOptions = Array.from({ length: 10 }, (_, i) => i + 1);
+  const timeFilterOptions = [
+    'All Times',
+    '11:00', '12:00', '13:00', '14:00',
+    '18:00', '19:00', '20:00', '21:00'
+  ];
+
+  const baseSlotTimes = [
+    '11:00', '11:15', '11:30', '11:45',
+    '12:00', '12:15', '12:30', '12:45',
+    '13:00', '13:15', '13:30', '13:45',
+    '14:00', '14:15', '14:30', '14:45',
+    '18:00', '18:15', '18:30', '18:45',
+    '19:00', '19:15', '19:30', '19:45',
+    '20:00', '20:15', '20:30', '20:45',
+    '21:00', '21:15', '21:30', '21:45',
+  ];
+
+  // Memoized slot computation - uses draft values for real-time updates
+  const visibleSlots = useMemo(() => {
+    const filteredTimes = draftTimeFilter === 'All Times'
+      ? baseSlotTimes
+      : baseSlotTimes.filter(time => time.startsWith(draftTimeFilter.slice(0, 2)));
+
+    return filteredTimes.map((time, index) => {
+      const seed = draftDate.getDate() + draftGuests + (index * 2);
+      const available = seed % 7 !== 0;
+      return { time, available };
+    });
+  }, [draftDate, draftGuests, draftTimeFilter]);
+
+  const applySearchFilters = () => {
+    // Collapse all sections and reset slot selection for a clean UX
+    setSelectedSlotTime('');
+    setActiveSearchSection(null);
+  };
+
+  const continueWithSelectedSlot = () => {
+    if (!selectedSlotTime) return;
+    setSelectedDate(draftDate.toISOString().split('T')[0]);
+    setSelectedTime(selectedSlotTime);
+    setSelectedGuests(draftGuests);
+  };
+
+  // If no slot is selected yet, show premium booking entry
+  if (!selectedDate || !selectedTime) {
+    return (
+      <div className="min-h-screen relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #f5f1ed 0%, #faf8f6 100%)' }}>
+        
+        {/* Full-height decorative rose - left side (mirrored) */}
+        <div className="absolute inset-0 opacity-35 pointer-events-none">
+  <img
+    src="/bookfirstpage.png"
+    alt=""
+    className="w-full h-full object-cover"
+    style={{ transform: 'scaleX(-1)' }}
+  />
+</div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 relative z-10">
+          <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6 sm:gap-8 items-start">
+            
+            {/* LEFT PANEL - Light Premium Info (No Scroll) */}
+            <div className="pr-4">
+              <div className="rounded-2xl bg-white/80 backdrop-blur-sm border border-black/8 shadow-lg p-8 sm:p-10">
+              <div className="mb-8">
+                <p className="text-sm font-medium text-black/60 mb-2 tracking-widest uppercase">Premium Dining Experience</p>
+                <h2 className="text-2xl sm:text-3xl font-serif text-black/90 leading-tight">
+                  Book Your Perfect Table
+                </h2>
+              </div>
+
+              <p className="text-black/70 leading-relaxed mb-8 text-base">
+                Just a stone's throw from the iconic Birmingham Bull Ring is our vibrant restaurant. Experience authentic cuisine in an elegant setting designed for unforgettable moments.
+              </p>
+
+              <div className="border-t border-black/10 pt-6">
+                <h3 className="text-lg font-serif text-black/90 mb-5">Opening Times</h3>
+                <div className="space-y-3">
+                  {[
+                    { day: 'Monday', time: '11:30am – 9:30pm' },
+                    { day: 'Tuesday', time: '11:30am – 9:30pm' },
+                    { day: 'Wednesday', time: '11:30am – 9:30pm' },
+                    { day: 'Thursday', time: '11:30am – 9:30pm' },
+                    { day: 'Friday', time: '11:30am – 10:00pm' },
+                    { day: 'Saturday', time: '11:30am – 10:00pm' },
+                    { day: 'Sunday', time: '11:30am – 8:00pm' },
+                  ].map((item) => (
+                    <div key={item.day} className="flex justify-between items-center">
+                      <span className="text-black/70 font-medium">{item.day}</span>
+                      <span className="text-black/50 text-sm">{item.time}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-8 p-4 rounded-lg bg-amber-50/60 border border-amber-200/40">
+                <p className="text-xs text-amber-900/70 leading-relaxed">
+                  <span className="font-semibold">Note:</span> A small deposit of £5 secures your reservation and helps us reduce no-shows. Fully refundable with 24 hours notice.
+                </p>
+              </div>
+            </div>
+            </div>
+
+            {/* RIGHT PANEL - Premium Dark Booking Card */}
+            <div className="rounded-2xl overflow-hidden shadow-2xl sticky top-6 h-fit">
+              {/* Header */}
+              <div className="bg-gradient-to-b from-amber-900/95 to-amber-950 px-8 py-6 text-center border-b border-amber-800/40">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-amber-700/40 border border-amber-600/50 mb-3">
+                  <span className="text-xl font-serif text-amber-200">🍽️</span>
+                </div>
+                <h3 className="text-white font-serif text-xl tracking-wide">LUXE RESERVE</h3>
+                <p className="text-amber-200/70 text-xs mt-1 tracking-widest uppercase">Select Your Dining Slot</p>
+              </div>
+
+              {/* Filter Bar - Real-time Updates */}
+              <div className="bg-white/95 px-6 py-4 border-b border-black/8 flex flex-wrap items-center gap-3 sm:gap-4">
+                <Search size={18} className="text-black/40" />
+                <span className="text-black/60 text-sm font-medium flex items-center gap-1.5 transition-all">
+                  <Users size={16} /> {draftGuests}
+                </span>
+                <span className="w-px h-4 bg-black/15" />
+                <span className="text-black/60 text-sm font-medium flex items-center gap-1.5 transition-all">
+                  <Calendar size={16} /> {draftDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                </span>
+                <span className="w-px h-4 bg-black/15" />
+                <span className="text-black/60 text-sm font-medium flex items-center gap-1.5 transition-all">
+                  <Clock size={16} /> {draftTimeFilter}
+                </span>
+              </div>
+
+              {/* Search Sections - Scrollable */}
+              <div className="bg-amber-50/50 px-6 py-5 space-y-3 max-h-64 overflow-y-auto">
+                
+                {/* Guests Section */}
+                <div className="bg-white rounded-lg overflow-hidden border border-black/10 hover:border-black/20 transition-colors">
+                  <button
+                    onClick={() => setActiveSearchSection(activeSearchSection === 'guests' ? null : 'guests')}
+                    className="w-full px-4 py-3 flex items-center justify-between hover:bg-amber-50/50 transition-colors"
+                  >
+                    <span className="font-medium text-black/80">Number of Guests</span>
+                    <ChevronDown size={18} className={`text-black/40 transition-transform ${activeSearchSection === 'guests' ? 'rotate-180' : ''}`} />
+                  </button>
+                  {activeSearchSection === 'guests' && (
+                    <div className="px-4 py-4 bg-gradient-to-br from-white to-amber-50/30 border-t border-black/8 grid grid-cols-5 gap-2">
+                      {guestOptions.map(num => (
+                        <button
+                          key={num}
+                          onClick={() => setDraftGuests(num)}
+                          className={`py-2 rounded-lg font-medium text-sm transition-all ${
+                            draftGuests === num
+                              ? 'bg-amber-600 text-white shadow-md'
+                              : 'bg-white border border-black/15 text-black/70 hover:border-amber-400'
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Date Section */}
+                <div className="bg-white rounded-lg overflow-hidden border border-black/10 hover:border-black/20 transition-colors">
+                  <button
+                    onClick={() => setActiveSearchSection(activeSearchSection === 'date' ? null : 'date')}
+                    className="w-full px-4 py-3 flex items-center justify-between hover:bg-amber-50/50 transition-colors"
+                  >
+                    <span className="font-medium text-black/80">Select Date</span>
+                    <ChevronDown size={18} className={`text-black/40 transition-transform ${activeSearchSection === 'date' ? 'rotate-180' : ''}`} />
+                  </button>
+                  {activeSearchSection === 'date' && (
+                    <div className="px-4 py-4 bg-gradient-to-br from-white to-amber-50/30 border-t border-black/8 flex justify-center">
+                      <DateCalendar
+                        mode="single"
+                        selected={draftDate}
+                        onSelect={(date) => {
+                          if (date) setDraftDate(date);
+                        }}
+                        disabled={(date) => date < new Date()}
+                        className="scale-90 origin-top"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Time Section */}
+                <div className="bg-white rounded-lg overflow-hidden border border-black/10 hover:border-black/20 transition-colors">
+                  <button
+                    onClick={() => setActiveSearchSection(activeSearchSection === 'time' ? null : 'time')}
+                    className="w-full px-4 py-3 flex items-center justify-between hover:bg-amber-50/50 transition-colors"
+                  >
+                    <span className="font-medium text-black/80">Time Preference</span>
+                    <ChevronDown size={18} className={`text-black/40 transition-transform ${activeSearchSection === 'time' ? 'rotate-180' : ''}`} />
+                  </button>
+                  {activeSearchSection === 'time' && (
+                    <div className="px-4 py-3 bg-gradient-to-br from-white to-amber-50/30 border-t border-black/8 grid grid-cols-3 gap-2">
+                      {timeFilterOptions.map(time => (
+                        <button
+                          key={time}
+                          onClick={() => setDraftTimeFilter(time)}
+                          className={`py-2 rounded-lg font-medium text-sm transition-all ${
+                            draftTimeFilter === time
+                              ? 'bg-amber-600 text-white shadow-md'
+                              : 'bg-white border border-black/15 text-black/70 hover:border-amber-400'
+                          }`}
+                        >
+                          {time}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={applySearchFilters}
+                  className="w-full mt-2 px-4 py-3 rounded-lg bg-amber-700 hover:bg-amber-800 text-white font-medium transition-all shadow-md hover:shadow-lg text-sm uppercase tracking-wide"
+                >
+                  Search Available Slots
+                </button>
+              </div>
+
+              {/* Slots Grid - Only show after Time Preference is selected */}
+              {draftTimeFilter !== 'All Times' && (
+                <>
+                  <div className="bg-white px-6 py-6 border-t border-black/8">
+                    <div className="grid grid-cols-4 gap-3 max-h-72 overflow-y-auto">
+                      {visibleSlots.map((slot, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => slot.available && setSelectedSlotTime(slot.time)}
+                          disabled={!slot.available}
+                          className={`py-3 px-2 rounded-lg font-medium text-sm transition-all ${
+                            slot.available
+                              ? selectedSlotTime === slot.time
+                                ? 'bg-amber-700 text-white shadow-md ring-2 ring-amber-800'
+                                : 'bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 cursor-pointer'
+                              : 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-50'
+                          }`}
+                        >
+                          {slot.time}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Continue Button */}
+                  <div className="bg-gradient-to-t from-black/5 to-transparent px-6 py-5 border-t border-black/8">
+                    <button
+                      onClick={continueWithSelectedSlot}
+                      disabled={!selectedSlotTime}
+                      className="w-full px-6 py-3.5 rounded-lg bg-amber-700 hover:bg-amber-800 disabled:bg-gray-400 text-white font-medium transition-all shadow-lg hover:shadow-xl uppercase tracking-wide text-sm disabled:cursor-not-allowed"
+                    >
+                      {selectedSlotTime ? `Continue with ${selectedSlotTime}` : 'Select a Time Slot'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const handlePaymentSuccess = async (): Promise<{ ok: boolean; error?: string }> => {
     setSaveError('');
 
-    // Find optimal table
-    const optimalTable = findOptimalTable(
-      selectedGuests,
-      tables,
-      [],
-      selectedDate,
-      selectedTime
-    );
+    // Use customer's explicit table selection when available; otherwise fallback to auto-allocation.
+    const chosenTable = selectedTable && selectedTable.capacity >= selectedGuests && selectedTable.status !== 'blocked'
+      ? selectedTable
+      : findOptimalTable(
+          selectedGuests,
+          tables,
+          [],
+          selectedDate,
+          selectedTime
+        );
 
     // Create booking
     const newBooking = {
@@ -209,8 +454,8 @@ export const BookingPage = () => {
       date: selectedDate,
       time: selectedTime,
       guests: selectedGuests,
-      tableId: optimalTable?.id,
-      tableNumber: optimalTable?.tableNumber,
+      tableId: chosenTable?.id,
+      tableNumber: chosenTable?.tableNumber,
       status: 'confirmed' as const,
       specialRequests: formData.specialRequests,
       depositAmount: 5,
@@ -239,6 +484,7 @@ export const BookingPage = () => {
 
     // Navigate to confirmation page after brief delay
     setTimeout(() => {
+      setSelectedTable(null);
       navigate('/confirmation', { state: { booking: newBooking } });
     }, 1500);
 
@@ -249,224 +495,277 @@ export const BookingPage = () => {
   const isDetailsValid = Boolean(formData.firstName && formData.lastName && formData.email && formData.phone);
 
   return (
-    <div className="min-h-screen pastel-luxe-bg pt-24 pb-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="booking-shell px-5 py-8 sm:px-8 sm:py-10 lg:px-10">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-[#B1B9C8] hover:text-[#F4F6FA] transition-colors mb-8 font-medium"
-        >
-          <ChevronLeft size={20} />
-          Back to home
-        </button>
+    <div className="min-h-screen pt-20 pb-16 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #e8e4df 0%, #f5f1ed 100%)' }}>
+      
+      {/* Full-height decorative rose - left side (mirrored) */}
+      <div className="absolute inset-y-0 -left-32 w-[450px] opacity-15 pointer-events-none" style={{ transform: 'scaleX(-1)' }}>
+        <img src="/bookpagerose.png" alt="" className="w-full h-full object-cover" />
+      </div>
+      
+      {/* Full-height decorative rose - right side */}
+      <div className="absolute inset-y-0 -right-32 w-[450px] opacity-15 pointer-events-none">
+        <img src="/bookpagerose.png" alt="" className="w-full h-full object-cover" />
+      </div>
 
-        {/* Header */}
-        <div className="mb-10">
-          <span className="pastel-eyebrow block mb-3">Complete Your Reservation</span>
-          <h1 className="pastel-section-heading text-[clamp(36px,4.6vw,62px)] leading-[0.95]">
-            Book a table
-          </h1>
-          <p className="pastel-copy mt-2 max-w-3xl">
-            Share your details once and get instant confirmation with secure payment protection.
-          </p>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 relative z-10">
+        <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6 sm:gap-8 items-start">
+          
+          {/* LEFT PANEL - Booking Summary (No Scroll) */}
+          <div className="pr-4">
+            <div className="rounded-2xl overflow-hidden shadow-lg bg-gradient-to-b from-amber-50 to-yellow-50 border border-amber-200/50">
+              {/* Header */}
+              <div className="bg-white px-8 py-6 text-center border-b border-amber-100">
+                <div className="text-4xl mb-2">🍽️</div>
+                <h3 className="text-amber-900 font-serif text-sm tracking-widest uppercase font-semibold">LUXE RESERVE / YOUR RESERVATION</h3>
+              </div>
 
-        {/* Booking Summary */}
-        <div className="booking-light-card p-6 mb-8">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <h3 className="font-serif text-[34px] text-[#F4F6FA] leading-none">Reservation Details</h3>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-sky-300/35 bg-sky-500/10 text-sky-200 text-xs uppercase tracking-[0.14em]">
-              <Shield size={12} /> Booking protected
-            </span>
+              {/* Reservation Details */}
+              <div className="px-8 py-8">
+                <div className="space-y-5">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                      <Calendar size={20} className="text-amber-700" />
+                    </div>
+                    <div>
+                      <p className="text-amber-900/60 text-xs font-medium uppercase">Date</p>
+                      <p className="text-amber-900 font-medium">{formatDate(selectedDate)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                      <Clock size={20} className="text-amber-700" />
+                    </div>
+                    <div>
+                      <p className="text-amber-900/60 text-xs font-medium uppercase">Time</p>
+                      <p className="text-amber-900 font-medium">{formatTime(selectedTime)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                      <Users size={20} className="text-amber-700" />
+                    </div>
+                    <div>
+                      <p className="text-amber-900/60 text-xs font-medium uppercase">Party Size</p>
+                      <p className="text-amber-900 font-medium">{selectedGuests} {selectedGuests === 1 ? 'Guest' : 'Guests'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 pt-3 border-t border-amber-200">
+                    <div className="w-10 h-10 rounded-lg bg-amber-700/20 flex items-center justify-center flex-shrink-0">
+                      <span className="text-amber-700 font-bold text-lg">£</span>
+                    </div>
+                    <div>
+                      <p className="text-amber-900/60 text-xs font-medium uppercase">Deposit Required</p>
+                      <p className="text-amber-700 font-serif text-xl font-semibold">£5.00</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Edit Selection Button */}
+                <button
+                  onClick={() => {
+                    setSelectedDate('');
+                    setSelectedTime('');
+                    setSelectedGuests(0);
+                    setStep(1);
+                  }}
+                  className="w-full mt-8 px-4 py-2.5 rounded-lg border border-amber-700 text-amber-700 hover:bg-amber-50 font-medium transition-all text-sm"
+                >
+                  Change Selection
+                </button>
+              </div>
+
+              {/* Step Indicator */}
+              <div className="bg-amber-100/50 px-8 py-6 border-t border-amber-200">
+                <div className="flex items-center justify-center gap-4">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= 1 ? 'bg-amber-700 text-white' : 'bg-amber-200 text-amber-700'}`}>
+                      1
+                    </div>
+                    <p className={`text-xs mt-2 font-medium ${step >= 1 ? 'text-amber-900' : 'text-amber-700/60'}`}>Details</p>
+                  </div>
+                  
+                  <div className={`flex-1 h-0.5 ${step >= 2 ? 'bg-amber-700' : 'bg-amber-200'}`} />
+                  
+                  <div className="flex flex-col items-center">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= 2 ? 'bg-amber-700 text-white' : 'bg-amber-200 text-amber-700'}`}>
+                      2
+                    </div>
+                    <p className={`text-xs mt-2 font-medium ${step >= 2 ? 'text-amber-900' : 'text-amber-700/60'}`}>Payment</p>
+                  </div>
+                  
+                  <div className={`flex-1 h-0.5 ${step >= 3 ? 'bg-amber-700' : 'bg-amber-200'}`} />
+                  
+                  <div className="flex flex-col items-center">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= 3 ? 'bg-amber-700 text-white' : 'bg-amber-200 text-amber-700'}`}>
+                      3
+                    </div>
+                    <p className={`text-xs mt-2 font-medium ${step >= 3 ? 'text-amber-900' : 'text-amber-700/60'}`}>Confirm</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Info Card */}
+              <div className="bg-amber-50/60 px-8 py-5 border-t border-black/10">
+                <p className="text-xs text-amber-900/70 leading-relaxed">
+                  <span className="font-semibold">Note:</span> A £5 deposit secures your reservation. Fully refundable with 24 hours notice.
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="grid sm:grid-cols-3 gap-4">
-            <div className="flex items-center gap-3">
-              <Calendar size={20} className="text-[#D4A23A]" />
-              <div>
-                <p className="text-[#9EABBF] text-sm">Date</p>
-                <p className="text-[#F4F6FA]">{formatDate(selectedDate)}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Clock size={20} className="text-[#D4A23A]" />
-              <div>
-                <p className="text-[#9EABBF] text-sm">Time</p>
-                <p className="text-[#F4F6FA]">{formatTime(selectedTime)}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Users size={20} className="text-[#D4A23A]" />
-              <div>
-                <p className="text-[#9EABBF] text-sm">Guests</p>
-                <p className="text-[#F4F6FA]">{selectedGuests} {selectedGuests === 1 ? 'guest' : 'guests'}</p>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Step Indicator */}
-        <div className="flex items-center gap-4 mb-8">
-          <div className={`flex items-center gap-2 ${step >= 1 ? 'text-[#D4AF37]' : 'text-[#7F8898]'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${step >= 1 ? 'bg-[#D4A23A] text-[#0B0C0F]' : 'bg-[#2A3242] text-[#A5AFBF]'}`}>
-              1
-            </div>
-            <span className="text-sm hidden sm:inline">Details</span>
-          </div>
-          <div className="flex-1 h-px bg-[#394357]" />
-          <div className={`flex items-center gap-2 ${step >= 2 ? 'text-[#D4AF37]' : 'text-[#7F8898]'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${step >= 2 ? 'bg-[#D4A23A] text-[#0B0C0F]' : 'bg-[#2A3242] text-[#A5AFBF]'}`}>
-              2
-            </div>
-            <span className="text-sm hidden sm:inline">Payment</span>
-          </div>
-          <div className="flex-1 h-px bg-[#394357]" />
-          <div className={`flex items-center gap-2 ${step >= 3 ? 'text-[#D4AF37]' : 'text-[#7F8898]'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${step >= 3 ? 'bg-[#D4A23A] text-[#0B0C0F]' : 'bg-[#2A3242] text-[#A5AFBF]'}`}>
-              3
-            </div>
-            <span className="text-sm hidden sm:inline">Confirm</span>
-          </div>
-        </div>
-
-        {/* Step 1: Contact Details */}
-        {step === 1 && (
-          <div className="booking-light-card p-8">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-              <h3 className="font-serif text-[36px] text-[#F4F6FA] leading-none">Contact Information</h3>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.06)] text-[#C7D0DF] text-xs uppercase tracking-[0.13em]">
-                <LockKeyhole size={12} /> Safe & private
-              </span>
+          {/* RIGHT PANEL - Form Steps */}
+          <div className="rounded-2xl overflow-hidden shadow-lg h-fit sticky top-6">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-8 py-6 text-center border-b border-slate-700">
+              <h3 className="text-white font-serif text-lg tracking-wide">Complete Your Details</h3>
+              <p className="text-slate-300 text-xs mt-1 tracking-widest uppercase">Secure Checkout</p>
             </div>
 
-            <div className="mb-6 rounded-xl border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.04)] px-4 py-3 text-sm text-[#A5B0C3]">
-              We only use these details for booking confirmation and arrival updates.
-            </div>
+            {/* Step 1: Contact Details */}
+            {step === 1 && (
+              <div className="bg-gradient-to-b from-yellow-50 to-amber-50 px-8 py-8">
+                <h3 className="font-serif text-xl text-amber-900 mb-6">Your Information</h3>
+                
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="firstName" className="text-amber-900 mb-2 block text-sm font-medium">First Name *</Label>
+                      <Input
+                        id="firstName"
+                        name="firstName"
+                        autoComplete="given-name"
+                        value={formData.firstName}
+                        onChange={handleInputChange}
+                        className="booking-input bg-white/90 border border-amber-200 text-amber-900 placeholder-amber-600/40"
+                        placeholder="John"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="lastName" className="text-amber-900 mb-2 block text-sm font-medium">Last Name *</Label>
+                      <Input
+                        id="lastName"
+                        name="lastName"
+                        autoComplete="family-name"
+                        value={formData.lastName}
+                        onChange={handleInputChange}
+                        className="booking-input bg-white/90 border border-amber-200 text-amber-900 placeholder-amber-600/40"
+                        placeholder="Doe"
+                      />
+                    </div>
+                  </div>
 
-            <div className="grid sm:grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="firstName" className="text-[#C7D0DF] mb-2 block">First Name</Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  autoComplete="given-name"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  className="booking-input"
-                  placeholder="John"
-                />
-              </div>
-              <div>
-                <Label htmlFor="lastName" className="text-[#C7D0DF] mb-2 block">Last Name</Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  autoComplete="family-name"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  className="booking-input"
-                  placeholder="Doe"
-                />
-              </div>
-              <div>
-                <Label htmlFor="email" className="text-[#C7D0DF] mb-2 block">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="booking-input"
-                  placeholder="john@example.com"
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone" className="text-[#C7D0DF] mb-2 block">Phone</Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  autoComplete="tel"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  className="booking-input"
-                  placeholder="+44 7123 456789"
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Label htmlFor="specialRequests" className="text-[#C7D0DF] mb-2 block">
-                  Special Requests (Optional)
-                </Label>
-                <textarea
-                  id="specialRequests"
-                  name="specialRequests"
-                  value={formData.specialRequests}
-                  onChange={handleInputChange}
-                  className="booking-input w-full h-24 resize-none"
-                  placeholder="Any dietary requirements or special occasions..."
-                />
-              </div>
-            </div>
-            <Button
-              onClick={() => setStep(2)}
-              disabled={!isDetailsValid}
-              className="w-full btn-gold mt-8 disabled:opacity-50"
-            >
-              Continue to Payment
-            </Button>
-          </div>
-        )}
+                  <div>
+                    <Label htmlFor="email" className="text-amber-900 mb-2 block text-sm font-medium">Email *</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className="booking-input bg-white/90 border border-amber-200 text-amber-900 placeholder-amber-600/40"
+                      placeholder="john@example.com"
+                    />
+                  </div>
 
-        {/* Step 2: Payment */}
-        {step === 2 && (
-          <div>
-            <Elements stripe={stripePromise}>
-              <PaymentForm 
-                onSuccess={handlePaymentSuccess}
-                amount={depositAmount}
-              />
-            </Elements>
-            {saveError && (
-              <p className="mt-4 text-center text-sm text-rose-400">{saveError}</p>
+                  <div>
+                    <Label htmlFor="phone" className="text-amber-900 mb-2 block text-sm font-medium">Phone *</Label>
+                    <div className="flex gap-2">
+                      <div className="w-16 pt-2">
+                        <span className="text-amber-900 text-sm font-medium">+ 44</span>
+                      </div>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        autoComplete="tel"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="booking-input flex-1 bg-white/90 border border-amber-200 text-amber-900 placeholder-amber-600/40"
+                        placeholder="7123 456789"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="specialRequests" className="text-amber-900 mb-2 block text-sm font-medium">
+                      Special Requests
+                    </Label>
+                    <textarea
+                      id="specialRequests"
+                      name="specialRequests"
+                      value={formData.specialRequests}
+                      onChange={handleInputChange}
+                      className="booking-input bg-white/90 border border-amber-200 text-amber-900 placeholder-amber-600/40 w-full h-24 resize-none text-sm"
+                      placeholder="e.g., dietary requirements, special occasion"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  onClick={() => setStep(2)}
+                  disabled={!isDetailsValid}
+                  className="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium py-3 rounded-lg mt-6 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  Continue to Payment
+                </Button>
+
+                <button
+                  onClick={() => {
+                    setSelectedDate('');
+                    setSelectedTime('');
+                    setSelectedGuests(0);
+                  }}
+                  className="w-full text-center text-amber-700 hover:text-amber-900 transition-colors mt-3 text-sm font-medium"
+                >
+                  Back to booking
+                </button>
+              </div>
             )}
-            <button
-              onClick={() => setStep(1)}
-              className="w-full text-center text-[#B2BDCF] hover:text-[#F4F6FA] transition-colors mt-4 font-medium"
-            >
-              Back to details
-            </button>
-          </div>
-        )}
 
-        {/* Step 3: Confirmation */}
-        {isConfirmed && (
-          <div className="booking-light-card p-8 text-center">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
-              <Check size={32} className="text-emerald-500" />
-            </div>
-            <h3 className="font-serif text-2xl text-[#F4F6FA] mb-2">
-              Booking Confirmed!
-            </h3>
-            <p className="text-[#A5B0C3] mb-6">
-              Redirecting to your confirmation page...
-            </p>
-          </div>
-        )}
+            {/* Step 2: Payment */}
+            {step === 2 && (
+              <div className="bg-gradient-to-b from-yellow-50 to-amber-50 px-8 py-8">
+                <h3 className="font-serif text-xl text-amber-900 mb-6">Payment Details</h3>
+                
+                <Elements stripe={stripePromise}>
+                  <PaymentForm 
+                    onSuccess={handlePaymentSuccess}
+                    amount={depositAmount}
+                  />
+                </Elements>
+                
+                {saveError && (
+                  <p className="mt-4 text-center text-sm text-red-600 font-medium">{saveError}</p>
+                )}
+                
+                <button
+                  onClick={() => setStep(1)}
+                  className="w-full text-center text-amber-700 hover:text-amber-900 transition-colors mt-4 font-medium"
+                >
+                  Back to details
+                </button>
+              </div>
+            )}
 
-        {/* Deposit Info */}
-        <div className="mt-8 booking-light-card p-5">
-          <div className="flex items-start gap-3">
-            <Shield size={20} className="text-[#D4A23A] mt-0.5" />
-            <div>
-              <p className="text-[#F4F6FA] font-semibold mb-1">£5 Deposit Required</p>
-              <p className="text-[#A5B0C3] text-sm">
-                A small deposit secures your reservation and helps us reduce no-shows. 
-                Fully refundable with 24 hours notice.
-              </p>
-            </div>
+            {/* Step 3: Confirmation */}
+            {isConfirmed && (
+              <div className="bg-gradient-to-b from-yellow-50 to-amber-50 px-8 py-12 text-center">
+                <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
+                  <Check size={32} className="text-emerald-600" />
+                </div>
+                <h3 className="font-serif text-2xl text-amber-900 mb-2">
+                  Booking Confirmed!
+                </h3>
+                <p className="text-amber-700 mb-2 text-sm font-medium">
+                  Your reservation is secure.
+                </p>
+                <p className="text-amber-600 text-xs">
+                  Redirecting to your confirmation page...
+                </p>
+              </div>
+            )}
           </div>
-        </div>
         </div>
       </div>
     </div>

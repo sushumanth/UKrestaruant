@@ -76,6 +76,8 @@ const mapRoleToAppRole = (role: DbRole): User['role'] => {
   return role === 'admin' ? 'admin' : 'employee';
 };
 
+const normalizeTime = (value: string) => value.slice(0, 5);
+
 const mapBookingRow = (row: DbBookingRow): Booking => ({
   id: row.id,
   bookingId: row.booking_id,
@@ -83,7 +85,7 @@ const mapBookingRow = (row: DbBookingRow): Booking => ({
   customerEmail: row.customer_email,
   customerPhone: row.customer_phone,
   date: row.booking_date,
-  time: row.booking_time,
+  time: normalizeTime(row.booking_time),
   guests: row.guests,
   tableId: row.table_id ?? undefined,
   tableNumber: row.table_number ?? undefined,

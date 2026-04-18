@@ -64,79 +64,79 @@ export const AdminDashboard = () => {
   }));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" style={{ background: 'linear-gradient(135deg, #e8e4df 0%, #f5f1ed 100%)' }}>
       {/* Header */}
       <div>
-        <h1 className="font-serif text-3xl text-[#F4F6FA] mb-2">Dashboard</h1>
-        <p className="text-[#A9B1BE]">Welcome back! Here's what's happening today.</p>
+        <h1 className="font-serif text-3xl text-amber-900 mb-2">Dashboard</h1>
+        <p className="text-amber-700/70">Welcome back! Here's what's happening today.</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="glass-card p-6">
+        <div className="bg-white rounded-2xl border border-amber-200/50 p-6 shadow-lg">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-full bg-[#D4A23A]/10 flex items-center justify-center">
-              <Calendar size={22} className="text-[#D4A23A]" />
+            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+              <Calendar size={22} className="text-amber-700" />
             </div>
-            <span className="text-emerald-400 text-sm flex items-center gap-1">
+            <span className="text-emerald-600 text-sm flex items-center gap-1 font-semibold">
               <TrendingUp size={14} />
               +12%
             </span>
           </div>
-          <p className="text-[#A9B1BE] text-sm mb-1">Today's Bookings</p>
-          <p className="font-serif text-3xl text-[#F4F6FA]">{todayStats.totalBookings}</p>
+          <p className="text-amber-700/60 text-sm mb-1">Today's Bookings</p>
+          <p className="font-serif text-3xl text-amber-900">{todayStats.totalBookings}</p>
         </div>
 
-        <div className="glass-card p-6">
+        <div className="bg-white rounded-2xl border border-amber-200/50 p-6 shadow-lg">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-full bg-[#D4A23A]/10 flex items-center justify-center">
-              <Users size={22} className="text-[#D4A23A]" />
+            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+              <Users size={22} className="text-amber-700" />
             </div>
-            <span className="text-emerald-400 text-sm flex items-center gap-1">
+            <span className="text-emerald-600 text-sm flex items-center gap-1 font-semibold">
               <TrendingUp size={14} />
               +8%
             </span>
           </div>
-          <p className="text-[#A9B1BE] text-sm mb-1">Total Guests</p>
-          <p className="font-serif text-3xl text-[#F4F6FA]">{todayStats.totalGuests}</p>
+          <p className="text-amber-700/60 text-sm mb-1">Total Guests</p>
+          <p className="font-serif text-3xl text-amber-900">{todayStats.totalGuests}</p>
         </div>
 
-        <div className="glass-card p-6">
+        <div className="bg-white rounded-2xl border border-amber-200/50 p-6 shadow-lg">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-full bg-[#D4A23A]/10 flex items-center justify-center">
-              <PoundSterling size={22} className="text-[#D4A23A]" />
+            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+              <PoundSterling size={22} className="text-amber-700" />
             </div>
-            <span className="text-emerald-400 text-sm flex items-center gap-1">
+            <span className="text-emerald-600 text-sm flex items-center gap-1 font-semibold">
               <TrendingUp size={14} />
               +15%
             </span>
           </div>
-          <p className="text-[#A9B1BE] text-sm mb-1">Deposit Revenue</p>
-          <p className="font-serif text-3xl text-[#F4F6FA]">{formatCurrency(todayStats.revenue)}</p>
+          <p className="text-amber-700/60 text-sm mb-1">Deposit Revenue</p>
+          <p className="font-serif text-3xl text-amber-900">{formatCurrency(todayStats.revenue)}</p>
         </div>
 
-        <div className="glass-card p-6">
+        <div className="bg-white rounded-2xl border border-amber-200/50 p-6 shadow-lg">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-full bg-rose-500/10 flex items-center justify-center">
-              <AlertCircle size={22} className="text-rose-500" />
+            <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center">
+              <AlertCircle size={22} className="text-rose-600" />
             </div>
-            <span className="text-rose-400 text-sm flex items-center gap-1">
+            <span className="text-rose-600 text-sm flex items-center gap-1 font-semibold">
               <TrendingDown size={14} />
               -5%
             </span>
           </div>
-          <p className="text-[#A9B1BE] text-sm mb-1">No Shows</p>
-          <p className="font-serif text-3xl text-[#F4F6FA]">{todayStats.noShows}</p>
+          <p className="text-amber-700/60 text-sm mb-1">No Shows</p>
+          <p className="font-serif text-3xl text-amber-900">{todayStats.noShows}</p>
         </div>
       </div>
 
       {/* Charts & Lists */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Revenue Chart */}
-        <div className="lg:col-span-2 glass-card p-6">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-amber-200/50 p-6 shadow-lg">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="font-serif text-xl text-[#F4F6FA]">Revenue Overview</h3>
-            <select className="input-luxury text-sm py-2">
+            <h3 className="font-serif text-xl text-amber-900">Revenue Overview</h3>
+            <select className="border border-amber-200 rounded-lg px-3 py-2 text-amber-900 bg-white text-sm">
               <option>Last 7 days</option>
               <option>Last 30 days</option>
               <option>This month</option>
@@ -145,22 +145,22 @@ export const AdminDashboard = () => {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2A2F3A" />
-                <XAxis dataKey="date" stroke="#A9B1BE" fontSize={12} />
-                <YAxis stroke="#A9B1BE" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2d1b5" />
+                <XAxis dataKey="date" stroke="#a18863" fontSize={12} />
+                <YAxis stroke="#a18863" fontSize={12} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#14171C', 
-                    border: '1px solid rgba(244,246,250,0.10)',
+                    backgroundColor: '#f5f1ed', 
+                    border: '1px solid rgba(217, 119, 6, 0.2)',
                     borderRadius: '8px'
                   }}
                 />
                 <Line 
                   type="monotone" 
                   dataKey="revenue" 
-                  stroke="#D4A23A" 
-                  strokeWidth={2}
-                  dot={{ fill: '#D4A23A', strokeWidth: 0 }}
+                  stroke="#20b2aa" 
+                  strokeWidth={3}
+                  dot={{ fill: '#20b2aa', strokeWidth: 0 }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -168,8 +168,8 @@ export const AdminDashboard = () => {
         </div>
 
         {/* Occupancy */}
-        <div className="glass-card p-6">
-          <h3 className="font-serif text-xl text-[#F4F6FA] mb-6">Table Occupancy</h3>
+        <div className="bg-white rounded-2xl border border-amber-200/50 p-6 shadow-lg">
+          <h3 className="font-serif text-xl text-amber-900 mb-6">Table Occupancy</h3>
           <div className="flex items-center justify-center mb-6">
             <div className="relative w-40 h-40">
               <svg className="w-full h-full -rotate-90">
@@ -178,7 +178,7 @@ export const AdminDashboard = () => {
                   cy="80"
                   r="70"
                   fill="none"
-                  stroke="#2A2F3A"
+                  stroke="#e2d1b5"
                   strokeWidth="12"
                 />
                 <circle
@@ -186,7 +186,7 @@ export const AdminDashboard = () => {
                   cy="80"
                   r="70"
                   fill="none"
-                  stroke="#D4A23A"
+                  stroke="#d4a574"
                   strokeWidth="12"
                   strokeLinecap="round"
                   strokeDasharray={`${occupancyRate * 4.4} 440`}
@@ -194,78 +194,78 @@ export const AdminDashboard = () => {
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="font-serif text-4xl text-[#F4F6FA]">{occupancyRate}%</span>
-                <span className="text-[#A9B1BE] text-sm">Occupied</span>
+                <span className="font-serif text-4xl text-amber-700">{occupancyRate}%</span>
+                <span className="text-amber-700/60 text-sm">Occupied</span>
               </div>
             </div>
           </div>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[#A9B1BE] text-sm">Available</span>
-              <span className="text-[#F4F6FA]">{tables.filter(t => t.status === 'available').length}</span>
+              <span className="text-amber-700/60 text-sm">Available</span>
+              <span className="text-amber-900 font-semibold">{tables.filter(t => t.status === 'available').length}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#A9B1BE] text-sm">Booked</span>
-              <span className="text-[#F4F6FA]">{tables.filter(t => t.status === 'booked').length}</span>
+              <span className="text-amber-700/60 text-sm">Booked</span>
+              <span className="text-amber-900 font-semibold">{tables.filter(t => t.status === 'booked').length}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#A9B1BE] text-sm">Seated</span>
-              <span className="text-[#F4F6FA]">{tables.filter(t => t.status === 'seated').length}</span>
+              <span className="text-amber-700/60 text-sm">Seated</span>
+              <span className="text-amber-900 font-semibold">{tables.filter(t => t.status === 'seated').length}</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Upcoming Bookings */}
-      <div className="glass-card p-6">
+      <div className="bg-white rounded-2xl border border-amber-200/50 p-6 shadow-lg">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="font-serif text-xl text-[#F4F6FA]">Upcoming Bookings</h3>
+          <h3 className="font-serif text-xl text-amber-900">Upcoming Bookings</h3>
           <Link to="/admin/bookings">
-            <Button className="btn-gold-outline text-sm">View All</Button>
+            <Button className="border border-amber-700 text-amber-700 hover:bg-amber-50 text-sm px-4 py-2 rounded-lg">View All</Button>
           </Link>
         </div>
         
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[rgba(244,246,250,0.08)]">
-                <th className="text-left py-3 px-4 text-[#A9B1BE] text-sm font-medium">Booking ID</th>
-                <th className="text-left py-3 px-4 text-[#A9B1BE] text-sm font-medium">Customer</th>
-                <th className="text-left py-3 px-4 text-[#A9B1BE] text-sm font-medium">Date & Time</th>
-                <th className="text-left py-3 px-4 text-[#A9B1BE] text-sm font-medium">Guests</th>
-                <th className="text-left py-3 px-4 text-[#A9B1BE] text-sm font-medium">Table</th>
-                <th className="text-left py-3 px-4 text-[#A9B1BE] text-sm font-medium">Status</th>
+              <tr className="border-b border-amber-200">
+                <th className="text-left py-3 px-4 text-amber-700/70 text-sm font-medium">Booking ID</th>
+                <th className="text-left py-3 px-4 text-amber-700/70 text-sm font-medium">Customer</th>
+                <th className="text-left py-3 px-4 text-amber-700/70 text-sm font-medium">Date & Time</th>
+                <th className="text-left py-3 px-4 text-amber-700/70 text-sm font-medium">Guests</th>
+                <th className="text-left py-3 px-4 text-amber-700/70 text-sm font-medium">Table</th>
+                <th className="text-left py-3 px-4 text-amber-700/70 text-sm font-medium">Status</th>
               </tr>
             </thead>
             <tbody>
               {upcomingBookings.map((booking) => (
-                <tr key={booking.id} className="border-b border-[rgba(244,246,250,0.05)] hover:bg-[rgba(244,246,250,0.02)]">
+                <tr key={booking.id} className="border-b border-amber-100 hover:bg-amber-50/30">
                   <td className="py-4 px-4">
-                    <span className="font-mono text-[#D4A23A]">{booking.bookingId}</span>
+                    <span className="font-mono text-amber-700 font-semibold">{booking.bookingId}</span>
                   </td>
                   <td className="py-4 px-4">
                     <div>
-                      <p className="text-[#F4F6FA]">{booking.customerName}</p>
-                      <p className="text-[#A9B1BE] text-sm">{booking.customerPhone}</p>
+                      <p className="text-amber-900">{booking.customerName}</p>
+                      <p className="text-amber-700/60 text-sm">{booking.customerPhone}</p>
                     </div>
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-2">
-                      <Clock size={14} className="text-[#A9B1BE]" />
-                      <span className="text-[#F4F6FA]">{formatDate(booking.date)}</span>
-                      <span className="text-[#A9B1BE]">at {booking.time}</span>
+                      <Clock size={14} className="text-amber-700/60" />
+                      <span className="text-amber-900">{formatDate(booking.date)}</span>
+                      <span className="text-amber-700/60">at {booking.time}</span>
                     </div>
                   </td>
                   <td className="py-4 px-4">
-                    <span className="text-[#F4F6FA]">{booking.guests}</span>
+                    <span className="text-amber-900">{booking.guests}</span>
                   </td>
                   <td className="py-4 px-4">
-                    <span className="text-[#F4F6FA]">
+                    <span className="text-amber-900">
                       {booking.tableNumber ? `T${booking.tableNumber}` : 'Unassigned'}
                     </span>
                   </td>
                   <td className="py-4 px-4">
-                    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs ${
+                    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${
                       statusColors.booking[booking.status]
                     } bg-opacity-20`}>
                       <span className={`w-2 h-2 rounded-full ${statusColors.booking[booking.status]}`} />
