@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar as DateCalendar } from '@/components/ui/calendar';
-import { useBookingStore, useTableStore } from '@/store';
+import { useBookingStore, useMenuCartStore, useTableStore } from '@/store';
 import { formatDate, formatTime, generateBookingId, findOptimalTable, formatCurrency } from '@/lib/mockData';
 import { saveBookingToSupabase } from '@/lib/supabaseBookingApi';
 import { sendBookingConfirmationEmail } from '@/lib/bookingEmailApi';
@@ -104,7 +104,7 @@ const PaymentForm = ({
         ) : (
           <span className="flex items-center gap-2">
             <CreditCard size={18} />
-            Pay {formatCurrency(amount)} deposit
+            Pay {formatCurrency(amount)} now
           </span>
         )}
       </Button>
@@ -136,6 +136,7 @@ export const BookingPage = () => {
     setSelectedGuests,
   } = useBookingStore();
   const { tables, selectedTable, setSelectedTable } = useTableStore();
+  const { items: cartItems, clearCart } = useMenuCartStore();
 
   // Form state - MUST be before early return
   const [step, setStep] = useState(1);
@@ -162,6 +163,18 @@ export const BookingPage = () => {
   const [draftDate, setDraftDate] = useState(new Date());
   const [draftTimeFilter, setDraftTimeFilter] = useState('All Times');
   const [selectedSlotTime, setSelectedSlotTime] = useState('');
+
+  const baseDepositAmount = 5;
+  const cartSubtotal = useMemo(
+    () => cartItems.reduce((total, item) => total + item.price * item.quantity, 0),
+    [cartItems],
+  );
+  const cartItemCount = useMemo(
+    () => cartItems.reduce((total, item) => total + item.quantity, 0),
+    [cartItems],
+  );
+  const totalChargeNow = baseDepositAmount + cartSubtotal;
+  const hasPreOrder = cartSubtotal > 0;
 
   // Time slot generation
   const guestOptions = Array.from({ length: 10 }, (_, i) => i + 1);
@@ -458,7 +471,7 @@ export const BookingPage = () => {
       tableNumber: chosenTable?.tableNumber,
       status: 'confirmed' as const,
       specialRequests: formData.specialRequests,
-      depositAmount: 5,
+      depositAmount: totalChargeNow,
       paymentStatus: 'paid' as const,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -485,13 +498,23 @@ export const BookingPage = () => {
     // Navigate to confirmation page after brief delay
     setTimeout(() => {
       setSelectedTable(null);
-      navigate('/confirmation', { state: { booking: newBooking } });
+      clearCart();
+      navigate('/confirmation', {
+        state: {
+          booking: newBooking,
+          charges: {
+            baseDepositAmount,
+            cartSubtotal,
+            totalPaid: totalChargeNow,
+            itemCount: cartItemCount,
+          },
+        },
+      });
     }, 1500);
 
     return { ok: true };
   };
 
-  const depositAmount = 5;
   const isDetailsValid = Boolean(formData.firstName && formData.lastName && formData.email && formData.phone);
 
   return (
@@ -549,13 +572,27 @@ export const BookingPage = () => {
                       <p className="text-amber-900 font-medium">{selectedGuests} {selectedGuests === 1 ? 'Guest' : 'Guests'}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 pt-3 border-t border-amber-200">
-                    <div className="w-10 h-10 rounded-lg bg-amber-700/20 flex items-center justify-center flex-shrink-0">
-                      <span className="text-amber-700 font-bold text-lg">£</span>
+                  <div className="pt-3 border-t border-amber-200 space-y-3">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-amber-700/20 flex items-center justify-center flex-shrink-0">
+                        <span className="text-amber-700 font-bold text-lg">£</span>
+                      </div>
+                      <div>
+                        <p className="text-amber-900/60 text-xs font-medium uppercase">Reservation Deposit</p>
+                        <p className="text-amber-700 font-serif text-xl font-semibold">{formatCurrency(baseDepositAmount)}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-amber-900/60 text-xs font-medium uppercase">Deposit Required</p>
-                      <p className="text-amber-700 font-serif text-xl font-semibold">£5.00</p>
+
+                    {hasPreOrder && (
+                      <div className="flex items-center justify-between rounded-lg border border-amber-200/70 bg-white/65 px-3 py-2">
+                        <p className="text-amber-900/75 text-xs font-semibold uppercase">Pre-order Dishes ({cartItemCount})</p>
+                        <p className="text-amber-900 font-semibold">{formatCurrency(cartSubtotal)}</p>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between rounded-lg border border-amber-300/80 bg-amber-100/70 px-3 py-2">
+                      <p className="text-amber-900 text-xs font-bold uppercase tracking-wide">Total Charge Now</p>
+                      <p className="text-amber-900 font-serif text-xl font-semibold">{formatCurrency(totalChargeNow)}</p>
                     </div>
                   </div>
                 </div>
@@ -607,7 +644,11 @@ export const BookingPage = () => {
               {/* Info Card */}
               <div className="bg-amber-50/60 px-8 py-5 border-t border-black/10">
                 <p className="text-xs text-amber-900/70 leading-relaxed">
-                  <span className="font-semibold">Note:</span> A £5 deposit secures your reservation. Fully refundable with 24 hours notice.
+                  <span className="font-semibold">Note:</span>{' '}
+                  {hasPreOrder
+                    ? `${formatCurrency(baseDepositAmount)} deposit + ${formatCurrency(cartSubtotal)} pre-order will be charged now.`
+                    : `${formatCurrency(baseDepositAmount)} deposit secures your reservation.`}{' '}
+                  Fully refundable with 24 hours notice.
                 </p>
               </div>
             </div>
@@ -733,12 +774,29 @@ export const BookingPage = () => {
             {step === 2 && (
               <div className="px-8 py-8">
                 <h3 className="font-serif text-[1.8rem] text-amber-950 mb-2 leading-none">Payment Details</h3>
-                <p className="text-sm text-amber-900/70 mb-6">Secure your table with a fully refundable deposit.</p>
+                <p className="text-sm text-amber-900/70 mb-4">Review and pay your reservation charges securely.</p>
+
+                <div className="mb-6 rounded-xl border border-amber-200/80 bg-white/80 p-4 text-sm">
+                  <div className="flex items-center justify-between text-amber-900/80">
+                    <span>Reservation deposit</span>
+                    <span className="font-semibold">{formatCurrency(baseDepositAmount)}</span>
+                  </div>
+                  {hasPreOrder && (
+                    <div className="mt-2 flex items-center justify-between text-amber-900/80">
+                      <span>Pre-order menu ({cartItemCount} item{cartItemCount === 1 ? '' : 's'})</span>
+                      <span className="font-semibold">{formatCurrency(cartSubtotal)}</span>
+                    </div>
+                  )}
+                  <div className="mt-3 flex items-center justify-between border-t border-amber-200 pt-3 text-amber-950">
+                    <span className="font-semibold uppercase tracking-wide text-xs">Pay Now</span>
+                    <span className="font-serif text-xl font-semibold">{formatCurrency(totalChargeNow)}</span>
+                  </div>
+                </div>
                 
                 <Elements stripe={stripePromise}>
                   <PaymentForm 
                     onSuccess={handlePaymentSuccess}
-                    amount={depositAmount}
+                    amount={totalChargeNow}
                   />
                 </Elements>
                 

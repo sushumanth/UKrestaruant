@@ -183,6 +183,69 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
   setSettings: (settings) => set({ settings }),
 }));
 
+// Menu Cart Store
+interface MenuCartItem {
+  id: string;
+  name: string;
+  image: string;
+  price: number;
+  quantity: number;
+}
+
+interface MenuCartState {
+  items: MenuCartItem[];
+  addItem: (item: Omit<MenuCartItem, 'quantity'>) => void;
+  updateItemQuantity: (itemId: string, quantity: number) => void;
+  removeItem: (itemId: string) => void;
+  clearCart: () => void;
+}
+
+export const useMenuCartStore = create<MenuCartState>()(
+  persist(
+    (set) => ({
+      items: [],
+      addItem: (item) =>
+        set((state) => {
+          const existing = state.items.find((cartItem) => cartItem.id === item.id);
+
+          if (existing) {
+            return {
+              items: state.items.map((cartItem) =>
+                cartItem.id === item.id
+                  ? { ...cartItem, quantity: cartItem.quantity + 1 }
+                  : cartItem
+              ),
+            };
+          }
+
+          return {
+            items: [...state.items, { ...item, quantity: 1 }],
+          };
+        }),
+      updateItemQuantity: (itemId, quantity) =>
+        set((state) => {
+          if (quantity <= 0) {
+            return {
+              items: state.items.filter((item) => item.id !== itemId),
+            };
+          }
+
+          return {
+            items: state.items.map((item) =>
+              item.id === itemId ? { ...item, quantity } : item
+            ),
+          };
+        }),
+      removeItem: (itemId) =>
+        set((state) => ({
+          items: state.items.filter((item) => item.id !== itemId),
+        })),
+      clearCart: () => set({ items: [] }),
+    }),
+    { name: 'menu-cart-storage' }
+  )
+);
+
 // Mock Data Store for Demo
 interface MockDataState {
   isMockMode: boolean;

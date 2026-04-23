@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTableStore, useBookingStore } from '@/store';
 import type { RestaurantTable, Booking } from '@/types';
 import {
@@ -30,8 +30,18 @@ export const FloorPlan = ({
   const tables = propTables || storeTables;
   const bookings = propBookings || storeBookings;
 
+  const validBookingsByTable = useMemo(() => {
+    const map = new Map<string, Booking>();
+    for (const b of bookings) {
+      if (b.tableId && ['confirmed', 'arrived', 'seated'].includes(b.status)) {
+        map.set(b.tableId, b);
+      }
+    }
+    return map;
+  }, [bookings]);
+
   const getTableBooking = (tableId: string): Booking | undefined => {
-    return bookings.find(b => b.tableId === tableId && ['confirmed', 'arrived', 'seated'].includes(b.status));
+    return validBookingsByTable.get(tableId);
   };
 
   const handleTableClick = (table: RestaurantTable) => {

@@ -6,25 +6,36 @@ import { formatDate, formatTime, formatCurrency } from '@/lib/mockData';
 import { jsPDF } from 'jspdf';
 import type { Booking } from '@/types';
 
+interface BookingCharges {
+  baseDepositAmount: number;
+  cartSubtotal: number;
+  totalPaid: number;
+  itemCount: number;
+}
+
 export const BookingConfirmationPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const booking = location.state?.booking as Booking | undefined;
+  const charges = location.state?.charges as BookingCharges | undefined;
   const [actionMessage, setActionMessage] = useState<string>('');
 
-  const getShareText = (activeBooking: Booking) => [
+  const getShareText = (activeBooking: Booking, paidAmount: number) => [
     `LuxeReserve Booking Confirmed (${activeBooking.bookingId})`,
     `Name: ${activeBooking.customerName}`,
     `Date: ${formatDate(activeBooking.date)}`,
     `Time: ${formatTime(activeBooking.time)}`,
     `Guests: ${activeBooking.guests}`,
     `Table: ${activeBooking.tableNumber ? `Table ${activeBooking.tableNumber}` : 'To be assigned'}`,
+    `Paid: ${formatCurrency(paidAmount)}`,
   ].join('\n');
 
   const handleDownloadPdf = () => {
     if (!booking) {
       return;
     }
+
+    const paidAmount = charges?.totalPaid ?? booking.depositAmount;
 
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     const marginX = 56;
@@ -75,8 +86,12 @@ export const BookingConfirmationPage = () => {
       ['Time', formatTime(booking.time)],
       ['Party Size', `${booking.guests} ${booking.guests === 1 ? 'guest' : 'guests'}`],
       ['Table', booking.tableNumber ? `Table ${booking.tableNumber}` : 'To be assigned'],
-      ['Deposit', `${formatCurrency(booking.depositAmount)} (${booking.paymentStatus})`],
+      ['Amount Paid', `${formatCurrency(paidAmount)} (${booking.paymentStatus})`],
     ];
+
+    if (charges?.cartSubtotal) {
+      details.splice(7, 0, ['Pre-order Menu', `${formatCurrency(charges.cartSubtotal)} (${charges.itemCount} item${charges.itemCount === 1 ? '' : 's'})`]);
+    }
 
     details.forEach(([label, value]) => {
       doc.setFont('helvetica', 'bold');
@@ -117,7 +132,7 @@ export const BookingConfirmationPage = () => {
       return;
     }
 
-    const shareText = getShareText(booking);
+    const shareText = getShareText(booking, charges?.totalPaid ?? booking.depositAmount);
     const shareData: ShareData = {
       title: `LuxeReserve Booking ${booking.bookingId}`,
       text: shareText,
@@ -149,6 +164,9 @@ export const BookingConfirmationPage = () => {
   }, [booking, navigate]);
 
   if (!booking) return null;
+
+  const paidAmount = charges?.totalPaid ?? booking.depositAmount;
+  const paidLabel = charges?.cartSubtotal ? 'Payment Received' : 'Deposit Paid';
 
   return (
     <div className="min-h-screen pt-24 pb-16" style={{ background: 'linear-gradient(135deg, #e8e4df 0%, #f5f1ed 100%)' }}>
@@ -249,14 +267,19 @@ export const BookingConfirmationPage = () => {
 
         {/* Payment Info */}
         <div className="rounded-xl border border-amber-200/50 p-6 mb-8 bg-gradient-to-br from-emerald-50/80 to-teal-50/80">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center">
                 <Mail size={22} className="text-emerald-700" />
               </div>
               <div>
-                <p className="text-emerald-900 font-semibold">Deposit Paid</p>
-                <p className="text-emerald-700/70 text-sm">{formatCurrency(booking.depositAmount)}</p>
+                <p className="text-emerald-900 font-semibold">{paidLabel}</p>
+                <p className="text-emerald-700/70 text-sm">{formatCurrency(paidAmount)}</p>
+                {charges?.cartSubtotal ? (
+                  <p className="text-emerald-700/70 text-xs mt-1">
+                    {formatCurrency(charges.baseDepositAmount)} deposit + {formatCurrency(charges.cartSubtotal)} pre-order menu
+                  </p>
+                ) : null}
               </div>
             </div>
             <span className="text-emerald-700 text-sm font-bold bg-emerald-100/60 px-3 py-1 rounded-full">✓ Paid</span>

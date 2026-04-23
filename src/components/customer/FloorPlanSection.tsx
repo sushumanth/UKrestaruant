@@ -63,12 +63,11 @@ export const FloorPlanSection = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative py-24 bg-[#0B0C0F]"
+      className="relative py-24 bg-[#0B0C0F] md:bg-fixed"
       style={{
         backgroundImage: 'url(/dining_room.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
       }}
     >
       {/* Dark overlay */}
