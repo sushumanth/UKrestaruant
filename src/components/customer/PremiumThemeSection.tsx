@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { CalendarDays, ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 type SignatureDish = {
   name: string;
@@ -30,45 +30,74 @@ const signatureDishes: SignatureDish[] = [
     description: 'Char-grilled paneer cubes with smoky spice marinade.',
     image: '/dining_room.jpg',
   },
+   {
+    name: 'Paneer Tikka',
+    description: 'Char-grilled paneer cubes with smoky spice marinade.',
+    image: '/dining_room.jpg',
+  },
 ];
 
 export const PremiumThemeSection = () => {
-  const [startIndex, setStartIndex] = useState(0);
-  const [itemsPerView, setItemsPerView] = useState(3);
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const updateItemsPerView = () => {
-      if (window.innerWidth < 768) {
-        setItemsPerView(1);
-        return;
-      }
-      if (window.innerWidth < 1120) {
-        setItemsPerView(2);
-        return;
-      }
-      setItemsPerView(3);
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
+    let isPaused = false;
+
+    const pause = () => {
+      isPaused = true;
     };
 
-    updateItemsPerView();
-    window.addEventListener('resize', updateItemsPerView);
-    return () => window.removeEventListener('resize', updateItemsPerView);
+    const resume = () => {
+      isPaused = false;
+    };
+
+    scroller.addEventListener('mouseenter', pause);
+    scroller.addEventListener('mouseleave', resume);
+    scroller.addEventListener('touchstart', pause, { passive: true });
+    scroller.addEventListener('touchend', resume);
+
+    const timer = window.setInterval(() => {
+      if (isPaused) return;
+
+      const firstCard = scroller.querySelector('[data-signature-card]') as HTMLDivElement | null;
+      const step = firstCard ? firstCard.offsetWidth + 16 : Math.round(scroller.clientWidth * 0.85);
+      const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
+
+      if (scroller.scrollLeft + step >= maxScrollLeft - 4) {
+        scroller.scrollTo({ left: 0, behavior: 'smooth' });
+        return;
+      }
+
+      scroller.scrollBy({ left: step, behavior: 'smooth' });
+    }, 3200);
+
+    return () => {
+      window.clearInterval(timer);
+      scroller.removeEventListener('mouseenter', pause);
+      scroller.removeEventListener('mouseleave', resume);
+      scroller.removeEventListener('touchstart', pause);
+      scroller.removeEventListener('touchend', resume);
+    };
   }, []);
 
-  const visibleDishes = useMemo(
-    () =>
-      Array.from({ length: itemsPerView }, (_, offset) => {
-        const dishIndex = (startIndex + offset) % signatureDishes.length;
-        return signatureDishes[dishIndex];
-      }),
-    [itemsPerView, startIndex],
-  );
+  const scrollDishes = (direction: -1 | 1) => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
 
-  const showPrevious = () => {
-    setStartIndex((current) => (current - 1 + signatureDishes.length) % signatureDishes.length);
-  };
+    const firstCard = scroller.querySelector('[data-signature-card]') as HTMLDivElement | null;
+    const step = firstCard ? firstCard.offsetWidth + 16 : Math.round(scroller.clientWidth * 0.85);
 
-  const showNext = () => {
-    setStartIndex((current) => (current + 1) % signatureDishes.length);
+    scroller.scrollBy({
+      left: direction * step,
+      behavior: 'smooth',
+    });
   };
 
   return (
@@ -108,7 +137,7 @@ export const PremiumThemeSection = () => {
       </svg>
 
       <section
-        className="relative w-full overflow-hidden py-14 sm:py-20"
+        className="relative w-full overflow-hidden py-4 sm:py-8"
         style={{
           backgroundImage: "url('/backgroundtheme.png')",
           backgroundSize: 'cover',
@@ -131,7 +160,7 @@ export const PremiumThemeSection = () => {
             <p className="mb-2 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9d804d]">
               Chef&apos;s Special
             </p>
-            <h2 className="text-center font-serif text-[clamp(34px,6vw,62px)] font-normal leading-[0.95] tracking-[0.01em] text-[#2a1e0e]">
+            <h2 className="text-center font-serif text-[clamp(24px,5vw,40px)] font-normal leading-[0.95] tracking-[0.01em] text-[#2a1e0e]">
               Signature Dishes
             </h2>
 
@@ -146,13 +175,13 @@ export const PremiumThemeSection = () => {
               <span className="block h-px w-16 bg-gradient-to-l from-transparent to-[#c4a053]" />
             </div>
 
-            {/* ── Carousel ── */}
-            <div className="relative mt-14 sm:mt-16">
+            {/* ── Horizontal Scroller ── */}
+            <div className="relative mt-10 sm:mt-12">
               {/* Prev button */}
               <button
                 type="button"
-                onClick={showPrevious}
-                className="absolute left-0 top-[38%] z-20 -translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053]"
+                onClick={() => scrollDishes(-1)}
+                className="absolute left-0 top-[35%] z-20 -translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053]"
                 aria-label="Previous dishes"
               >
                 <ChevronLeft size={18} />
@@ -161,128 +190,126 @@ export const PremiumThemeSection = () => {
               {/* Next button */}
               <button
                 type="button"
-                onClick={showNext}
-                className="absolute right-0 top-[38%] z-20 -translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053]"
+                onClick={() => scrollDishes(1)}
+                className="absolute right-0 top-[35%] z-20 -translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053]"
                 aria-label="Next dishes"
               >
                 <ChevronRight size={18} />
               </button>
 
-              {/* Cards grid */}
+              {/* Scroll container */}
               <div
-                className="mx-12 grid gap-5 sm:mx-14"
-                style={{ gridTemplateColumns: `repeat(${itemsPerView}, minmax(0, 1fr))` }}
+                ref={scrollerRef}
+                className="mx-11 overflow-x-auto scroll-smooth sm:mx-12"
+                style={{ scrollbarWidth: 'none' }}
               >
-                {visibleDishes.map((dish, i) => (
-                  <motion.div
-                    key={`${dish.name}-${startIndex}`}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: i * 0.07, ease: 'easeOut' }}
-                    /*
-                      drop-shadow stacks:
-                      1. A soft large shadow beneath the card for depth.
-                      2. A 1 px tight shadow to fake the golden border around
-                         the clip-path edge (regular border won't follow the arch).
-                    */
-                    style={{
-                      filter:
-                        'drop-shadow(0 10px 22px rgba(80,40,0,0.12)) drop-shadow(0 0 0.5px rgba(196,160,83,0.9))',
-                      transform: 'translateZ(0)', /* GPU layer — prevents filter repaint jank */
-                    }}
-                  >
-                    <article
-                      className="group flex cursor-default flex-col"
-                      style={{ clipPath: 'url(#mughal-card)', background: '#faf4e6' }}
+                <div className="flex snap-x snap-mandatory gap-4 pb-2">
+                  {signatureDishes.map((dish, i) => (
+                    <motion.div
+                      key={dish.name}
+                      data-signature-card
+                      initial={{ opacity: 0, y: 12 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, amount: 0.2 }}
+                      transition={{ duration: 0.4, delay: i * 0.07, ease: 'easeOut' }}
+                      className="w-[min(84vw,340px)] shrink-0 snap-start sm:w-[320px] lg:w-[350px]"
+                      style={{
+                        filter:
+                          'drop-shadow(0 10px 22px rgba(80,40,0,0.12)) drop-shadow(0 0 0.5px rgba(196,160,83,0.9))',
+                        transform: 'translateZ(0)',
+                      }}
                     >
-                      {/* ── Food image — fills the arch dome area ── */}
-                      <div className="relative w-full overflow-hidden" style={{ paddingTop: '78%' }}>
-                        <img
-                          src={dish.image}
-                          alt={dish.name}
-                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                          loading="lazy"
-                          draggable={false}
-                        />
-                        {/*
-                          Subtle vignette at the bottom of the image so it
-                          blends into the cream card body without a harsh edge.
-                        */}
-                        <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#faf4e6]/60 to-transparent" />
-                      </div>
-
-                      {/* ── Text body ── */}
-                      <div
-                        className="flex flex-col items-center px-5 pb-8 pt-6 text-center"
-                        style={{ borderTop: '1px solid #e8d09a', background: '#faf4e6' }}
+                      <article
+                        className="group flex cursor-default flex-col"
+                        style={{ clipPath: 'url(#mughal-card)', background: '#faf4e6' }}
                       >
-                        <h3 className="font-serif text-[clamp(20px,2vw,26px)] font-normal leading-tight text-[#2a1e0e]">
-                          {dish.name}
-                        </h3>
+                        <div className="relative w-full overflow-hidden" style={{ paddingTop: '70%' }}>
+                          <img
+                            src={dish.image}
+                            alt={dish.name}
+                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                            loading="lazy"
+                            draggable={false}
+                          />
+                          <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#faf4e6]/60 to-transparent" />
+                        </div>
 
-                        <p className="mt-2.5 min-h-[44px] px-1 text-[13px] leading-relaxed text-[#6b4f2a]">
-                          {dish.description}
-                        </p>
-
-                        <Link
-                          to="/menu"
-                          className="mt-5 inline-flex items-center rounded border border-[#c4a053] bg-[#ecd9a8] px-7 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#3d2806] transition-colors hover:bg-[#dabb80]"
+                        <div
+                          className="flex flex-col items-center px-5 pb-6 pt-4 text-center"
+                          style={{ borderTop: '1px solid #e8d09a', background: '#faf4e6' }}
                         >
-                          Order Now
-                        </Link>
-                      </div>
-                    </article>
-                  </motion.div>
-                ))}
+                          <h3 className="font-serif text-[clamp(18px,1.8vw,24px)] font-normal leading-tight text-[#2a1e0e]">
+                            {dish.name}
+                          </h3>
+
+                          <p className="mt-2 min-h-[38px] px-1 text-[12px] leading-relaxed text-[#6b4f2a] sm:text-[13px]">
+                            {dish.description}
+                          </p>
+
+                          <Link
+                            to="/menu"
+                            className="mt-4 inline-flex items-center rounded border border-[#c4a053] bg-[#ecd9a8] px-6 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[#3d2806] transition-colors hover:bg-[#dabb80]"
+                          >
+                            Order Now
+                          </Link>
+                        </div>
+                      </article>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* ── CTA row ── */}
-            <div className="mt-14 grid gap-4 md:grid-cols-2">
+            <div className="mt-10 grid gap-3 md:grid-cols-2">
               {/* Order Online */}
-              <div
-                className="relative overflow-hidden rounded-2xl border border-[#6f2f22] p-6 sm:p-8"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(115deg,rgba(66,7,7,0.92),rgba(89,16,12,0.8)), url('/homepa1.png')",
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              >
-                <h3 className="font-serif text-[clamp(26px,3vw,36px)] font-normal leading-tight text-[#f4dfb4]">
-                  Order Online
-                </h3>
-                <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-[#f5e8cc]/90">
-                  Enjoy your favourite Punjabi dishes at home with quick London delivery.
-                </p>
-                <Link
-                  to="/menu"
-                  className="mt-6 inline-flex items-center gap-2 rounded-lg border border-[#c8994b] bg-[rgba(63,8,8,0.55)] px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[#f8e3b8] transition-colors hover:bg-[rgba(94,16,16,0.6)]"
-                >
-                  <ShoppingBag size={14} />
-                  Order Now
-                </Link>
+              <div className="relative min-h-[90px] overflow-hidden rounded-2xl border border-[#6f2f22] bg-[#3a0808] p-5 sm:min-h-[90px] sm:p-5">
+                <div className="absolute inset-y-0 right-0 w-[60%] p-0.5 sm:p-0.5">
+                  <img
+                    src="/bookorderimg.png"
+                    alt="Order online Punjabi food"
+                    className="h-full w-full object-contain object-right-bottom"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(47,6,6,0.96)_0%,rgba(74,11,10,0.9)_47%,rgba(85,14,12,0.45)_74%,rgba(85,14,12,0.2)_100%)]" />
+
+                <div className="relative z-10 max-w-[17rem] sm:max-w-[19rem]">
+                  <h3 className="font-serif text-[clamp(22px,2.7vw,32px)] font-normal leading-tight text-[#f4dfb4]">
+                    Order Online
+                  </h3>
+                  <p className="mt-2 max-w-sm text-[12px] leading-relaxed text-[#f5e8cc]/90 sm:text-[13px]">
+                    Enjoy your favourite Punjabi dishes at home with quick London delivery.
+                  </p>
+                  <Link
+                    to="/menu"
+                    className="mt-4 inline-flex items-center gap-2 rounded-lg border border-[#c8994b] bg-[rgba(63,8,8,0.55)] px-5 py-2 text-[10px] font-bold uppercase tracking-[0.1em] text-[#f8e3b8] transition-colors hover:bg-[rgba(94,16,16,0.6)]"
+                  >
+                    <ShoppingBag size={14} />
+                    Order Now
+                  </Link>
+                </div>
               </div>
 
               {/* Book a Table */}
               <div
-                className="relative overflow-hidden rounded-2xl border border-[#1f4e43] p-6 sm:p-8"
+                className="relative overflow-hidden rounded-2xl border border-[#1f4e43] p-5 sm:p-6"
                 style={{
                   backgroundImage:
-                    "linear-gradient(115deg,rgba(8,40,34,0.94),rgba(15,58,49,0.82)), url('/dining_room.jpg')",
+                    "linear-gradient(115deg,rgba(8,40,34,0.94),rgba(15,58,49,0.42)), url('/dining_room.jpg')",
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                 }}
               >
-                <h3 className="font-serif text-[clamp(26px,3vw,36px)] font-normal leading-tight text-[#f2e3bf]">
+                <h3 className="font-serif text-[clamp(22px,2.7vw,32px)] font-normal leading-tight text-[#f2e3bf]">
                   Book Your Table
                 </h3>
-                <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-[#eef0de]/85">
+                <p className="mt-2 max-w-sm text-[12px] leading-relaxed text-[#eef0de]/85 sm:text-[13px]">
                   Reserve your table and enjoy a complete royal dining experience.
                 </p>
                 <Link
                   to="/book"
-                  className="mt-6 inline-flex items-center gap-2 rounded-lg border border-[#b89b61] bg-[rgba(8,33,29,0.55)] px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[#f8e3b8] transition-colors hover:bg-[rgba(12,50,43,0.62)]"
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg border border-[#b89b61] bg-[rgba(8,33,29,0.55)] px-5 py-2 text-[10px] font-bold uppercase tracking-[0.1em] text-[#f8e3b8] transition-colors hover:bg-[rgba(12,50,43,0.62)]"
                 >
                   <CalendarDays size={14} />
                   Book Now

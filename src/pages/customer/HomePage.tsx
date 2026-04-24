@@ -49,6 +49,29 @@ const chefSpecials = [
 
 const customerMoments = ['/cocktail.jpg', '/dining_room.jpg', '/chef_plating.jpg', '/kitchen_team.jpg'];
 
+const kitchenHighlights = [
+  {
+    title: 'Freshly Ground Spices',
+    description: 'Daily masala prep for authentic depth and aroma.',
+    image: '/FreshlyGround.png',
+  },
+  {
+    title: 'Family-Style Sharing',
+    description: 'Menus curated for couples, families, and celebrations.',
+    image: '/Family-StyleSharing.png',
+  },
+  {
+    title: 'Royal Ambiance',
+    description: 'Elegant interiors inspired by classic Punjabi heritage.',
+    image: '/RoyalAmbiance.png',
+  },
+  {
+    title: 'Instant Reservations',
+    description: 'Book your preferred slot online in seconds.',
+    image: '/InstantReservations.png',
+  },
+];
+
 const testimonials = [
   {
     quote: 'Booked in under 20 seconds and got a perfect table by the window.',
@@ -179,46 +202,29 @@ export const HomePage = () => {
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.45, delay: 0.02 }}
-                  className="min-h-[160px] rounded-[24px] bg-[linear-gradient(180deg,rgba(255,251,244,0.92)_0%,rgba(251,239,210,0.94)_100%)] p-6 shadow-[0_16px_40px_rgba(112,76,30,0.12)]"
-                >
-                  <p className="text-amber-900 text-sm font-semibold">Freshly Ground Spices</p>
-                  <p className="mt-2 text-amber-800/80 text-sm leading-relaxed">Daily masala prep for authentic depth and aroma.</p>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.45, delay: 0.08 }}
-                  className="min-h-[160px] rounded-[24px] bg-[linear-gradient(180deg,rgba(255,251,244,0.92)_0%,rgba(251,239,210,0.94)_100%)] p-6 shadow-[0_16px_40px_rgba(112,76,30,0.12)]"
-                >
-                  <p className="text-amber-900 text-sm font-semibold">Family-Style Sharing</p>
-                  <p className="mt-2 text-amber-800/80 text-sm leading-relaxed">Menus curated for couples, families, and celebrations.</p>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.45, delay: 0.14 }}
-                  className="min-h-[160px] rounded-[24px] bg-[linear-gradient(180deg,rgba(255,251,244,0.92)_0%,rgba(251,239,210,0.94)_100%)] p-6 shadow-[0_16px_40px_rgba(112,76,30,0.12)]"
-                >
-                  <p className="text-amber-900 text-sm font-semibold">Royal Ambiance</p>
-                  <p className="mt-2 text-amber-800/80 text-sm leading-relaxed">Elegant interiors inspired by classic Punjabi heritage.</p>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.45, delay: 0.2 }}
-                  className="min-h-[160px] rounded-[24px] bg-[linear-gradient(180deg,rgba(255,251,244,0.92)_0%,rgba(251,239,210,0.94)_100%)] p-6 shadow-[0_16px_40px_rgba(112,76,30,0.12)]"
-                >
-                  <p className="text-amber-900 text-sm font-semibold">Instant Reservations</p>
-                  <p className="mt-2 text-amber-800/80 text-sm leading-relaxed">Book your preferred slot online in seconds.</p>
-                </motion.div>
+                {kitchenHighlights.map((item, index) => (
+                  <motion.div
+                    key={item.title}
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.45, delay: 0.02 + index * 0.06 }}
+                    className="group relative min-h-[190px] overflow-hidden rounded-[24px] border border-amber-200/65 shadow-[0_16px_40px_rgba(112,76,30,0.14)]"
+                  >
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(51,24,12,0.18)_0%,rgba(58,27,13,0.34)_42%,rgba(42,19,9,0.76)_100%)]" />
+
+                    <div className="relative z-10 flex h-full flex-col justify-end p-5">
+                      <p className="text-[22px] font-serif leading-tight text-[#f8e8c6]">{item.title}</p>
+                      <p className="mt-2 text-sm leading-relaxed text-[#f2ddba]">{item.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             </div>
           </motion.div>
