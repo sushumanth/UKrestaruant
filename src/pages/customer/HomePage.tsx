@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { HeroSection } from '@/components/customer/HeroSection';
 import { PremiumThemeSection } from '@/components/customer/PremiumThemeSection';
+import { RoyalExperienceSection } from '@/components/customer/RoyalExperienceSection';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Clock3, Mail, PhoneCall, Sparkles, Star } from 'lucide-react';
 
@@ -69,62 +70,172 @@ export const HomePage = () => {
       <div className="grain-overlay opacity-10" />
 
       <HeroSection />
-  <PremiumThemeSection />
+      <PremiumThemeSection />
+      <RoyalExperienceSection />
 
       <main className="relative z-10 pb-24">
-        <section id="about-us" className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 mt-14 scroll-mt-24">
+        <section
+          id="about-us"
+          className="relative mt-0 min-h-screen w-full overflow-hidden scroll-mt-24"
+          style={{
+            backgroundImage: `
+              linear-gradient(
+                135deg,
+                rgba(250, 242, 225, 0.65) 0%,
+                rgba(248, 235, 205, 0.55) 35%,
+                rgba(240, 220, 180, 0.45) 65%,
+                rgba(236, 216, 178, 0.35) 100%
+              ),
+              url('/bgimage.png')
+            `,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(255,255,255,0.35),transparent_28%),radial-gradient(circle_at_88%_82%,rgba(173,129,56,0.14),transparent_24%)]" />
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.25 }}
-            className="rounded-2xl border border-amber-200/60 p-6 sm:p-8 bg-gradient-to-r from-[#fff1d8] via-[#f8e8cb] to-[#efe1c5] shadow-lg"
+            className="relative z-10 flex min-h-screen w-full flex-col justify-center px-6 py-16 sm:px-10 lg:px-16 xl:px-24"
           >
-            <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-              <div>
-                <span className="text-amber-500 text-xs font-bold tracking-[0.16em] uppercase">About Our Kitchen</span>
-                <h2 className="mt-3 font-serif text-amber-950 text-[clamp(32px,4.5vw,56px)] leading-[0.95]">
-                  Crafted Punjabi Dining For The UK
-                </h2>
-                <p className="mt-4 text-amber-900/80 text-base leading-relaxed max-w-2xl">
-                  From slow-cooked curries to charcoal-grilled favourites, every dish is prepared with traditional methods and premium ingredients.
-                  We blend timeless Punjabi hospitality with a polished London dining experience.
-                </p>
+            <div className="grid items-center gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-14">
+              <div className="max-w-3xl">
+                <span className="text-[#8c5735] text-[11px] font-bold tracking-[0.2em] uppercase">About Our Kitchen</span>
+                
+                {/* Motion Perfect SVG Text replacing standard h2 */}
+                <svg
+                  viewBox="0 0 700 280"
+                  className="relative z-10 w-full mt-5 overflow-visible drop-shadow-[0_2px_12px_rgba(74,37,17,0.15)]"
+                  preserveAspectRatio="xMinYMin meet"
+                >
+                  <motion.text
+                    x="0" y="80"
+                    className="font-serif text-[85px] font-bold tracking-tight"
+                    initial={{ strokeDasharray: 400, strokeDashoffset: 400, fill: "rgba(74,37,17,0)" }}
+                    whileInView={{ strokeDashoffset: 0, fill: "rgba(74,37,17,1)" }} // Rich Mahogany color
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 1.2, ease: "easeOut" }}
+                    stroke="#4a2511" strokeWidth="1"
+                  >
+                    Crafted Punjabi
+                  </motion.text>
+                  <motion.text
+                    x="0" y="175"
+                    className="font-serif text-[85px] font-bold tracking-tight"
+                    initial={{ strokeDasharray: 400, strokeDashoffset: 400, fill: "rgba(74,37,17,0)" }}
+                    whileInView={{ strokeDashoffset: 0, fill: "rgba(74,37,17,1)" }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 1.2, ease: "easeOut", delay: 0.25 }}
+                    stroke="#4a2511" strokeWidth="1"
+                  >
+                    Dining For The
+                  </motion.text>
+                  <motion.text
+                    x="0" y="270"
+                    className="font-serif text-[85px] font-bold tracking-tight"
+                    initial={{ strokeDasharray: 400, strokeDashoffset: 400, fill: "rgba(74,37,17,0)" }}
+                    whileInView={{ strokeDashoffset: 0, fill: "rgba(74,37,17,1)" }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 1.2, ease: "easeOut", delay: 0.5 }}
+                    stroke="#4a2511" strokeWidth="1"
+                  >
+                    UK
+                  </motion.text>
+                </svg>
+
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.8, delay: 1 }}
+                  className="mt-6 max-w-2xl text-[#6b4c3a] text-[clamp(16px,1.7vw,20px)] leading-relaxed font-medium"
+                >
+                  From slow-cooked curries to charcoal-grilled favourites, every dish is prepared with traditional methods and premium ingredients. We blend timeless Punjabi hospitality with a polished London dining experience.
+                </motion.p>
+
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.5, delay: 1.2 }}
+                  className="mt-8 flex flex-wrap gap-3"
+                >
+                  <Link
+                    to="/menu"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#7a1d14] px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8e4b7] shadow-lg shadow-[#7a1d14]/20 transition-colors hover:bg-[#8d2419]"
+                  >
+                    Explore Menu
+                  </Link>
+                  <Link
+                    to="/book"
+                    className="inline-flex items-center gap-2 rounded-full border border-[#9f7c42] bg-transparent px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#4a2511] transition-colors hover:bg-[#fff7e8]"
+                  >
+                    Reserve Now <ArrowRight size={16} />
+                  </Link>
+                </motion.div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-amber-200/60 bg-white/70 p-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.45, delay: 0.02 }}
+                  className="min-h-[160px] rounded-[24px] bg-[linear-gradient(180deg,rgba(255,251,244,0.92)_0%,rgba(251,239,210,0.94)_100%)] p-6 shadow-[0_16px_40px_rgba(112,76,30,0.12)]"
+                >
                   <p className="text-amber-900 text-sm font-semibold">Freshly Ground Spices</p>
-                  <p className="mt-1 text-amber-800/75 text-sm">Daily masala prep for authentic depth and aroma.</p>
-                </div>
-                <div className="rounded-xl border border-amber-200/60 bg-white/70 p-4">
+                  <p className="mt-2 text-amber-800/80 text-sm leading-relaxed">Daily masala prep for authentic depth and aroma.</p>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.45, delay: 0.08 }}
+                  className="min-h-[160px] rounded-[24px] bg-[linear-gradient(180deg,rgba(255,251,244,0.92)_0%,rgba(251,239,210,0.94)_100%)] p-6 shadow-[0_16px_40px_rgba(112,76,30,0.12)]"
+                >
                   <p className="text-amber-900 text-sm font-semibold">Family-Style Sharing</p>
-                  <p className="mt-1 text-amber-800/75 text-sm">Menus curated for couples, families, and celebrations.</p>
-                </div>
-                <div className="rounded-xl border border-amber-200/60 bg-white/70 p-4">
+                  <p className="mt-2 text-amber-800/80 text-sm leading-relaxed">Menus curated for couples, families, and celebrations.</p>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.45, delay: 0.14 }}
+                  className="min-h-[160px] rounded-[24px] bg-[linear-gradient(180deg,rgba(255,251,244,0.92)_0%,rgba(251,239,210,0.94)_100%)] p-6 shadow-[0_16px_40px_rgba(112,76,30,0.12)]"
+                >
                   <p className="text-amber-900 text-sm font-semibold">Royal Ambiance</p>
-                  <p className="mt-1 text-amber-800/75 text-sm">Elegant interiors inspired by classic Punjabi heritage.</p>
-                </div>
-                <div className="rounded-xl border border-amber-200/60 bg-white/70 p-4">
+                  <p className="mt-2 text-amber-800/80 text-sm leading-relaxed">Elegant interiors inspired by classic Punjabi heritage.</p>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.45, delay: 0.2 }}
+                  className="min-h-[160px] rounded-[24px] bg-[linear-gradient(180deg,rgba(255,251,244,0.92)_0%,rgba(251,239,210,0.94)_100%)] p-6 shadow-[0_16px_40px_rgba(112,76,30,0.12)]"
+                >
                   <p className="text-amber-900 text-sm font-semibold">Instant Reservations</p>
-                  <p className="mt-1 text-amber-800/75 text-sm">Book your preferred slot online in seconds.</p>
-                </div>
+                  <p className="mt-2 text-amber-800/80 text-sm leading-relaxed">Book your preferred slot online in seconds.</p>
+                </motion.div>
               </div>
             </div>
           </motion.div>
         </section>
 
-        <section className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 mt-14">
+        <section className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 mt-0 -translate-y-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.25 }}
-            className="rounded-2xl border border-amber-200/50 p-5 sm:p-7 flex flex-wrap items-center justify-between gap-4 bg-gradient-to-r from-amber-50/80 to-yellow-50/80 shadow-lg"
+            className="flex flex-wrap items-center justify-between gap-4 bg-[linear-gradient(90deg,rgba(255,248,233,0.96)_0%,rgba(244,226,190,0.96)_100%)] px-6 py-5 shadow-[0_18px_36px_rgba(99,67,25,0.12)]"
           >
             <div className="flex items-center gap-2 text-amber-900">
               <Star className="text-amber-700" size={18} />
               <span className="text-lg sm:text-xl font-medium">4.8 rating | loved across London</span>
             </div>
-            <div className="inline-flex items-center gap-2 rounded-full border-2 border-amber-200 bg-white px-4 py-2 text-amber-800 text-sm font-medium">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-200/70 bg-white/80 px-4 py-2 text-amber-800 text-sm font-medium">
               <Clock3 size={15} className="text-amber-700" />
               Average online booking completion: 9 seconds
             </div>
@@ -132,19 +243,18 @@ export const HomePage = () => {
         </section>
 
         <section 
-  className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 mt-16 py-16 relative overflow-hidden rounded-2xl border border-amber-200/50 shadow-lg" 
-  id="popular-tables" 
-  style={{ 
-    backgroundImage: `
-      linear-gradient(135deg, rgba(40, 42, 60, 0.75) 0%, rgba(80, 60, 50, 0.65) 100%),
-      url('/popular-tables.png')
-    `,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat'
-  }}
->
- 
+          className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 mt-16 py-16 relative overflow-hidden rounded-2xl border border-amber-200/50 shadow-lg" 
+          id="popular-tables" 
+          style={{ 
+            backgroundImage: `
+              linear-gradient(135deg, rgba(40, 42, 60, 0.75) 0%, rgba(80, 60, 50, 0.65) 100%),
+              url('/popular-tables.png')
+            `,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
           <div className="relative z-10 flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>
               <span className="text-amber-700 text-xs font-bold tracking-widest uppercase">Tonight is filling fast</span>
