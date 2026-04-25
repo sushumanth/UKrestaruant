@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Clock3, Leaf, Plus, Search, ShoppingBag, Star } from 'lucide-react';
+import { Clock3, Leaf, Minus, Plus, Search, ShoppingBag, Star } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '@/lib/mockData';
@@ -89,7 +89,7 @@ const menuItems: MenuItem[] = [
     description: 'Saffron basmati layered with vegetables and herbs.',
     price: 12.2,
     category: 'biryani',
-    image: '/backgroundtheme.png',
+    image: '/backgroundtheme1.png',
     rating: 4.6,
     prepTime: 20,
     isVeg: true,
@@ -119,7 +119,7 @@ const menuItems: MenuItem[] = [
 ];
 
 export const MenuPage = () => {
-  const { items, addItem } = useMenuCartStore();
+  const { items, addItem, updateItemQuantity } = useMenuCartStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<MenuCategory | 'all'>('all');
 
@@ -147,12 +147,21 @@ export const MenuPage = () => {
     [items],
   );
 
+  const itemQuantityById = useMemo(
+    () =>
+      items.reduce<Record<string, number>>((acc, item) => {
+        acc[item.id] = item.quantity;
+        return acc;
+      }, {}),
+    [items],
+  );
+
   return (
     <div className="min-h-screen bg-[#f8f0e1] pt-24 text-[#2d241b]">
       <div className="mx-auto max-w-7xl px-5 pb-16 sm:px-6 lg:px-8">
         <section className="rounded-[30px] border border-[#ead6b8] bg-[linear-gradient(135deg,#7a2418_0%,#a63d1e_45%,#f0c975_100%)] p-6 text-[#fff6e4] shadow-[0_18px_46px_rgba(79,39,13,0.18)] sm:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Order Online</p>
-          <h1 className="mt-2 font-serif text-[clamp(36px,6vw,62px)] leading-[0.95] text-white">
+          <h1 className="mt-2 font-serif text-[clamp(34px,8.5vw,62px)] leading-[0.95] text-white sm:text-[clamp(36px,6vw,62px)]">
             Punjabi menu, delivered fast
           </h1>
           <p className="mt-3 max-w-2xl text-sm text-white/85 sm:text-base">
@@ -194,42 +203,75 @@ export const MenuPage = () => {
           </div>
         </section>
 
-        <section className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <section className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-2 xl:grid-cols-4">
           {filteredItems.map((item) => (
             <motion.article
               key={item.id}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="overflow-hidden rounded-3xl border border-[#ead7ba] bg-[#fffaf1] shadow-[0_16px_34px_rgba(83,50,17,0.06)]"
+              className="overflow-hidden rounded-2xl border border-[#ead7ba] bg-[#fffaf1] shadow-[0_12px_26px_rgba(83,50,17,0.07)] sm:rounded-3xl sm:shadow-[0_16px_34px_rgba(83,50,17,0.06)]"
             >
-              <img src={item.image} alt={item.name} className="h-48 w-full object-cover" loading="lazy" />
-              <div className="p-5">
+              <img src={item.image} alt={item.name} className="h-28 w-full object-cover sm:h-48" loading="lazy" />
+              <div className="p-3 sm:p-5">
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="font-serif text-2xl leading-tight text-[#2d2319]">{item.name}</h3>
-                    <p className="mt-2 text-sm text-[#6f5f4a]">{item.description}</p>
+                  <div className="min-w-0">
+                    <h3 className="font-serif text-[clamp(18px,4.8vw,28px)] leading-[0.95] text-[#2d2319] sm:text-2xl">
+                      {item.name}
+                    </h3>
+                    <p className="mt-1 text-[12px] leading-[1.35] text-[#6f5f4a] sm:mt-2 sm:text-sm">
+                      <span className="sm:hidden">
+                        {item.description.length > 52
+                          ? `${item.description.slice(0, 52).trimEnd()}...`
+                          : item.description}
+                      </span>
+                      <span className="hidden sm:inline">{item.description}</span>
+                    </p>
                   </div>
                   {item.isVeg && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-[#e7f8e7] px-2.5 py-1 text-xs font-semibold text-[#2d7a2d]">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#e7f8e7] px-2 py-0.5 text-[10px] font-semibold text-[#2d7a2d] sm:px-2.5 sm:py-1 sm:text-xs">
                       <Leaf size={12} /> Veg
                     </span>
                   )}
                 </div>
 
-                <div className="mt-4 flex items-center justify-between text-sm text-[#7d6a57]">
-                  <span className="inline-flex items-center gap-1"><Star size={14} className="text-[#b9832f]" /> {item.rating.toFixed(1)}</span>
-                  <span className="inline-flex items-center gap-1"><Clock3 size={14} /> {item.prepTime} min</span>
+                <div className="mt-3 flex items-center justify-between text-[12px] text-[#7d6a57] sm:mt-4 sm:text-sm">
+                  <span className="inline-flex items-center gap-1"><Star size={13} className="text-[#b9832f] sm:h-[14px] sm:w-[14px]" /> {item.rating.toFixed(1)}</span>
+                  <span className="inline-flex items-center gap-1"><Clock3 size={13} className="sm:h-[14px] sm:w-[14px]" /> {item.prepTime} min</span>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="text-lg font-semibold text-[#7d2419]">{formatCurrency(item.price)}</span>
-                  <button
-                    type="button"
-                    onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
-                    className="inline-flex items-center gap-2 rounded-full bg-[#7d2419] px-4 py-2 text-sm font-semibold text-[#fff3df] transition-colors hover:bg-[#942d21]"
-                  >
-                    <Plus size={14} /> Add
-                  </button>
+                <div className="mt-3 flex items-center justify-between sm:mt-4">
+                  <span className="text-xl font-semibold text-[#7d2419] sm:text-lg">{formatCurrency(item.price)}</span>
+                  {itemQuantityById[item.id] ? (
+                    <div className="inline-flex items-center rounded-full border border-[#8f2a1d] bg-[#7d2419] p-1 text-[#fff3df] shadow-[0_4px_12px_rgba(60,20,10,0.2)]">
+                      <button
+                        type="button"
+                        onClick={() => updateItemQuantity(item.id, itemQuantityById[item.id] - 1)}
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21]"
+                        aria-label={`Decrease quantity of ${item.name}`}
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <span className="min-w-[22px] text-center text-sm font-bold leading-none">
+                        {itemQuantityById[item.id]}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21]"
+                        aria-label={`Increase quantity of ${item.name}`}
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[#7d2419] px-3 py-1.5 text-sm font-semibold text-[#fff3df] transition-colors hover:bg-[#942d21] sm:gap-2 sm:px-4 sm:py-2"
+                    >
+                      <Plus size={14} /> Add
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.article>

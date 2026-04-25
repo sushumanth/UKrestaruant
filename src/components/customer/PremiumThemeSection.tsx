@@ -212,7 +212,7 @@ export const PremiumThemeSection = () => {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, amount: 0.2 }}
                       transition={{ duration: 0.4, delay: i * 0.07, ease: 'easeOut' }}
-                      className="w-[min(84vw,340px)] shrink-0 snap-start sm:w-[320px] lg:w-[350px]"
+                      className="w-[calc((100%-0.75rem)/2)] min-w-[140px] shrink-0 snap-start sm:w-[320px] sm:min-w-0 lg:w-[350px]"
                       style={{
                         filter:
                           'drop-shadow(0 10px 22px rgba(80,40,0,0.12)) drop-shadow(0 0 0.5px rgba(196,160,83,0.9))',
@@ -223,7 +223,7 @@ export const PremiumThemeSection = () => {
                         className="group flex cursor-default flex-col"
                         style={{ clipPath: 'url(#mughal-card)', background: '#faf4e6' }}
                       >
-                        <div className="relative w-full overflow-hidden" style={{ paddingTop: '70%' }}>
+                        <div className="relative w-full overflow-hidden pt-[78%] sm:pt-[70%]">
                           <img
                             src={dish.image}
                             alt={dish.name}
@@ -235,20 +235,25 @@ export const PremiumThemeSection = () => {
                         </div>
 
                         <div
-                          className="flex flex-col items-center px-5 pb-6 pt-4 text-center"
+                          className="flex flex-col items-center px-3 pb-4 pt-3 text-center sm:px-5 sm:pb-6 sm:pt-4"
                           style={{ borderTop: '1px solid #e8d09a', background: '#faf4e6' }}
                         >
-                          <h3 className="font-serif text-[clamp(18px,1.8vw,24px)] font-normal leading-tight text-[#2a1e0e]">
+                          <h3 className="font-serif text-[17px] font-normal leading-tight text-[#2a1e0e] sm:text-[clamp(18px,1.8vw,24px)]">
                             {dish.name}
                           </h3>
 
-                          <p className="mt-2 min-h-[38px] px-1 text-[12px] leading-relaxed text-[#6b4f2a] sm:text-[13px]">
-                            {dish.description}
+                          <p className="mt-1.5 min-h-[40px] px-1 text-[10.5px] leading-relaxed text-[#6b4f2a] sm:mt-2 sm:min-h-[38px] sm:text-[13px]">
+                            <span className="sm:hidden">
+                              {dish.description.length > 40
+                                ? `${dish.description.slice(0, 40).trimEnd()}...`
+                                : dish.description}
+                            </span>
+                            <span className="hidden sm:inline">{dish.description}</span>
                           </p>
 
                           <Link
                             to="/menu"
-                            className="mt-4 inline-flex items-center rounded border border-[#c4a053] bg-[#ecd9a8] px-6 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[#3d2806] transition-colors hover:bg-[#dabb80]"
+                            className="mt-3 inline-flex items-center rounded border border-[#c4a053] bg-[#ecd9a8] px-4 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-[#3d2806] transition-colors hover:bg-[#dabb80] sm:mt-4 sm:px-6 sm:py-2 sm:text-[10px] sm:tracking-[0.12em]"
                           >
                             Order Now
                           </Link>
@@ -262,41 +267,47 @@ export const PremiumThemeSection = () => {
 
             {/* ── CTA row ── */}
             <div className="mt-10 grid gap-3 md:grid-cols-2">
-              {/* Order Online */}
-              <div className="relative min-h-[90px] overflow-hidden rounded-2xl border border-[#6f2f22] bg-[#3a0808] p-5 sm:min-h-[90px] sm:p-5">
-                <div className="absolute inset-y-0 right-0 w-[60%] p-0.5 sm:p-0.5">
-                  <img
-                    src="/bookorderimg.png"
-                    alt="Order online Punjabi food"
-                    className="h-full w-full object-contain object-right-bottom"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(47,6,6,0.96)_0%,rgba(74,11,10,0.9)_47%,rgba(85,14,12,0.45)_74%,rgba(85,14,12,0.2)_100%)]" />
+             <div className="relative w-full min-h-[220px] overflow-hidden rounded-2xl border border-[#6f2f22]">
 
-                <div className="relative z-10 max-w-[17rem] sm:max-w-[19rem]">
-                  <h3 className="font-serif text-[clamp(22px,2.7vw,32px)] font-normal leading-tight text-[#f4dfb4]">
-                    Order Online
-                  </h3>
-                  <p className="mt-2 max-w-sm text-[12px] leading-relaxed text-[#f5e8cc]/90 sm:text-[13px]">
-                    Enjoy your favourite Punjabi dishes at home with quick London delivery.
-                  </p>
-                  <Link
-                    to="/menu"
-                    className="mt-4 inline-flex items-center gap-2 rounded-lg border border-[#c8994b] bg-[rgba(63,8,8,0.55)] px-5 py-2 text-[10px] font-bold uppercase tracking-[0.1em] text-[#f8e3b8] transition-colors hover:bg-[rgba(94,16,16,0.6)]"
-                  >
-                    <ShoppingBag size={14} />
-                    Order Now
-                  </Link>
-                </div>
-              </div>
+  {/* Image (pushed more right) */}
+  <img
+    src="/bookorderimg.png"
+    alt="Order online Punjabi food"
+    className="absolute inset-0 w-full h-full object-cover object-[75%_center]"
+    loading="lazy"
+  />
+
+  {/* Stronger left protection gradient */}
+  <div className="absolute inset-0 bg-[linear-gradient(100deg,rgba(20,4,4,0.97)_0%,rgba(40,8,8,0.9)_35%,rgba(60,12,10,0.55)_60%,rgba(0,0,0,0)_85%)]" />
+
+  {/* Content */}
+  <div className="relative z-10 p-6 sm:p-8 max-w-[420px]">
+    
+    <h3 className="font-serif text-[clamp(26px,2.8vw,36px)] text-[#f4dfb4] leading-tight">
+      Order Online
+    </h3>
+
+    <p className="mt-3 text-[13px] text-[#f5e8cc]/90 leading-relaxed">
+      Enjoy your favourite Punjabi dishes at home with quick London delivery.
+    </p>
+
+    <Link
+      to="/menu"
+      className="mt-5 inline-flex items-center gap-2 rounded-lg border border-[#c8994b] bg-[#3f0808]/70 px-5 py-2 text-xs font-bold uppercase tracking-wide text-[#f8e3b8] hover:bg-[#5a1212]/80 transition"
+    >
+      <ShoppingBag size={14} />
+      Order Now
+    </Link>
+
+  </div>
+</div>
 
               {/* Book a Table */}
               <div
                 className="relative overflow-hidden rounded-2xl border border-[#1f4e43] p-5 sm:p-6"
                 style={{
                   backgroundImage:
-                    "linear-gradient(115deg,rgba(8,40,34,0.94),rgba(15,58,49,0.42)), url('/dining_room.jpg')",
+                    "linear-gradient(115deg,rgba(8,40,34,0.8),rgba(15,58,49,0)), url('/tablecard.png')",
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                 }}

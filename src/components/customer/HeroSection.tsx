@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion';
+import { gsap } from 'gsap';
 import { ArrowRight, CalendarClock, Clock3, PhoneCall } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const operatingHighlights = [
@@ -31,11 +33,40 @@ const operatingHighlights = [
 ];
 
 export const HeroSection = () => {
+  const heroTitle = 'An Indian Punjabi Restaurant';
+  const [typedHeroTitle, setTypedHeroTitle] = useState('');
+
+  useEffect(() => {
+    const typingState = { chars: 0 };
+
+    const timeline = gsap.timeline({ repeat: -1, repeatDelay: 0.2 });
+    timeline
+      .to(typingState, {
+        chars: heroTitle.length,
+        duration: 2.1,
+        ease: 'none',
+        onUpdate: () => {
+          setTypedHeroTitle(heroTitle.slice(0, Math.floor(typingState.chars)));
+        },
+      })
+      .to({}, { duration: 0.9 })
+      .set(typingState, {
+        chars: 0,
+        onComplete: () => {
+          setTypedHeroTitle('');
+        },
+      });
+
+    return () => {
+      timeline.kill();
+    };
+  }, [heroTitle]);
+
   return (
-    <section className="relative overflow-hidden bg-[#140705] pt-20 lg:min-h-screen lg:pt-28">
+    <section className="relative overflow-hidden bg-[#140705] pt-16 sm:pt-20 lg:min-h-screen lg:pt-28">
       <div className="absolute inset-0">
         <img
-          src="https://images.pexels.com/photos/34779147/pexels-photo-34779147.jpeg"
+          src="\heroimg.png"
           alt="Authentic Punjabi dining in London"
           className="h-full w-full object-cover object-center"
           loading="eager"
@@ -51,43 +82,78 @@ export const HeroSection = () => {
           transition={{ duration: 0.65, ease: 'easeOut' }}
           className="max-w-[36rem]"
         >
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#d2aa64] sm:text-[11px] sm:tracking-[0.22em]">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#d2aa64] sm:mb-3 sm:text-[11px] sm:tracking-[0.22em]">
             Authentic Punjabi Dining Experience
           </p>
-         <motion.svg
+
+          <div className="sm:hidden">
+            <div className="relative">
+              <span
+                aria-hidden="true"
+                className="invisible block font-serif text-[clamp(46px,12vw,64px)] font-bold italic leading-[0.92] tracking-[-0.035em]"
+              >
+                {heroTitle}
+              </span>
+              <h1
+                className="absolute inset-0 font-serif text-[clamp(46px,12vw,64px)] font-bold italic leading-[0.92] tracking-[-0.035em] text-[#f6dba4]"
+                style={{
+                  textShadow: '0 6px 20px rgba(0,0,0,0.45)',
+                }}
+              >
+                {typedHeroTitle}
+              </h1>
+            </div>
+            <p
+              className="mt-1.5 font-serif text-[clamp(46px,11.2vw,62px)] font-bold leading-[0.9] tracking-[-0.03em] text-[#f6dba4]"
+              style={{
+                textShadow: '0 4px 12px rgba(0,0,0,0.3)',
+              }}
+            >
+              Experience in London
+            </p>
+          </div>
+
+          <motion.svg
   viewBox="0 0 860 240"
-  className="w-full max-w-[820px] overflow-visible"
+  className="hidden w-full max-w-[820px] overflow-visible sm:block"
   preserveAspectRatio="xMinYMin meet"
   role="img"
-  aria-label="A Royal Punjabi Experience in London"
+  aria-label="Indian Punjabi Restaurant in London - A Royal Punjabi Experience"
   initial={{ opacity: 0 }}
   animate={{ opacity: 1 }}
   transition={{ duration: 0.6 }}
 >
   {/* First Line */}
   <motion.text
-    x="0"
-    y="98"
-    className="font-serif text-[92px] font-bold tracking-[-0.02em] drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]"
-    fill="#f6dba4"
-    stroke="#f6dba4"
-    strokeWidth="1.5"
-    initial={{ 
-      strokeDasharray: 800, 
-      strokeDashoffset: 800, 
-      fill: "rgba(246, 219, 164, 0)" 
-    }}
-    animate={{ 
-      strokeDashoffset: 0, 
-      fill: "#f6dba4" 
-    }}
-    transition={{ 
-      duration: 1.4, 
-      ease: [0.25, 0.1, 0.25, 1] 
-    }}
-  >
-    A Royal Punjabi
-  </motion.text>
+  x="0"
+  y="98"
+  className="font-serif text-[92px] font-bold tracking-[-0.03em]"
+  fill="#f6dba4"
+  stroke="#f6dba4"
+  strokeWidth="1.8"
+  style={{
+    fontFamily: "'Playfair Display', 'Great Vibes', 'Dancing Script', Blackadder ITC", // Fallback cursive fonts
+    fontStyle: "italic",
+    textShadow: "0 6px 20px rgba(0,0,0,0.45)",
+  }}
+  initial={{
+    strokeDasharray: 1200,
+    strokeDashoffset: 1200,
+    fill: "rgba(246, 219, 164, 0)",
+    opacity: 0.6,
+  }}
+  animate={{
+    strokeDashoffset: 0,
+    fill: "#f6dba4",
+    opacity: 1,
+  }}
+  transition={{
+    duration: 2.2,
+    ease: [0.25, 0.1, 0.25, 1],
+  }}
+>
+  {typedHeroTitle}
+</motion.text>
 
   {/* Second Line */}
   <motion.text
@@ -115,23 +181,23 @@ export const HeroSection = () => {
     Experience in London
   </motion.text>
 </motion.svg>
-          <p className="mt-4 max-w-[32rem] text-[clamp(16px,4.8vw,21px)] leading-relaxed text-[#f3e4c2] sm:mt-5 sm:text-[clamp(15px,1.7vw,21px)]">
+          <p className="mt-4 max-w-[32rem] text-[clamp(15px,5vw,19px)] leading-relaxed text-[#f3e4c2] sm:mt-5 sm:text-[clamp(15px,1.7vw,21px)]">
             Where timeless recipes meet refined elegance. Indulge in rich, authentic flavours crafted with tradition, served in a setting designed for unforgettable evenings.
           </p>
-          <p className="mt-3 max-w-[32rem] text-sm leading-relaxed text-[#e7d6b0]">
+          <p className="mt-3 max-w-[32rem] text-[clamp(15px,4.1vw,18px)] leading-relaxed text-[#e7d6b0] sm:text-sm">
             Perfect for family celebrations, date nights, and premium dining experiences across London.
           </p>
 
           <div className="mt-7 flex flex-col gap-3.5 sm:mt-8 sm:flex-row sm:flex-wrap">
             <Link
               to="/menu"
-              className="inline-flex w-fit items-center justify-center gap-2 rounded-xl border border-[#7a3e19] bg-[linear-gradient(90deg,#67130f,#7d1712)] px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#7b1913,#94221a)] sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#7a3e19] bg-[linear-gradient(90deg,#67130f,#7d1712)] px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#7b1913,#94221a)] sm:w-auto"
             >
               Order Online
             </Link>
             <Link
               to="/book"
-              className="inline-flex w-fit items-center justify-center gap-2 rounded-xl border border-[#1e6a4f] bg-[linear-gradient(90deg,#0f3328,#124437)] px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#134132,#1a5a47)] sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#1e6a4f] bg-[linear-gradient(90deg,#0f3328,#124437)] px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#134132,#1a5a47)] sm:w-auto"
             >
               Book Your Table <ArrowRight size={16} />
             </Link>
