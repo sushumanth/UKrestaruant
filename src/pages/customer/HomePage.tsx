@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { HeroSection } from '@/components/customer/HeroSection';
+import { AboutJourneySection } from '@/components/customer/AboutJourneySection';
 import { PremiumThemeSection } from '@/components/customer/PremiumThemeSection';
 import { RoyalExperienceSection } from '@/components/customer/RoyalExperienceSection';
 import { AnimatedFoodDoodle } from '@/components/customer/AnimatedFoodDoodle';
@@ -186,6 +187,8 @@ export const HomePage = () => {
             </div>
           </motion.div>
         </section>
+
+        <AboutJourneySection />
 
         <section className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 mt-0 -translate-y-6">
           <motion.div

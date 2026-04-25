@@ -266,6 +266,15 @@ export const HeroSection = () => {
           </motion.p>
 
           <motion.div
+            initial={{ opacity: 0, y: playIntro ? 14 : 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: playIntro ? 0.6 : 0.35, delay: playIntro ? 0.42 : 0.12, ease: 'easeOut' }}
+            className="mb-3 inline-flex rounded-full border border-[#cfa664]/45 bg-[linear-gradient(120deg,rgba(24,13,8,0.78),rgba(12,8,5,0.66))] px-3.5 py-1.5 text-[9.5px] font-semibold uppercase tracking-[0.14em] text-[#f2d7a1] shadow-[0_6px_16px_rgba(0,0,0,0.28)] sm:hidden"
+          >
+            Proudly Non-Halal Restaurant
+          </motion.div>
+
+          <motion.div
             initial={{ opacity: 0, y: playIntro ? 24 : 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: playIntro ? 0.9 : 0.45, delay: playIntro ? 0.48 : 0.14, ease: 'easeOut' }}
