@@ -1,5 +1,4 @@
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'framer-motion';
-import { gsap } from 'gsap';
 import { ArrowRight, CalendarClock, Clock3, PhoneCall } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -54,8 +53,6 @@ const floatingFoodAccents = [
 ];
 
 export const HeroSection = () => {
-  const heroTitle = 'An Indian Punjabi Restaurant';
-  const [typedHeroTitle, setTypedHeroTitle] = useState('');
   const [playIntro, setPlayIntro] = useState(false);
   const prefersReducedMotion = useReducedMotion();
 
@@ -88,31 +85,7 @@ export const HeroSection = () => {
     }
   }, [prefersReducedMotion]);
 
-  useEffect(() => {
-    const typingState = { chars: 0 };
 
-    const timeline = gsap.timeline({ repeat: -1, repeatDelay: 0.2 });
-    timeline
-      .to(typingState, {
-        chars: heroTitle.length,
-        duration: 2.1,
-        ease: 'none',
-        onUpdate: () => {
-          setTypedHeroTitle(heroTitle.slice(0, Math.floor(typingState.chars)));
-        },
-      })
-      .to({}, { duration: 0.9 })
-      .set(typingState, {
-        chars: 0,
-        onComplete: () => {
-          setTypedHeroTitle('');
-        },
-      });
-
-    return () => {
-      timeline.kill();
-    };
-  }, [heroTitle]);
 
   const handlePointerMove = (event: React.MouseEvent<HTMLElement>) => {
     if (prefersReducedMotion) return;
@@ -274,121 +247,136 @@ export const HeroSection = () => {
             Proudly Non-Halal Restaurant
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: playIntro ? 24 : 10 }}
+          <motion.svg
+            viewBox="0 0 900 280"
+            className="w-full max-w-2xl overflow-visible"
+            preserveAspectRatio="xMinYMid meet"
+            role="img"
+            aria-label="An Indian Punjabi Restaurant - Experience in London"
+            initial={{ opacity: 0, y: playIntro ? 18 : 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: playIntro ? 0.9 : 0.45, delay: playIntro ? 0.48 : 0.14, ease: 'easeOut' }}
-            className="sm:hidden"
+            transition={{ duration: playIntro ? 0.8 : 0.5, delay: playIntro ? 0.48 : 0.16, ease: 'easeOut' }}
           >
-            <div className="relative">
-              <span
-                aria-hidden="true"
-                className="invisible block font-serif text-[clamp(46px,12vw,64px)] font-bold italic leading-[0.92] tracking-[-0.035em]"
-              >
-                {heroTitle}
-              </span>
-              <h1
-                className="absolute inset-0 font-serif text-[clamp(46px,12vw,64px)] font-bold italic leading-[0.92] tracking-[-0.035em] text-[#f6dba4]"
-                style={{
-                  textShadow: '0 6px 20px rgba(0,0,0,0.45)',
-                }}
-              >
-                {typedHeroTitle}
-              </h1>
-            </div>
-            <p
-              className="mt-1.5 font-serif text-[clamp(46px,11.2vw,62px)] font-bold leading-[0.9] tracking-[-0.03em] text-[#f6dba4]"
+            <defs>
+              <linearGradient id="heroTitleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#f9e3b3" />
+                <stop offset="50%" stopColor="#f2d7a1" />
+                <stop offset="100%" stopColor="#e8c98d" />
+              </linearGradient>
+              <filter id="heroTitleGlow" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="3" result="softGlow" />
+                <feColorMatrix in="softGlow" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.35 0" />
+                <feMerge>
+                  <feMergeNode />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+
+            {/* Line 1: An Indian Punjabi */}
+            <motion.text
+              x="0"
+              y="70"
+              fill="url(#heroTitleGradient)"
+              stroke="#f7d89f"
+              strokeWidth="0.8"
+              filter="url(#heroTitleGlow)"
               style={{
-                textShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                fontFamily: "'Playfair Display', 'Georgia', serif",
+                fontSize: '56px',
+                fontWeight: '700',
+                fontStyle: 'italic',
+                letterSpacing: '-0.02em',
+              }}
+              initial={{
+                strokeDasharray: 600,
+                strokeDashoffset: 600,
+                fill: 'rgba(246, 219, 164, 0)',
+              }}
+              animate={{
+                strokeDashoffset: 0,
+                fill: 'url(#heroTitleGradient)',
+              }}
+              transition={{
+                duration: playIntro ? 1.4 : 0.9,
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
+            >
+              An Indian Punjabi
+            </motion.text>
+
+            {/* Line 2: Restaurant */}
+            <motion.text
+              x="0"
+              y="135"
+              fill="url(#heroTitleGradient)"
+              stroke="#f7d89f"
+              strokeWidth="0.8"
+              filter="url(#heroTitleGlow)"
+              style={{
+                fontFamily: "'Playfair Display', 'Georgia', serif",
+                fontSize: '56px',
+                fontWeight: '700',
+                fontStyle: 'italic',
+                letterSpacing: '-0.02em',
+              }}
+              initial={{
+                strokeDasharray: 400,
+                strokeDashoffset: 400,
+                fill: 'rgba(246, 219, 164, 0)',
+              }}
+              animate={{
+                strokeDashoffset: 0,
+                fill: 'url(#heroTitleGradient)',
+              }}
+              transition={{
+                duration: playIntro ? 1.2 : 0.8,
+                delay: playIntro ? 0.1 : 0.05,
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
+            >
+              Restaurant
+            </motion.text>
+
+            {/* Line 3: Experience in London (Script) */}
+            <motion.text
+              x="0"
+              y="210"
+              fill="url(#heroTitleGradient)"
+              stroke="#f7d89f"
+              strokeWidth="0.9"
+              filter="url(#heroTitleGlow)"
+              style={{
+                fontFamily: "'Palace Script MT', 'Brush Script MT', 'Segoe Script', cursive",
+                fontSize: '48px',
+                fontStyle: 'italic',
+                letterSpacing: '-0.01em',
+              }}
+              initial={{
+                strokeDasharray: 450,
+                strokeDashoffset: 450,
+                fill: 'rgba(246, 219, 164, 0)',
+              }}
+              animate={{
+                strokeDashoffset: 0,
+                fill: 'url(#heroTitleGradient)',
+              }}
+              transition={{
+                duration: playIntro ? 1 : 0.7,
+                delay: playIntro ? 0.2 : 0.08,
+                ease: [0.25, 0.1, 0.25, 1],
               }}
             >
               Experience in London
-            </p>
-          </motion.div>
-
-          <motion.svg
-  viewBox="0 0 860 240"
-  className="hidden w-full max-w-[820px] overflow-visible sm:block"
-  preserveAspectRatio="xMinYMin meet"
-  role="img"
-  aria-label="Indian Punjabi Restaurant in London - A Royal Punjabi Experience"
-  initial={{ opacity: 0, y: playIntro ? 18 : 8 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: playIntro ? 0.8 : 0.45, delay: playIntro ? 0.52 : 0.12, ease: 'easeOut' }}
->
-  {/* First Line */}
-  <motion.text
-  x="0"
-  y="98"
-  className="font-serif text-[92px] font-bold tracking-[-0.03em]"
-  fill="#f6dba4"
-  stroke="#f6dba4"
-  strokeWidth="1.8"
-  style={{
-    fontFamily: "'Playfair Display', 'Great Vibes', 'Dancing Script', Blackadder ITC", // Fallback cursive fonts
-    fontStyle: "italic",
-    textShadow: "0 6px 20px rgba(0,0,0,0.45)",
-  }}
-  initial={{
-    strokeDasharray: 1200,
-    strokeDashoffset: 1200,
-    fill: "rgba(246, 219, 164, 0)",
-    opacity: 0.6,
-  }}
-  animate={{
-    strokeDashoffset: 0,
-    fill: "#f6dba4",
-    opacity: 1,
-  }}
-  transition={{
-    duration: playIntro ? 1.6 : 1,
-    ease: [0.25, 0.1, 0.25, 1],
-  }}
->
-  {typedHeroTitle}
-</motion.text>
-
-  {/* Second Line */}
-  <motion.text
-    x="0"
-    y="198"
-    className="font-serif text-[92px] font-bold tracking-[-0.02em] drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]"
-    fill="#f6dba4"
-    stroke="#f6dba4"
-    strokeWidth="1.5"
-    initial={{ 
-      strokeDasharray: 900, 
-      strokeDashoffset: 900, 
-      fill: "rgba(246, 219, 164, 0)" 
-    }}
-    animate={{ 
-      strokeDashoffset: 0, 
-      fill: "#f6dba4" 
-    }}
-    transition={{ 
-      duration: playIntro ? 1.1 : 0.8, 
-      delay: playIntro ? 0.15 : 0.05, 
-      ease: [0.25, 0.1, 0.25, 1] 
-    }}
-  >
-    Experience in London
-  </motion.text>
-</motion.svg>
+            </motion.text>
+          </motion.svg>
           <motion.p
             initial={{ opacity: 0, y: playIntro ? 16 : 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: playIntro ? 0.7 : 0.4, delay: playIntro ? 0.78 : 0.2, ease: 'easeOut' }}
-            className="mt-4 max-w-[32rem] text-[clamp(15px,5vw,19px)] leading-relaxed text-[#f3e4c2] sm:mt-5 sm:text-[clamp(15px,1.7vw,21px)]"
+            transition={{ duration: playIntro ? 0.75 : 0.45, delay: playIntro ? 1.1 : 0.3, ease: 'easeOut' }}
+            className="mt-6 max-w-[36rem] text-[clamp(14px,5vw,17px)] leading-relaxed text-[#e8d8bc] sm:mt-7 sm:text-[15px]"
           >
-            Where timeless recipes meet refined elegance. Indulge in rich, authentic flavours crafted with tradition, served in a setting designed for unforgettable evenings.
-          </motion.p>
-          <motion.p
-            initial={{ opacity: 0, y: playIntro ? 14 : 7 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: playIntro ? 0.6 : 0.35, delay: playIntro ? 0.9 : 0.24, ease: 'easeOut' }}
-            className="mt-3 max-w-[32rem] text-[clamp(15px,4.1vw,18px)] leading-relaxed text-[#e7d6b0] sm:text-sm"
-          >
-            Perfect for family celebrations, date nights, and premium dining experiences across London.
+           Traditional flavours, Royal ambiance - A true taste of Punjab in the heart of London. Experience the rich heritage and vibrant culture of India with every bite.
           </motion.p>
 
           <motion.div

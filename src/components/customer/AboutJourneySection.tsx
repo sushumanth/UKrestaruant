@@ -18,28 +18,28 @@ const journeySteps: JourneyStep[] = [
   {
     title: 'Market-Fresh Sourcing',
     description: 'Premium produce and handpicked spices arrive fresh each morning.',
-    image: '/FreshlyGround.png',
+    image: '/Market-Fresh.png',
     top: '42%',
     left: '14%',
   },
   {
     title: 'Kitchen Craftsmanship',
     description: 'Our chefs slow-cook gravies and roast masalas with precision.',
-    image: '/kitchen_team.jpg',
+    image: '/KitchenCraftsmanship.png',
     top: '16%',
     left: '33%',
   },
   {
     title: 'Signature Plating',
     description: 'Every dish is plated with modern elegance and royal warmth.',
-    image: '/chef_plating.jpg',
+    image: '/SignaturePlating.png',
     top: '38%',
     left: '56%',
   },
   {
     title: 'Luxury Dining Room',
     description: 'A refined ambience curated for memorable evenings in London.',
-    image: '/RoyalAmbiance.png',
+    image: '/lucry-dinning.png',
     top: '12%',
     left: '78%',
   },
@@ -166,7 +166,15 @@ export const AboutJourneySection = () => {
           <div className="relative">
             <span className="absolute inset-0 rounded-full bg-[#cb9548]/35 blur-lg" />
             <div className="relative flex h-14 w-14 items-center justify-center rounded-full border border-[#c99753] bg-[linear-gradient(135deg,#2f1b10,#5b3518)] shadow-[0_8px_18px_rgba(40,20,8,0.35)]">
-              <img src="/logoImg.png" alt="Journey marker" className="h-8 w-8 object-contain" loading="lazy" draggable={false} />
+              <span className="inline-flex h-10 w-10 overflow-hidden rounded-full border border-[#d7aa62]/65 bg-[#1a0d06]">
+                <img
+                  src="/logosolo.png"
+                  alt="Journey marker"
+                  className="h-full w-full scale-[1.16] object-cover"
+                  loading="lazy"
+                  draggable={false}
+                />
+              </span>
             </div>
           </div>
         </div>

@@ -117,11 +117,14 @@ export const LoginPage = () => {
       <div className="w-full max-w-md relative z-10">
         {/* Logo */}
         <div className="text-center mb-10">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <span className="font-mono text-xs uppercase tracking-[0.14em] text-amber-700">
-              LUXE
-            </span>
-            <span className="font-serif text-2xl text-amber-900">RESERVE</span>
+          <div className="mb-4 flex items-center justify-center">
+            <img
+              src="/logo.png"
+              alt="LuxeReserve"
+              className="h-16 w-auto max-w-[230px] object-contain drop-shadow-[0_4px_10px_rgba(109,70,20,0.2)]"
+              loading="eager"
+              draggable={false}
+            />
           </div>
           <p className="text-amber-700/60">Staff Portal</p>
         </div>

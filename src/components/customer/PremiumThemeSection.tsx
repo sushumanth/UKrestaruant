@@ -220,7 +220,7 @@ export const PremiumThemeSection = () => {
                       }}
                     >
                       <article
-                        className="group flex cursor-default flex-col"
+                        className="group flex h-full cursor-default flex-col"
                         style={{ clipPath: 'url(#mughal-card)', background: '#faf4e6' }}
                       >
                         <div className="relative w-full overflow-hidden pt-[78%] sm:pt-[70%]">
@@ -235,10 +235,10 @@ export const PremiumThemeSection = () => {
                         </div>
 
                         <div
-                          className="flex flex-col items-center px-3 pb-4 pt-3 text-center sm:px-5 sm:pb-6 sm:pt-4"
+                          className="flex flex-1 flex-col items-center px-3 pb-4 pt-3 text-center sm:px-5 sm:pb-6 sm:pt-4"
                           style={{ borderTop: '1px solid #e8d09a', background: '#faf4e6' }}
                         >
-                          <h3 className="font-serif text-[17px] font-normal leading-tight text-[#2a1e0e] sm:text-[clamp(18px,1.8vw,24px)]">
+                          <h3 className="min-h-[44px] font-serif text-[17px] font-normal leading-tight text-[#2a1e0e] sm:min-h-[58px] sm:text-[clamp(18px,1.8vw,24px)]">
                             {dish.name}
                           </h3>
 
@@ -253,7 +253,7 @@ export const PremiumThemeSection = () => {
 
                           <Link
                             to="/menu"
-                            className="mt-3 inline-flex items-center rounded border border-[#c4a053] bg-[#ecd9a8] px-4 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-[#3d2806] transition-colors hover:bg-[#dabb80] sm:mt-4 sm:px-6 sm:py-2 sm:text-[10px] sm:tracking-[0.12em]"
+                            className="mt-auto inline-flex items-center rounded border border-[#c4a053] bg-[#ecd9a8] px-4 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-[#3d2806] transition-colors hover:bg-[#dabb80] sm:mt-4 sm:px-6 sm:py-2 sm:text-[10px] sm:tracking-[0.12em]"
                           >
                             Order Now
                           </Link>

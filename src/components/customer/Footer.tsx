@@ -8,11 +8,14 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}
           <div>
-            <Link to="/" className="flex items-center gap-2 mb-6">
-              <span className="font-mono text-xs uppercase tracking-[0.14em] text-[#C8AE6A]">
-                LUXE
-              </span>
-              <span className="font-serif text-xl text-[#F4F6FA]">RESERVE</span>
+            <Link to="/" className="mb-6 inline-flex items-center">
+              <img
+                src="/logo.png"
+                alt="LuxeReserve"
+                className="h-12 w-auto max-w-[200px] object-contain drop-shadow-[0_4px_14px_rgba(0,0,0,0.35)]"
+                loading="lazy"
+                draggable={false}
+              />
             </Link>
             <p className="text-[#AFB8C8] text-sm leading-relaxed">
               A curated dining experience in the heart of Manchester. 

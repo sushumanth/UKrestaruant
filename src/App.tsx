@@ -232,14 +232,7 @@ function App() {
   }, []);
 
   if (!isInitialized) {
-    return (
-      <div className="min-h-screen bg-[#0B0C0F] flex items-center justify-center">
-        <div className="text-center">
-          <div className="font-serif text-3xl text-[#D4A23A] mb-4">LUXERESERVE</div>
-          <div className="text-[#A9B1BE]">Loading...</div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (

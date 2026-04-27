@@ -26,17 +26,18 @@ export const Navigation = () => {
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 transition-all duration-300">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-1.5 group">
-            <span className={`font-mono text-[10px] uppercase tracking-[0.2em] font-medium transition-colors duration-300 ${
-              isHomePage ? 'text-[#d7a44f]' : 'text-amber-600'
-            }`}>
-              LUXE
-            </span>
-            <span className={`font-serif text-[22px] tracking-wide transition-colors duration-300 ${
-              isHomePage ? 'text-[#f1d39a]' : 'text-amber-950'
-            }`}>
-              RESERVE
-            </span>
+          <Link to="/" className="group inline-flex items-center">
+            <img
+              src="/logo.png"
+              alt="LuxeReserve"
+              className={`h-11 w-auto max-w-[170px] object-contain transition-all duration-300 ${
+                isHomePage
+                  ? 'drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)]'
+                  : 'drop-shadow-[0_2px_6px_rgba(88,52,16,0.18)]'
+              }`}
+              loading="eager"
+              draggable={false}
+            />
           </Link>
 
           {/* Desktop Navigation */}

@@ -1,6 +1,6 @@
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { Clock3, Leaf, Minus, Plus, Search, ShoppingBag, Star } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '@/lib/mockData';
 import { useMenuCartStore } from '@/store';
@@ -122,6 +122,17 @@ export const MenuPage = () => {
   const { items, addItem, updateItemQuantity } = useMenuCartStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<MenuCategory | 'all'>('all');
+  const heroRef = useRef<HTMLElement | null>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+
+  const heroImageY = useTransform(scrollYProgress, [0, 1], ['0%', '20%']);
+  const heroImageScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
+  const heroTextY = useTransform(scrollYProgress, [0, 1], [0, -26]);
+  const heroTextOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.72]);
 
   const filteredItems = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -159,15 +170,44 @@ export const MenuPage = () => {
   return (
     <div className="min-h-screen bg-[#f8f0e1] pt-24 text-[#2d241b]">
       <div className="mx-auto max-w-7xl px-5 pb-16 sm:px-6 lg:px-8">
-        <section className="rounded-[30px] border border-[#ead6b8] bg-[linear-gradient(135deg,#7a2418_0%,#a63d1e_45%,#f0c975_100%)] p-6 text-[#fff6e4] shadow-[0_18px_46px_rgba(79,39,13,0.18)] sm:p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Order Online</p>
-          <h1 className="mt-2 font-serif text-[clamp(34px,8.5vw,62px)] leading-[0.95] text-white sm:text-[clamp(36px,6vw,62px)]">
-            Punjabi menu, delivered fast
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm text-white/85 sm:text-base">
-            Browse signature dishes, add to cart, and head to checkout in seconds.
-          </p>
+        <section
+          ref={heroRef}
+          className="relative isolate overflow-hidden rounded-[30px] border border-[#dcc29a]/75 shadow-[0_22px_55px_rgba(79,39,13,0.24)]"
+        >
+          <motion.img
+            src="/Memus.png"
+            alt="Menu hero"
+            className="h-[36vh] w-full object-cover object-center sm:h-[46vh]"
+            style={{ y: heroImageY, scale: heroImageScale }}
+            loading="eager"
+            draggable={false}
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(18,10,5,0.28)_0%,rgba(18,10,5,0.36)_55%,rgba(18,10,5,0.5)_100%)]" />
+
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center"
+            style={{ y: heroTextY, opacity: heroTextOpacity }}
+          >
+            <h1
+              className="font-serif text-[clamp(52px,14vw,150px)] font-semibold uppercase tracking-[0.14em] text-[#f7e2bc]"
+              style={{
+                textShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                WebkitTextStroke: '1px rgba(255,225,168,0.52)',
+              }}
+            >
+              MENU
+            </h1>
+          </motion.div>
         </section>
+
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: 'easeOut' }}
+          className="mt-4 max-w-3xl text-sm text-[#6f5f4a] sm:text-base"
+        >
+          Scroll and explore signature Punjabi dishes with a smooth, cinematic menu experience.
+        </motion.p>
 
         <section className="sticky top-16 z-20 mt-6 rounded-3xl border border-[#ead6b8] bg-[#fffaf1]/95 p-4 shadow-[0_10px_30px_rgba(83,50,17,0.08)] backdrop-blur">
           <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
@@ -209,16 +249,16 @@ export const MenuPage = () => {
               key={item.id}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="overflow-hidden rounded-2xl border border-[#ead7ba] bg-[#fffaf1] shadow-[0_12px_26px_rgba(83,50,17,0.07)] sm:rounded-3xl sm:shadow-[0_16px_34px_rgba(83,50,17,0.06)]"
+              className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#ead7ba] bg-[#fffaf1] shadow-[0_12px_26px_rgba(83,50,17,0.07)] sm:rounded-3xl sm:shadow-[0_16px_34px_rgba(83,50,17,0.06)]"
             >
               <img src={item.image} alt={item.name} className="h-28 w-full object-cover sm:h-48" loading="lazy" />
-              <div className="p-3 sm:p-5">
+              <div className="flex flex-1 flex-col p-3 sm:p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="font-serif text-[clamp(18px,4.8vw,28px)] leading-[0.95] text-[#2d2319] sm:text-2xl">
                       {item.name}
                     </h3>
-                    <p className="mt-1 text-[12px] leading-[1.35] text-[#6f5f4a] sm:mt-2 sm:text-sm">
+                    <p className="mt-1 min-h-[44px] text-[12px] leading-[1.35] text-[#6f5f4a] sm:mt-2 sm:min-h-[48px] sm:text-sm">
                       <span className="sm:hidden">
                         {item.description.length > 52
                           ? `${item.description.slice(0, 52).trimEnd()}...`
@@ -234,13 +274,19 @@ export const MenuPage = () => {
                   )}
                 </div>
 
-                <div className="mt-3 flex items-center justify-between text-[12px] text-[#7d6a57] sm:mt-4 sm:text-sm">
-                  <span className="inline-flex items-center gap-1"><Star size={13} className="text-[#b9832f] sm:h-[14px] sm:w-[14px]" /> {item.rating.toFixed(1)}</span>
-                  <span className="inline-flex items-center gap-1"><Clock3 size={13} className="sm:h-[14px] sm:w-[14px]" /> {item.prepTime} min</span>
+                <div className="mt-3 flex min-h-[20px] items-center gap-6 text-[12px] text-[#7d6a57] sm:mt-4 sm:min-h-[22px] sm:text-sm">
+                  <span className="inline-flex items-center gap-1.5 tabular-nums">
+                    <Star size={13} className="text-[#b9832f] sm:h-[14px] sm:w-[14px]" />
+                    {item.rating.toFixed(1)}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 tabular-nums">
+                    <Clock3 size={13} className="sm:h-[14px] sm:w-[14px]" />
+                    {item.prepTime} min
+                  </span>
                 </div>
 
-                <div className="mt-3 flex items-center justify-between sm:mt-4">
-                  <span className="text-xl font-semibold text-[#7d2419] sm:text-lg">{formatCurrency(item.price)}</span>
+                <div className="mt-auto flex items-center justify-between pt-4">
+                  <span className="text-lg font-semibold text-[#7d2419] sm:text-xl">{formatCurrency(item.price)}</span>
                   {itemQuantityById[item.id] ? (
                     <div className="inline-flex items-center rounded-full border border-[#8f2a1d] bg-[#7d2419] p-1 text-[#fff3df] shadow-[0_4px_12px_rgba(60,20,10,0.2)]">
                       <button
