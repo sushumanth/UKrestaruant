@@ -1,5 +1,7 @@
-import type { User, Booking, BookingStatus, RestaurantTable, TableStatus, DailyReport, RestaurantSettings } from '@/types';
+import type { User, Booking, BookingStatus, RestaurantTable, TableStatus, DailyReport, RestaurantSettings, MenuCategory, MenuItem } from '@/types';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+
+const MENU_IMAGE_BUCKET = import.meta.env.VITE_SUPABASE_MENU_IMAGE_BUCKET ?? 'ukrestaurent';
 
 type DbRole = 'admin' | 'staff';
 
@@ -47,6 +49,23 @@ type DbSettingsRow = {
   default_deposit_amount: number;
   cancellation_deadline_hours: number;
   auto_release_minutes: number;
+};
+
+type DbMenuItemRow = {
+  id: string;
+  category: MenuCategory;
+  name: string;
+  description: string;
+  price: number;
+  image_url: string;
+  rating: number;
+  prep_time_minutes: number;
+  is_veg: boolean;
+  tags: string[] | null;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
 };
 
 type DbReportRow = {
@@ -124,6 +143,23 @@ const mapSettingsRow = (row: DbSettingsRow): RestaurantSettings => ({
   autoReleaseMinutes: row.auto_release_minutes,
 });
 
+const mapMenuItemRow = (row: DbMenuItemRow): MenuItem => ({
+  id: row.id,
+  name: row.name,
+  description: row.description,
+  price: row.price,
+  category: row.category,
+  image: row.image_url,
+  rating: row.rating,
+  prepTime: row.prep_time_minutes,
+  isVeg: row.is_veg,
+  tags: row.tags ?? [],
+  isActive: row.is_active,
+  sortOrder: row.sort_order,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
 const mapReportRow = (row: DbReportRow): DailyReport => ({
   date: row.date,
   totalBookings: row.total_bookings,
@@ -133,6 +169,13 @@ const mapReportRow = (row: DbReportRow): DailyReport => ({
   cancellations: row.cancellations,
   averageOccupancy: row.average_occupancy,
 });
+
+const sanitizeFileName = (fileName: string) =>
+  fileName
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'menu-image';
 
 const resolveRole = async (userId: string): Promise<DbRole | null> => {
   if (!supabase) {
@@ -222,14 +265,21 @@ export const signOutStaffPortal = async (): Promise<void> => {
 export const fetchPublicOperationalData = async (): Promise<{
   tables: RestaurantTable[];
   settings: RestaurantSettings | null;
+  menuItems: MenuItem[];
 }> => {
   if (!supabase) {
-    return { tables: [], settings: null };
+    return { tables: [], settings: null, menuItems: [] };
   }
 
-  const [tablesResponse, settingsResponse] = await Promise.all([
+  const [tablesResponse, settingsResponse, menuItemsResponse] = await Promise.all([
     supabase.from('restaurant_tables').select('*').order('table_number', { ascending: true }),
     supabase.from('restaurant_settings').select('*').limit(1).maybeSingle<DbSettingsRow>(),
+    supabase
+      .from('menu_items')
+      .select('*')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true })
+      .order('name', { ascending: true }),
   ]);
 
   if (tablesResponse.error) {
@@ -240,10 +290,103 @@ export const fetchPublicOperationalData = async (): Promise<{
     throw new Error(settingsResponse.error.message);
   }
 
+  if (menuItemsResponse.error) {
+    throw new Error(menuItemsResponse.error.message);
+  }
+
   return {
     tables: (tablesResponse.data as DbTableRow[] | null)?.map(mapTableRow) ?? [],
     settings: settingsResponse.data ? mapSettingsRow(settingsResponse.data) : null,
+    menuItems: (menuItemsResponse.data as DbMenuItemRow[] | null)?.map(mapMenuItemRow) ?? [],
   };
+};
+
+export const fetchMenuItemsInSupabase = async (): Promise<MenuItem[]> => {
+  if (!supabase) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('menu_items')
+    .select('*')
+    .order('sort_order', { ascending: true })
+    .order('name', { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data as DbMenuItemRow[] | null)?.map(mapMenuItemRow) ?? [];
+};
+
+export const upsertMenuItemInSupabase = async (menuItem: MenuItem): Promise<MenuItem> => {
+  if (!supabase) {
+    return menuItem;
+  }
+
+  const payload = {
+    id: menuItem.id,
+    category: menuItem.category,
+    name: menuItem.name,
+    description: menuItem.description,
+    price: menuItem.price,
+    image_url: menuItem.image,
+    rating: menuItem.rating,
+    prep_time_minutes: menuItem.prepTime,
+    is_veg: menuItem.isVeg,
+    tags: menuItem.tags,
+    is_active: menuItem.isActive,
+    sort_order: menuItem.sortOrder,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data, error } = await supabase.from('menu_items').upsert(payload, { onConflict: 'id' }).select('*').single<DbMenuItemRow>();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return mapMenuItemRow(data);
+};
+
+export const deleteMenuItemInSupabase = async (menuItemId: string): Promise<void> => {
+  if (!supabase) {
+    return;
+  }
+
+  const { error } = await supabase.from('menu_items').delete().eq('id', menuItemId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+};
+
+export const uploadMenuImageToSupabase = async (file: File): Promise<string> => {
+  if (!isSupabaseConfigured || !supabase) {
+    throw new Error('Supabase is not configured.');
+  }
+
+  const fileExtension = file.name.includes('.') ? file.name.split('.').pop() ?? '' : '';
+  const safeName = sanitizeFileName(file.name.replace(/\.[^.]+$/, ''));
+  const storagePath = `menu-images/${crypto.randomUUID()}-${safeName}${fileExtension ? `.${fileExtension.toLowerCase()}` : ''}`;
+
+  const { error: uploadError } = await supabase.storage.from(MENU_IMAGE_BUCKET).upload(storagePath, file, {
+    cacheControl: '3600',
+    upsert: true,
+    contentType: file.type || 'application/octet-stream',
+  });
+
+  if (uploadError) {
+    throw new Error(uploadError.message);
+  }
+
+  const { data } = supabase.storage.from(MENU_IMAGE_BUCKET).getPublicUrl(storagePath);
+
+  if (!data?.publicUrl) {
+    throw new Error('Unable to resolve public image URL.');
+  }
+
+  return data.publicUrl;
 };
 
 export const fetchStaffOperationalData = async (): Promise<{

@@ -3,7 +3,8 @@ import type {
   Booking, 
   User, 
   DailyReport, 
-  RestaurantSettings 
+  RestaurantSettings,
+  MenuItem
 } from '@/types';
 
 // Generate 50 tables with various capacities
@@ -115,6 +116,139 @@ export const mockSettings: RestaurantSettings = {
   autoReleaseMinutes: 15,
 };
 
+const mockMenuTimestamp = '2026-04-28T00:00:00Z';
+
+export const mockMenuItems: MenuItem[] = [
+  {
+    id: 'starter-1',
+    name: 'Paneer Tikka',
+    description: 'Char-grilled cottage cheese with smoky spice marinade.',
+    price: 8.5,
+    category: 'starters',
+    image: '/dining_room.jpg',
+    rating: 4.8,
+    prepTime: 14,
+    isVeg: true,
+    tags: ['signature', 'starter'],
+    isActive: true,
+    sortOrder: 1,
+    createdAt: mockMenuTimestamp,
+    updatedAt: mockMenuTimestamp,
+  },
+  {
+    id: 'starter-2',
+    name: 'Chicken 65',
+    description: 'Crispy fried chicken tossed in South Indian spices.',
+    price: 9.5,
+    category: 'starters',
+    image: '/kitchen_team.jpg',
+    rating: 4.7,
+    prepTime: 12,
+    isVeg: false,
+    tags: ['popular', 'starter'],
+    isActive: true,
+    sortOrder: 2,
+    createdAt: mockMenuTimestamp,
+    updatedAt: mockMenuTimestamp,
+  },
+  {
+    id: 'main-1',
+    name: 'Butter Chicken',
+    description: 'Tender chicken in creamy tomato butter gravy.',
+    price: 13.9,
+    category: 'mains',
+    image: '/chef_plating.jpg',
+    rating: 4.9,
+    prepTime: 18,
+    isVeg: false,
+    tags: ['signature', 'main'],
+    isActive: true,
+    sortOrder: 1,
+    createdAt: mockMenuTimestamp,
+    updatedAt: mockMenuTimestamp,
+  },
+  {
+    id: 'main-2',
+    name: 'Dal Makhani',
+    description: 'Slow-cooked black lentils finished with cream.',
+    price: 11.5,
+    category: 'mains',
+    image: '/homepa1.png',
+    rating: 4.7,
+    prepTime: 16,
+    isVeg: true,
+    tags: ['vegetarian', 'main'],
+    isActive: true,
+    sortOrder: 2,
+    createdAt: mockMenuTimestamp,
+    updatedAt: mockMenuTimestamp,
+  },
+  {
+    id: 'biryani-1',
+    name: 'Lamb Biryani',
+    description: 'Fragrant basmati rice with slow-cooked lamb.',
+    price: 14.9,
+    category: 'biryani',
+    image: '/dessert.jpg',
+    rating: 4.8,
+    prepTime: 22,
+    isVeg: false,
+    tags: ['signature', 'biryani'],
+    isActive: true,
+    sortOrder: 1,
+    createdAt: mockMenuTimestamp,
+    updatedAt: mockMenuTimestamp,
+  },
+  {
+    id: 'biryani-2',
+    name: 'Veg Dum Biryani',
+    description: 'Saffron basmati layered with vegetables and herbs.',
+    price: 12.2,
+    category: 'biryani',
+    image: '/backgroundtheme1.png',
+    rating: 4.6,
+    prepTime: 20,
+    isVeg: true,
+    tags: ['vegetarian', 'biryani'],
+    isActive: true,
+    sortOrder: 2,
+    createdAt: mockMenuTimestamp,
+    updatedAt: mockMenuTimestamp,
+  },
+  {
+    id: 'bread-1',
+    name: 'Garlic Naan',
+    description: 'Tandoor-baked naan topped with butter and garlic.',
+    price: 3.5,
+    category: 'bread',
+    image: '/homepa1.png',
+    rating: 4.7,
+    prepTime: 8,
+    isVeg: true,
+    tags: ['bread', 'side'],
+    isActive: true,
+    sortOrder: 1,
+    createdAt: mockMenuTimestamp,
+    updatedAt: mockMenuTimestamp,
+  },
+  {
+    id: 'dessert-1',
+    name: 'Gulab Jamun',
+    description: 'Warm milk-solid dumplings in cardamom syrup.',
+    price: 5.2,
+    category: 'dessert',
+    image: '/dessert.jpg',
+    rating: 4.9,
+    prepTime: 6,
+    isVeg: true,
+    tags: ['dessert', 'sweet'],
+    isActive: true,
+    sortOrder: 1,
+    createdAt: mockMenuTimestamp,
+    updatedAt: mockMenuTimestamp,
+  },
+];
+
 // Generate mock reports
 export const generateReports = (): DailyReport[] => {
   const reports: DailyReport[] = [];
@@ -143,7 +277,8 @@ export const generateReports = (): DailyReport[] => {
 };
 
 // Time slots generation
-export const generateTimeSlots = (_date: string): { time: string; available: boolean; availableTables: number }[] => {
+export const generateTimeSlots = (date: string): { time: string; available: boolean; availableTables: number }[] => {
+  void date;
   const slots: { time: string; available: boolean; availableTables: number }[] = [];
 
   for (let hour = 0; hour < 24; hour++) {

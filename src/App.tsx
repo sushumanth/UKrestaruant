@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useAuthStore } from '@/store';
 import { generateTables, generateBookings, mockUsers, mockSettings, generateReports } from '@/lib/mockData';
-import { useTableStore, useBookingStore, useSettingsStore, useAnalyticsStore } from '@/store';
+import { mockMenuItems } from '@/lib/mockData';
+import { useTableStore, useBookingStore, useSettingsStore, useAnalyticsStore, useMenuStore } from '@/store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import {
   fetchPublicOperationalData,
@@ -25,11 +26,13 @@ import { BookingPage } from '@/pages/customer/BookingPage';
 import { BookingConfirmationPage } from '@/pages/customer/BookingConfirmationPage';
 import { AdminDashboard } from '@/pages/admin/AdminDashboard';
 import { AdminBookings } from '@/pages/admin/AdminBookings';
+import { AdminMenu } from '@/pages/admin/AdminMenu';
 import { AdminFloorPlan } from '@/pages/admin/AdminFloorPlan';
 import { AdminAnalytics } from '@/pages/admin/AdminAnalytics';
 import { AdminSettings } from '@/pages/admin/AdminSettings';
 import { EmployeeDashboard } from '@/pages/employee/EmployeeDashboard';
 import { EmployeeBookings } from '@/pages/employee/EmployeeBookings';
+import { EmployeeMenu } from '@/pages/employee/EmployeeMenu';
 import { LoginPage } from '@/pages/LoginPage';
 
 // Register GSAP plugins
@@ -79,49 +82,38 @@ function App() {
   const { setBookings } = useBookingStore();
   const { setSettings } = useSettingsStore();
   const { setReports } = useAnalyticsStore();
+  const { setMenuItems } = useMenuStore();
 
-  const loadPublicData = useCallback(async () => {
-    if (!isSupabaseConfigured) {
-      return;
-    }
-
-    const publicData = await fetchPublicOperationalData();
-    setTables(publicData.tables);
-
-    if (publicData.settings) {
-      setSettings(publicData.settings);
-    }
-  }, [setSettings, setTables]);
-
-  const loadStaffData = useCallback(async () => {
-    if (!isSupabaseConfigured) {
-      return;
-    }
-
-    const staffData = await fetchStaffOperationalData();
-    setBookings(staffData.bookings);
-    setReports(staffData.reports);
-  }, [setBookings, setReports]);
-
-  // Initialize app state from Supabase when configured, otherwise fallback to local mock mode.
   useEffect(() => {
-    if (!isSupabaseConfigured) {
-      if (!isInitialized) {
-        setTables(generateTables());
-        setBookings(generateBookings());
-        setSettings(mockSettings);
-        setReports(generateReports());
-        login(mockUsers[0]);
-        setIsInitialized(true);
-      }
-      return;
-    }
-
     let isMounted = true;
 
-    const initializeFromSupabase = async () => {
+    void (async () => {
+      if (!isSupabaseConfigured) {
+        if (isMounted && !isInitialized) {
+          setTables(generateTables());
+          setBookings(generateBookings());
+          setSettings(mockSettings);
+          setReports(generateReports());
+          setMenuItems(mockMenuItems);
+          login(mockUsers[0]);
+          setIsInitialized(true);
+        }
+        return;
+      }
+
       try {
-        await loadPublicData();
+        const publicData = await fetchPublicOperationalData();
+
+        if (!isMounted) {
+          return;
+        }
+
+        setTables(publicData.tables);
+        setMenuItems(publicData.menuItems);
+
+        if (publicData.settings) {
+          setSettings(publicData.settings);
+        }
 
         const currentUser = await resolveCurrentStaffUser();
 
@@ -131,7 +123,14 @@ function App() {
 
         if (currentUser) {
           login(currentUser);
-          await loadStaffData();
+
+          const staffData = await fetchStaffOperationalData();
+          if (!isMounted) {
+            return;
+          }
+
+          setBookings(staffData.bookings);
+          setReports(staffData.reports);
         } else {
           logout();
           setBookings([]);
@@ -144,71 +143,48 @@ function App() {
           setIsInitialized(true);
         }
       }
-    };
-
-    void initializeFromSupabase();
-
-    const subscription = supabase?.auth.onAuthStateChange((_event, session) => {
-      void (async () => {
-        if (!session?.user) {
-          logout();
-          setBookings([]);
-          setReports([]);
-          return;
-        }
-
-        const currentUser = await resolveCurrentStaffUser();
-
-        if (!currentUser) {
-          logout();
-          setBookings([]);
-          setReports([]);
-          return;
-        }
-
-        login(currentUser);
-        await loadStaffData();
-      })();
-    });
+    })();
 
     return () => {
       isMounted = false;
-      subscription?.data.subscription.unsubscribe();
     };
   }, [
     isInitialized,
-    loadPublicData,
-    loadStaffData,
     login,
     logout,
     setBookings,
+    setMenuItems,
     setReports,
     setSettings,
     setTables,
   ]);
 
-  // Keep staff/admin dashboards in sync with realtime DB changes.
   useEffect(() => {
-    if (!isSupabaseConfigured || !supabase || !isAuthenticated || !user) {
+    if (!isSupabaseConfigured || !supabase || !isAuthenticated || !user || !['admin', 'employee'].includes(user.role)) {
       return;
     }
 
     const client = supabase;
 
-    if (!['admin', 'employee'].includes(user.role)) {
-      return;
-    }
-
     const refreshAll = async () => {
       try {
-        await loadPublicData();
-        await loadStaffData();
+        const publicData = await fetchPublicOperationalData();
+        setTables(publicData.tables);
+        setMenuItems(publicData.menuItems);
+
+        if (publicData.settings) {
+          setSettings(publicData.settings);
+        }
+
+        const staffData = await fetchStaffOperationalData();
+        setBookings(staffData.bookings);
+        setReports(staffData.reports);
       } catch (error) {
         console.warn('Failed to refresh realtime operational data:', error);
       }
     };
 
-    const channel = client
+    const channel = supabase
       .channel('ops-realtime-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
         void refreshAll();
@@ -219,14 +195,16 @@ function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'restaurant_settings' }, () => {
         void refreshAll();
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_items' }, () => {
+        void refreshAll();
+      })
       .subscribe();
 
     return () => {
       void client.removeChannel(channel);
     };
-  }, [isAuthenticated, loadPublicData, loadStaffData, user]);
+  }, [isAuthenticated, setBookings, setMenuItems, setReports, setSettings, setTables, user]);
 
-  // Refresh ScrollTrigger on route change
   useEffect(() => {
     ScrollTrigger.refresh();
   }, []);
@@ -239,7 +217,6 @@ function App() {
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
-        {/* Customer Routes */}
         <Route path="/" element={<CustomerLayout />}>
           <Route index element={<HomePage />} />
           <Route path="menu" element={<MenuPage />} />
@@ -247,13 +224,11 @@ function App() {
           <Route path="book" element={<BookingPage />} />
           <Route path="confirmation" element={<BookingConfirmationPage />} />
         </Route>
-        
-        {/* Login Route */}
+
         <Route path="/login" element={<LoginPage />} />
-        
-        {/* Admin Routes */}
-        <Route 
-          path="/admin" 
+
+        <Route
+          path="/admin"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminLayout />
@@ -262,14 +237,14 @@ function App() {
         >
           <Route index element={<AdminDashboard />} />
           <Route path="bookings" element={<AdminBookings />} />
+          <Route path="menu" element={<AdminMenu />} />
           <Route path="floor-plan" element={<AdminFloorPlan />} />
           <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>
-        
-        {/* Employee Routes */}
-        <Route 
-          path="/employee" 
+
+        <Route
+          path="/employee"
           element={
             <ProtectedRoute allowedRoles={['admin', 'employee']}>
               <EmployeeLayout />
@@ -278,9 +253,9 @@ function App() {
         >
           <Route index element={<EmployeeDashboard />} />
           <Route path="bookings" element={<EmployeeBookings />} />
+          <Route path="menu" element={<EmployeeMenu />} />
         </Route>
-        
-        {/* Fallback */}
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

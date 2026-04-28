@@ -110,12 +110,53 @@ create table if not exists public.menu_items (
   name text not null,
   description text not null,
   price numeric(10,2) not null check (price >= 0),
+  image_url text not null,
+  rating numeric(2,1) not null default 4.5 check (rating >= 0 and rating <= 5),
+  prep_time_minutes integer not null default 0 check (prep_time_minutes >= 0),
+  is_veg boolean not null default true,
   tags text[] not null default '{}',
   is_active boolean not null default true,
   sort_order integer not null default 0,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
+
+insert into public.menu_items (
+  id,
+  category,
+  name,
+  description,
+  price,
+  image_url,
+  rating,
+  prep_time_minutes,
+  is_veg,
+  tags,
+  is_active,
+  sort_order
+)
+values
+  ('starter-1', 'starters', 'Paneer Tikka', 'Char-grilled cottage cheese with smoky spice marinade.', 8.50, '/dining_room.jpg', 4.8, 14, true, array['signature', 'starter'], true, 1),
+  ('starter-2', 'starters', 'Chicken 65', 'Crispy fried chicken tossed in South Indian spices.', 9.50, '/kitchen_team.jpg', 4.7, 12, false, array['popular', 'starter'], true, 2),
+  ('main-1', 'mains', 'Butter Chicken', 'Tender chicken in creamy tomato butter gravy.', 13.90, '/chef_plating.jpg', 4.9, 18, false, array['signature', 'main'], true, 1),
+  ('main-2', 'mains', 'Dal Makhani', 'Slow-cooked black lentils finished with cream.', 11.50, '/homepa1.png', 4.7, 16, true, array['vegetarian', 'main'], true, 2),
+  ('biryani-1', 'biryani', 'Lamb Biryani', 'Fragrant basmati rice with slow-cooked lamb.', 14.90, '/dessert.jpg', 4.8, 22, false, array['signature', 'biryani'], true, 1),
+  ('biryani-2', 'biryani', 'Veg Dum Biryani', 'Saffron basmati layered with vegetables and herbs.', 12.20, '/backgroundtheme1.png', 4.6, 20, true, array['vegetarian', 'biryani'], true, 2),
+  ('bread-1', 'bread', 'Garlic Naan', 'Tandoor-baked naan topped with butter and garlic.', 3.50, '/homepa1.png', 4.7, 8, true, array['bread', 'side'], true, 1),
+  ('dessert-1', 'dessert', 'Gulab Jamun', 'Warm milk-solid dumplings in cardamom syrup.', 5.20, '/dessert.jpg', 4.9, 6, true, array['dessert', 'sweet'], true, 1)
+on conflict (id) do update set
+  category = excluded.category,
+  name = excluded.name,
+  description = excluded.description,
+  price = excluded.price,
+  image_url = excluded.image_url,
+  rating = excluded.rating,
+  prep_time_minutes = excluded.prep_time_minutes,
+  is_veg = excluded.is_veg,
+  tags = excluded.tags,
+  is_active = excluded.is_active,
+  sort_order = excluded.sort_order,
+  updated_at = timezone('utc', now());
 
 create table if not exists public.bookings (
   id text primary key,
@@ -217,6 +258,78 @@ on conflict (id) do update set
   cancellation_deadline_hours = excluded.cancellation_deadline_hours,
   auto_release_minutes = excluded.auto_release_minutes,
   updated_at = timezone('utc', now());
+
+-- 6) Storage bucket for menu images
+insert into storage.buckets (id, name, public)
+values ('ukrestaurent', 'ukrestaurent', true)
+on conflict (id) do update set
+  name = excluded.name,
+  public = excluded.public;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'storage'
+      and tablename = 'objects'
+      and policyname = 'Public read ukrestaurent images'
+  ) then
+    create policy "Public read ukrestaurent images"
+    on storage.objects
+    for select
+    to anon, authenticated
+    using (bucket_id = 'ukrestaurent');
+  end if;
+
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'storage'
+      and tablename = 'objects'
+      and policyname = 'Staff admin upload ukrestaurent images'
+  ) then
+    create policy "Staff admin upload ukrestaurent images"
+    on storage.objects
+    for insert
+    to authenticated
+    with check (bucket_id = 'ukrestaurent' and public.is_staff_or_admin());
+  end if;
+
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'storage'
+      and tablename = 'objects'
+      and policyname = 'Staff admin update ukrestaurent images'
+  ) then
+    create policy "Staff admin update ukrestaurent images"
+    on storage.objects
+    for update
+    to authenticated
+    using (bucket_id = 'ukrestaurent' and public.is_staff_or_admin())
+    with check (bucket_id = 'ukrestaurent' and public.is_staff_or_admin());
+  end if;
+
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'storage'
+      and tablename = 'objects'
+      and policyname = 'Staff admin delete ukrestaurent images'
+  ) then
+    create policy "Staff admin delete ukrestaurent images"
+    on storage.objects
+    for delete
+    to authenticated
+    using (bucket_id = 'ukrestaurent' and public.is_staff_or_admin());
+  end if;
+
+  -- Drop old admin-only policies if they exist
+  drop policy if exists "Admin upload ukrestaurent images" on storage.objects;
+  drop policy if exists "Admin update ukrestaurent images" on storage.objects;
+  drop policy if exists "Admin delete ukrestaurent images" on storage.objects;
+end $$;
 
 -- 6) Seed 50 floor-plan tables only if empty
 insert into public.restaurant_tables (
@@ -499,6 +612,7 @@ drop policy if exists "Public read menu" on public.menu_items;
 drop policy if exists "Staff admin write menu" on public.menu_items;
 drop policy if exists "Staff admin update menu" on public.menu_items;
 drop policy if exists "Admin delete menu" on public.menu_items;
+drop policy if exists "Staff admin delete menu" on public.menu_items;
 
 create policy "Public read menu"
 on public.menu_items
@@ -519,11 +633,11 @@ to authenticated
 using (public.is_staff_or_admin())
 with check (public.is_staff_or_admin());
 
-create policy "Admin delete menu"
+create policy "Staff admin delete menu"
 on public.menu_items
 for delete
 to authenticated
-using (public.is_admin());
+using (public.is_staff_or_admin());
 
 -- 11) Realtime setup
 alter table public.bookings replica identity full;

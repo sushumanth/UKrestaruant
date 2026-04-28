@@ -206,7 +206,7 @@ export const BookingPage = () => {
       const available = seed % 7 !== 0;
       return { time, available };
     });
-  }, [draftDate, draftGuests, draftTimeFilter]);
+  }, [baseSlotTimes, draftDate, draftGuests, draftTimeFilter]);
 
   const applySearchFilters = () => {
     // Collapse all sections and reset slot selection for a clean UX
