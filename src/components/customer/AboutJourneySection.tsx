@@ -26,21 +26,21 @@ const journeySteps: JourneyStep[] = [
     title: 'Kitchen Craftsmanship',
     description: 'Our chefs slow-cook gravies and roast masalas with precision.',
     image: '/KitchenCraftsmanship.png',
-    top: '16%',
+    top: '22%',
     left: '33%',
   },
   {
     title: 'Signature Plating',
     description: 'Every dish is plated with modern elegance and royal warmth.',
     image: '/SignaturePlating.png',
-    top: '38%',
+    top: '40%',
     left: '56%',
   },
   {
     title: 'Luxury Dining Room',
     description: 'A refined ambience curated for memorable evenings in London.',
     image: '/lucry-dinning.png',
-    top: '12%',
+    top: '20%',
     left: '78%',
   },
 ];
@@ -134,7 +134,7 @@ export const AboutJourneySection = () => {
   }, [prefersReducedMotion]);
 
   return (
-    <section className="relative mt-2 overflow-hidden bg-[linear-gradient(150deg,#f5ecd9_0%,#f0e2c2_45%,#f6efde_100%)]">
+    <section className="relative mt-0 overflow-hidden bg-[linear-gradient(150deg,#f5ecd9_0%,#f0e2c2_45%,#f6efde_100%)]">
       <div className="mx-auto max-w-7xl px-6 pt-5 text-center sm:px-8 sm:pt-7 lg:px-12">
         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8d6435]">Our Culinary Journey</p>
         <h3 className="mt-3 font-serif text-[clamp(32px,4.2vw,60px)] leading-[0.92] text-[#2f1e0b]">
@@ -145,7 +145,7 @@ export const AboutJourneySection = () => {
         </p>
       </div>
 
-      <div ref={desktopSceneRef} className="relative -mt-12 hidden min-h-[84vh] lg:block">
+      <div ref={desktopSceneRef} className="relative -mt-10 hidden min-h-[76vh] lg:block">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_22%,rgba(255,255,255,0.45),transparent_38%),radial-gradient(circle_at_86%_70%,rgba(180,126,54,0.16),transparent_33%)]" />
 
         <div className="absolute inset-0">

@@ -118,13 +118,25 @@ export const LoginPage = () => {
         {/* Logo */}
         <div className="text-center mb-10">
           <div className="mb-4 flex items-center justify-center">
-            <img
-              src="/logo.png"
-              alt="LuxeReserve"
-              className="h-16 w-auto max-w-[230px] object-contain drop-shadow-[0_4px_10px_rgba(109,70,20,0.2)]"
-              loading="eager"
-              draggable={false}
-            />
+            <div className="inline-flex items-center gap-3">
+              <img
+                src="/logosolo.png"
+                alt="Singh's Dining lion logo"
+                className="h-14 w-14 object-contain drop-shadow-[0_4px_12px_rgba(109,70,20,0.25)]"
+                loading="eager"
+                draggable={false}
+              />
+              <div className="text-left leading-none">
+                <div className="flex items-end gap-2">
+                  <span className="font-serif text-[24px] tracking-wide text-amber-900">Singh&apos;s</span>
+                  <span className="mb-1 inline-block h-4 w-px bg-amber-700/60" />
+                  <span className="text-[12px] font-semibold uppercase tracking-[0.32em] text-amber-800">Dining</span>
+                </div>
+                <span className="mt-1 block text-[10px] uppercase tracking-[0.28em] text-amber-700/70">
+                  By Rangrez
+                </span>
+              </div>
+            </div>
           </div>
           <p className="text-amber-700/60">Staff Portal</p>
         </div>

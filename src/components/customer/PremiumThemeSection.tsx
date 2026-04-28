@@ -212,18 +212,18 @@ export const PremiumThemeSection = () => {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, amount: 0.2 }}
                       transition={{ duration: 0.4, delay: i * 0.07, ease: 'easeOut' }}
-                      className="w-[calc((100%-0.75rem)/2)] min-w-[140px] shrink-0 snap-start sm:w-[320px] sm:min-w-0 lg:w-[350px]"
+                      className="w-[calc((100%-0.75rem)/2)] min-w-[140px] shrink-0 snap-start sm:w-[280px] sm:min-w-0 lg:w-[300px]"
                       style={{
                         filter:
-                          'drop-shadow(0 10px 22px rgba(80,40,0,0.12)) drop-shadow(0 0 0.5px rgba(196,160,83,0.9))',
+                          'drop-shadow(0 8px 18px rgba(66,36,10,0.12)) drop-shadow(0 0 0.5px rgba(196,160,83,0.8))',
                         transform: 'translateZ(0)',
                       }}
                     >
                       <article
-                        className="group flex h-full cursor-default flex-col"
-                        style={{ clipPath: 'url(#mughal-card)', background: '#faf4e6' }}
+                        className="group flex h-full cursor-default flex-col border border-[#d5bb86]"
+                        style={{ clipPath: 'url(#mughal-card)', background: 'linear-gradient(180deg,#fff7e8 0%,#f9efdb 100%)' }}
                       >
-                        <div className="relative w-full overflow-hidden pt-[78%] sm:pt-[70%]">
+                        <div className="relative w-full overflow-hidden pt-[70%] sm:pt-[62%]">
                           <img
                             src={dish.image}
                             alt={dish.name}
@@ -231,18 +231,18 @@ export const PremiumThemeSection = () => {
                             loading="lazy"
                             draggable={false}
                           />
-                          <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#faf4e6]/60 to-transparent" />
+                          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#f9efdb]/70 to-transparent" />
                         </div>
 
                         <div
-                          className="flex flex-1 flex-col items-center px-3 pb-4 pt-3 text-center sm:px-5 sm:pb-6 sm:pt-4"
-                          style={{ borderTop: '1px solid #e8d09a', background: '#faf4e6' }}
+                          className="flex flex-1 flex-col items-center px-3 pb-4 pt-3 text-center sm:px-4 sm:pb-5 sm:pt-3"
+                          style={{ borderTop: '1px solid #e0c794', background: '#f9efdb' }}
                         >
-                          <h3 className="min-h-[44px] font-serif text-[17px] font-normal leading-tight text-[#2a1e0e] sm:min-h-[58px] sm:text-[clamp(18px,1.8vw,24px)]">
+                          <h3 className="min-h-[38px] font-serif text-[16px] font-normal leading-tight text-[#2a1e0e] sm:min-h-[46px] sm:text-[clamp(17px,1.7vw,21px)]">
                             {dish.name}
                           </h3>
 
-                          <p className="mt-1.5 min-h-[40px] px-1 text-[10.5px] leading-relaxed text-[#6b4f2a] sm:mt-2 sm:min-h-[38px] sm:text-[13px]">
+                          <p className="mt-1.5 min-h-[36px] px-1 text-[10px] leading-relaxed text-[#6b4f2a] sm:mt-2 sm:min-h-[34px] sm:text-[12px]">
                             <span className="sm:hidden">
                               {dish.description.length > 40
                                 ? `${dish.description.slice(0, 40).trimEnd()}...`
@@ -253,7 +253,7 @@ export const PremiumThemeSection = () => {
 
                           <Link
                             to="/menu"
-                            className="mt-auto inline-flex items-center rounded border border-[#c4a053] bg-[#ecd9a8] px-4 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-[#3d2806] transition-colors hover:bg-[#dabb80] sm:mt-4 sm:px-6 sm:py-2 sm:text-[10px] sm:tracking-[0.12em]"
+                            className="mt-auto inline-flex items-center rounded border border-[#c4a053] bg-[#f0dfb6] px-4 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-[#3d2806] transition-colors hover:bg-[#e3cd97] sm:mt-3 sm:px-5 sm:py-1.5 sm:text-[10px] sm:tracking-[0.12em]"
                           >
                             Order Now
                           </Link>
