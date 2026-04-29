@@ -1,4 +1,3 @@
-import React from 'react';
 import { TableCard } from './TableCard';
 import type { RestaurantTable, Booking } from '@/types';
 

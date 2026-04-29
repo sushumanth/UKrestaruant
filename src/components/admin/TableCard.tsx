@@ -1,4 +1,3 @@
-import React from 'react';
 import type { RestaurantTable, Booking } from '@/types';
 import { statusColors } from '@/lib/mockData';
 
