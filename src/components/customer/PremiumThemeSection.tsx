@@ -102,24 +102,9 @@ export const PremiumThemeSection = () => {
 
   return (
     <>
-      {/*
-        SVG Clip Path — Mughal / Islamic pointed arch.
-        The arch rises to a sharp point at the centre (0.5, 0) using two
-        cubic Bézier curves that mimic the classic ogee silhouette seen in
-        the reference screenshot.  The bottom corners are notched inward so
-        the card has the characteristic cut-corner finish.
-      */}
       <svg width="0" height="0" className="absolute -z-10" aria-hidden="true">
         <defs>
           <clipPath id="mughal-card" clipPathUnits="objectBoundingBox">
-            {/*
-              Reading the path in segments (all coords are 0–1 fractions):
-              Start bottom-left notch  → up the left edge
-              → left side of arch dome (cubic Bézier, peaking near centre-top)
-              → right side of arch dome
-              → down the right edge
-              → bottom-right notch → close
-            */}
             <path d="
               M 0.05,1
               L 0,0.95
@@ -145,7 +130,6 @@ export const PremiumThemeSection = () => {
           backgroundRepeat: 'no-repeat',
         }}
       >
-        {/* Warm cream overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,248,231,0.6)_0%,rgba(255,248,231,0.68)_52%,rgba(255,248,231,0.74)_100%)]" />
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -156,7 +140,6 @@ export const PremiumThemeSection = () => {
             transition={{ duration: 0.7, ease: 'easeOut' }}
             className="mx-auto max-w-6xl"
           >
-            {/* ── Section header ── */}
             <p className="mb-2 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9d804d]">
               Chef&apos;s Special
             </p>
@@ -164,7 +147,6 @@ export const PremiumThemeSection = () => {
               Signature Dishes
             </h2>
 
-            {/* Decorative divider */}
             <div className="mx-auto mt-4 flex items-center justify-center gap-3">
               <span className="block h-px w-16 bg-gradient-to-r from-transparent to-[#c4a053]" />
               <svg width="20" height="10" viewBox="0 0 20 10" fill="none" aria-hidden="true">
@@ -175,9 +157,7 @@ export const PremiumThemeSection = () => {
               <span className="block h-px w-16 bg-gradient-to-l from-transparent to-[#c4a053]" />
             </div>
 
-            {/* ── Horizontal Scroller ── */}
             <div className="relative mt-10 sm:mt-12">
-              {/* Prev button */}
               <button
                 type="button"
                 onClick={() => scrollDishes(-1)}
@@ -187,7 +167,6 @@ export const PremiumThemeSection = () => {
                 <ChevronLeft size={18} />
               </button>
 
-              {/* Next button */}
               <button
                 type="button"
                 onClick={() => scrollDishes(1)}
@@ -197,33 +176,35 @@ export const PremiumThemeSection = () => {
                 <ChevronRight size={18} />
               </button>
 
-              {/* Scroll container */}
               <div
                 ref={scrollerRef}
                 className="mx-11 overflow-x-auto scroll-smooth sm:mx-12"
                 style={{ scrollbarWidth: 'none' }}
               >
-                <div className="flex snap-x snap-mandatory gap-4 pb-2">
+                {/* FIX APPLIED HERE: Added items-stretch and pt-4/pb-8 for shadows */}
+                <div className="flex items-stretch snap-x snap-mandatory gap-4 pt-4 pb-8">
                   {signatureDishes.map((dish, i) => (
                     <motion.div
-                      key={dish.name}
+                      key={dish.name + i}
                       data-signature-card
                       initial={{ opacity: 0, y: 12 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, amount: 0.2 }}
                       transition={{ duration: 0.4, delay: i * 0.07, ease: 'easeOut' }}
-                      className="w-[calc((100%-0.75rem)/2)] min-w-[140px] shrink-0 snap-start sm:w-[320px] sm:min-w-0 lg:w-[350px]"
+                      // FIX APPLIED HERE: Added flex and h-auto
+                      className="flex h-auto w-[calc((100%-0.75rem)/2)] min-w-[140px] shrink-0 snap-start sm:w-[280px] sm:min-w-0 lg:w-[300px]"
                       style={{
                         filter:
-                          'drop-shadow(0 10px 22px rgba(80,40,0,0.12)) drop-shadow(0 0 0.5px rgba(196,160,83,0.9))',
+                          'drop-shadow(0 8px 18px rgba(66,36,10,0.12)) drop-shadow(0 0 0.5px rgba(196,160,83,0.8))',
                         transform: 'translateZ(0)',
                       }}
                     >
+                      {/* FIX APPLIED HERE: Added w-full */}
                       <article
-                        className="group flex h-full cursor-default flex-col"
-                        style={{ clipPath: 'url(#mughal-card)', background: '#faf4e6' }}
+                        className="group flex w-full h-full cursor-default flex-col border border-[#d5bb86]"
+                        style={{ clipPath: 'url(#mughal-card)', background: 'linear-gradient(180deg,#fff7e8 0%,#f9efdb 100%)' }}
                       >
-                        <div className="relative w-full overflow-hidden pt-[78%] sm:pt-[70%]">
+                        <div className="relative w-full overflow-hidden pt-[70%] sm:pt-[62%] shrink-0">
                           <img
                             src={dish.image}
                             alt={dish.name}
@@ -231,29 +212,31 @@ export const PremiumThemeSection = () => {
                             loading="lazy"
                             draggable={false}
                           />
-                          <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#faf4e6]/60 to-transparent" />
+                          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#f9efdb]/70 to-transparent" />
                         </div>
 
                         <div
-                          className="flex flex-1 flex-col items-center px-3 pb-4 pt-3 text-center sm:px-5 sm:pb-6 sm:pt-4"
-                          style={{ borderTop: '1px solid #e8d09a', background: '#faf4e6' }}
+                          className="flex flex-1 flex-col items-center justify-between px-3 pb-4 pt-3 text-center sm:px-4 sm:pb-5 sm:pt-3"
+                          style={{ borderTop: '1px solid #e0c794', background: '#f9efdb' }}
                         >
-                          <h3 className="min-h-[44px] font-serif text-[17px] font-normal leading-tight text-[#2a1e0e] sm:min-h-[58px] sm:text-[clamp(18px,1.8vw,24px)]">
-                            {dish.name}
-                          </h3>
+                          <div>
+                            <h3 className="min-h-[38px] font-serif text-[16px] font-normal leading-tight text-[#2a1e0e] sm:min-h-[46px] sm:text-[clamp(17px,1.7vw,21px)]">
+                              {dish.name}
+                            </h3>
 
-                          <p className="mt-1.5 min-h-[40px] px-1 text-[10.5px] leading-relaxed text-[#6b4f2a] sm:mt-2 sm:min-h-[38px] sm:text-[13px]">
-                            <span className="sm:hidden">
-                              {dish.description.length > 40
-                                ? `${dish.description.slice(0, 40).trimEnd()}...`
-                                : dish.description}
-                            </span>
-                            <span className="hidden sm:inline">{dish.description}</span>
-                          </p>
+                            <p className="mt-1.5 min-h-[36px] px-1 text-[10px] leading-relaxed text-[#6b4f2a] sm:mt-2 sm:min-h-[34px] sm:text-[12px]">
+                              <span className="sm:hidden">
+                                {dish.description.length > 40
+                                  ? `${dish.description.slice(0, 40).trimEnd()}...`
+                                  : dish.description}
+                              </span>
+                              <span className="hidden sm:inline">{dish.description}</span>
+                            </p>
+                          </div>
 
                           <Link
                             to="/menu"
-                            className="mt-auto inline-flex items-center rounded border border-[#c4a053] bg-[#ecd9a8] px-4 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-[#3d2806] transition-colors hover:bg-[#dabb80] sm:mt-4 sm:px-6 sm:py-2 sm:text-[10px] sm:tracking-[0.12em]"
+                            className="mt-4 inline-flex items-center rounded border border-[#c4a053] bg-[#f0dfb6] px-4 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-[#3d2806] transition-colors hover:bg-[#e3cd97] sm:px-5 sm:py-1.5 sm:text-[10px] sm:tracking-[0.12em]"
                           >
                             Order Now
                           </Link>
@@ -265,44 +248,34 @@ export const PremiumThemeSection = () => {
               </div>
             </div>
 
-            {/* ── CTA row ── */}
             <div className="mt-10 grid gap-3 md:grid-cols-2">
              <div className="relative w-full min-h-[220px] overflow-hidden rounded-2xl border border-[#6f2f22]">
+                <img
+                  src="/bookorderimg.png"
+                  alt="Order online Punjabi food"
+                  className="absolute inset-0 w-full h-full object-cover object-[75%_center]"
+                  loading="lazy"
+                />
 
-  {/* Image (pushed more right) */}
-  <img
-    src="/bookorderimg.png"
-    alt="Order online Punjabi food"
-    className="absolute inset-0 w-full h-full object-cover object-[75%_center]"
-    loading="lazy"
-  />
+                <div className="absolute inset-0 bg-[linear-gradient(100deg,rgba(20,4,4,0.97)_0%,rgba(40,8,8,0.9)_35%,rgba(60,12,10,0.55)_60%,rgba(0,0,0,0)_85%)]" />
 
-  {/* Stronger left protection gradient */}
-  <div className="absolute inset-0 bg-[linear-gradient(100deg,rgba(20,4,4,0.97)_0%,rgba(40,8,8,0.9)_35%,rgba(60,12,10,0.55)_60%,rgba(0,0,0,0)_85%)]" />
+                <div className="relative z-10 p-6 sm:p-8 max-w-[420px]">
+                  <h3 className="font-serif text-[clamp(26px,2.8vw,36px)] text-[#f4dfb4] leading-tight">
+                    Order Online
+                  </h3>
+                  <p className="mt-3 text-[13px] text-[#f5e8cc]/90 leading-relaxed">
+                    Enjoy your favourite Punjabi dishes at home with quick London delivery.
+                  </p>
+                  <Link
+                    to="/menu"
+                    className="mt-5 inline-flex items-center gap-2 rounded-lg border border-[#c8994b] bg-[#3f0808]/70 px-5 py-2 text-xs font-bold uppercase tracking-wide text-[#f8e3b8] hover:bg-[#5a1212]/80 transition"
+                  >
+                    <ShoppingBag size={14} />
+                    Order Now
+                  </Link>
+                </div>
+              </div>
 
-  {/* Content */}
-  <div className="relative z-10 p-6 sm:p-8 max-w-[420px]">
-    
-    <h3 className="font-serif text-[clamp(26px,2.8vw,36px)] text-[#f4dfb4] leading-tight">
-      Order Online
-    </h3>
-
-    <p className="mt-3 text-[13px] text-[#f5e8cc]/90 leading-relaxed">
-      Enjoy your favourite Punjabi dishes at home with quick London delivery.
-    </p>
-
-    <Link
-      to="/menu"
-      className="mt-5 inline-flex items-center gap-2 rounded-lg border border-[#c8994b] bg-[#3f0808]/70 px-5 py-2 text-xs font-bold uppercase tracking-wide text-[#f8e3b8] hover:bg-[#5a1212]/80 transition"
-    >
-      <ShoppingBag size={14} />
-      Order Now
-    </Link>
-
-  </div>
-</div>
-
-              {/* Book a Table */}
               <div
                 className="relative overflow-hidden rounded-2xl border border-[#1f4e43] p-5 sm:p-6"
                 style={{

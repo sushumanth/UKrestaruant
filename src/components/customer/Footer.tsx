@@ -9,13 +9,25 @@ export const Footer = () => {
           {/* Brand */}
           <div>
             <Link to="/" className="mb-6 inline-flex items-center">
-              <img
-                src="/logo.png"
-                alt="LuxeReserve"
-                className="h-12 w-auto max-w-[200px] object-contain drop-shadow-[0_4px_14px_rgba(0,0,0,0.35)]"
-                loading="lazy"
-                draggable={false}
-              />
+              <div className="relative flex items-center">
+                <img
+                  src="/logo1.png"
+                  alt="Singh's Dining lion logo"
+                  className="absolute -left-7 h-16 w-16 object-contain drop-shadow-[0_6px_18px_rgba(0,0,0,0.45)]"
+                  loading="lazy"
+                  draggable={false}
+                />
+                <div className="relative z-10 pl-6 leading-none">
+                <div className="flex items-end gap-2">
+                  <span className="font-serif text-[22px] tracking-wide text-[#F4F6FA]">Singh&apos;s</span>
+                  <span className="mb-1 inline-block h-4 w-px bg-[#D4A23A]/70" />
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#D4A23A]">Dining</span>
+                </div>
+                <span className="mt-1 block text-[10px] uppercase tracking-[0.28em] text-[#AFB8C8]">
+                  By Rangrez
+                </span>
+                </div>
+              </div>
             </Link>
             <p className="text-[#AFB8C8] text-sm leading-relaxed">
               A curated dining experience in the heart of Manchester. 

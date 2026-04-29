@@ -19,29 +19,29 @@ const journeySteps: JourneyStep[] = [
     title: 'Market-Fresh Sourcing',
     description: 'Premium produce and handpicked spices arrive fresh each morning.',
     image: '/Market-Fresh.png',
-    top: '42%',
-    left: '14%',
+    top: '58%',
+    left: '15%',
   },
   {
     title: 'Kitchen Craftsmanship',
     description: 'Our chefs slow-cook gravies and roast masalas with precision.',
     image: '/KitchenCraftsmanship.png',
-    top: '16%',
-    left: '33%',
+    top: '32%',
+    left: '35%',
   },
   {
     title: 'Signature Plating',
     description: 'Every dish is plated with modern elegance and royal warmth.',
     image: '/SignaturePlating.png',
-    top: '38%',
-    left: '56%',
+    top: '58%',
+    left: '55%',
   },
   {
     title: 'Luxury Dining Room',
     description: 'A refined ambience curated for memorable evenings in London.',
     image: '/lucry-dinning.png',
-    top: '12%',
-    left: '78%',
+    top: '32%',
+    left: '75%',
   },
 ];
 
@@ -134,7 +134,7 @@ export const AboutJourneySection = () => {
   }, [prefersReducedMotion]);
 
   return (
-    <section className="relative mt-2 overflow-hidden bg-[linear-gradient(150deg,#f5ecd9_0%,#f0e2c2_45%,#f6efde_100%)]">
+    <section className="relative mt-0 overflow-hidden bg-[linear-gradient(150deg,#f5ecd9_0%,#f0e2c2_45%,#f6efde_100%)]">
       <div className="mx-auto max-w-7xl px-6 pt-5 text-center sm:px-8 sm:pt-7 lg:px-12">
         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8d6435]">Our Culinary Journey</p>
         <h3 className="mt-3 font-serif text-[clamp(32px,4.2vw,60px)] leading-[0.92] text-[#2f1e0b]">
@@ -145,7 +145,7 @@ export const AboutJourneySection = () => {
         </p>
       </div>
 
-      <div ref={desktopSceneRef} className="relative -mt-12 hidden min-h-[84vh] lg:block">
+      <div ref={desktopSceneRef} className="relative mt-4 hidden min-h-[82vh] lg:block">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_22%,rgba(255,255,255,0.45),transparent_38%),radial-gradient(circle_at_86%_70%,rgba(180,126,54,0.16),transparent_33%)]" />
 
         <div className="absolute inset-0">
@@ -162,7 +162,7 @@ export const AboutJourneySection = () => {
           </svg>
         </div>
 
-        <div ref={carriageRef} className="absolute left-[120px] top-[270px] z-30">
+        <div ref={carriageRef} className="absolute left-0 top-0 z-30">
           <div className="relative">
             <span className="absolute inset-0 rounded-full bg-[#cb9548]/35 blur-lg" />
             <div className="relative flex h-14 w-14 items-center justify-center rounded-full border border-[#c99753] bg-[linear-gradient(135deg,#2f1b10,#5b3518)] shadow-[0_8px_18px_rgba(40,20,8,0.35)]">

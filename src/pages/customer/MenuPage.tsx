@@ -42,11 +42,11 @@ export const MenuPage = () => {
   }, {});
 
   return (
-    <div className="min-h-screen bg-[#f8f0e1] pt-24 text-[#2d241b]">
-      <div className="mx-auto max-w-7xl px-5 pb-16 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f8f0e1] pt-20 text-[#2d241b]">
+      <div className="w-full pb-16">
         <section
           ref={heroRef}
-          className="relative isolate overflow-hidden rounded-[30px] border border-[#dcc29a]/75 shadow-[0_22px_55px_rgba(79,39,13,0.24)]"
+          className="relative isolate -mt-2 w-full overflow-hidden rounded-none border-y border-[#e7d4b2] shadow-none"
         >
           <motion.img
             src="/Memus.png"
@@ -74,72 +74,79 @@ export const MenuPage = () => {
           </motion.div>
         </section>
 
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, ease: 'easeOut' }}
-          className="mt-4 max-w-3xl text-sm text-[#6f5f4a] sm:text-base"
-        >
-          Scroll and explore signature Punjabi dishes with a smooth, cinematic menu experience.
-        </motion.p>
+        <div className="mx-auto w-full max-w-[1400px] px-5 sm:px-6 lg:px-10">
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+            className="mt-4 max-w-3xl text-sm text-[#6f5f4a] sm:text-base"
+          >
+            Scroll and explore signature Punjabi dishes with a smooth, cinematic menu experience.
+          </motion.p>
 
-        <section className="sticky top-16 z-20 mt-6 rounded-3xl border border-[#ead6b8] bg-[#fffaf1]/95 p-4 shadow-[0_10px_30px_rgba(83,50,17,0.08)] backdrop-blur">
-          <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div className="relative">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a6d49]" />
-              <input
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search dishes"
-                className="h-12 w-full rounded-2xl border border-[#dcc9a4] bg-white pl-10 pr-4 text-[#2d241b] outline-none focus:border-[#c26d37]"
-              />
-            </div>
+          <section className="sticky top-16 z-20 mt-6 rounded-3xl border border-[#ead6b8] bg-[#fffaf1]/95 p-4 shadow-[0_10px_30px_rgba(83,50,17,0.08)] backdrop-blur">
+            <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
+              <div className="relative">
+                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a6d49]" />
+                <input
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Search dishes"
+                  className="h-12 w-full rounded-2xl border border-[#dcc9a4] bg-white pl-10 pr-4 text-[#2d241b] outline-none focus:border-[#c26d37]"
+                />
+              </div>
 
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setActiveCategory('all')}
-                className={`rounded-full px-4 py-2 text-sm font-medium ${activeCategory === 'all' ? 'bg-[#7d2419] text-[#fff3df]' : 'bg-[#f5ead7] text-[#6c583f]'}`}
-              >
-                All
-              </button>
-              {categories.map((category) => (
+              <div className="flex flex-wrap gap-2">
                 <button
-                  key={category.id}
                   type="button"
-                  onClick={() => setActiveCategory(category.id)}
-                  className={`rounded-full px-4 py-2 text-sm font-medium ${activeCategory === category.id ? 'bg-[#7d2419] text-[#fff3df]' : 'bg-[#f5ead7] text-[#6c583f]'}`}
+                  onClick={() => setActiveCategory('all')}
+                  className={`rounded-full px-4 py-2 text-sm font-medium ${activeCategory === 'all' ? 'bg-[#7d2419] text-[#fff3df]' : 'bg-[#f5ead7] text-[#6c583f]'}`}
                 >
-                  {category.label}
+                  All
                 </button>
-              ))}
+                {categories.map((category) => (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => setActiveCategory(category.id)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium ${activeCategory === category.id ? 'bg-[#7d2419] text-[#fff3df]' : 'bg-[#f5ead7] text-[#6c583f]'}`}
+                  >
+                    {category.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {filteredItems.map((item) => (
-            <motion.article
-              key={item.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#ead7ba] bg-[#fffaf1] shadow-[0_12px_26px_rgba(83,50,17,0.07)] sm:rounded-3xl sm:shadow-[0_16px_34px_rgba(83,50,17,0.06)]"
-            >
-              <img src={item.image} alt={item.name} className="h-28 w-full object-cover sm:h-48" loading="lazy" />
-              <div className="flex flex-1 flex-col p-3 sm:p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h3 className="font-serif text-[clamp(18px,4.8vw,28px)] leading-[0.95] text-[#2d2319] sm:text-2xl">
-                      {item.name}
-                    </h3>
-                    <p className="mt-1 min-h-[44px] text-[12px] leading-[1.35] text-[#6f5f4a] sm:mt-2 sm:min-h-[48px] sm:text-sm">
-                      <span className="sm:hidden">
-                        {item.description.length > 52
-                          ? `${item.description.slice(0, 52).trimEnd()}...`
-                          : item.description}
+          <section className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
+            {filteredItems.map((item) => (
+              <motion.article
+                key={item.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#ead7ba] bg-[#fffaf1] shadow-[0_12px_26px_rgba(83,50,17,0.07)] sm:rounded-3xl sm:shadow-[0_16px_34px_rgba(83,50,17,0.06)]"
+              >
+                <img src={item.image} alt={item.name} className="h-28 w-full object-cover sm:h-48" loading="lazy" />
+                <div className="flex flex-1 flex-col p-3 sm:p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h3 className="font-serif text-[clamp(18px,4.2vw,26px)] leading-[0.95] text-[#2d2319] sm:text-2xl">
+                        {item.name}
+                      </h3>
+                      <p className="mt-1 min-h-[44px] text-[12px] leading-[1.35] text-[#6f5f4a] sm:mt-2 sm:min-h-[48px] sm:text-sm">
+                        <span className="sm:hidden">
+                          {item.description.length > 52
+                            ? `${item.description.slice(0, 52).trimEnd()}...`
+                            : item.description}
+                        </span>
+                        <span className="hidden sm:inline">{item.description}</span>
+                      </p>
+                    </div>
+                    {item.isVeg && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[#e7f8e7] px-2 py-0.5 text-[10px] font-semibold text-[#2d7a2d] sm:px-2.5 sm:py-1 sm:text-xs">
+                        <Leaf size={12} /> Veg
                       </span>
-                      <span className="hidden sm:inline">{item.description}</span>
-                    </p>
+                    )}
                   </div>
                   <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold sm:px-2.5 sm:py-1 sm:text-xs ${item.isVeg ? 'bg-[#e7f8e7] text-[#2d7a2d]' : 'bg-[#ffe8e8] text-[#c41e1e]'}`}>
                     <Leaf size={12} />
@@ -158,50 +165,51 @@ export const MenuPage = () => {
                   </span>
                 </div>
 
-                <div className="mt-auto flex items-center justify-between pt-4">
-                  <span className="text-lg font-semibold text-[#7d2419] sm:text-xl">{formatCurrency(item.price)}</span>
-                  {itemQuantityById[item.id] ? (
-                    <div className="inline-flex items-center rounded-full border border-[#8f2a1d] bg-[#7d2419] p-1 text-[#fff3df] shadow-[0_4px_12px_rgba(60,20,10,0.2)]">
-                      <button
-                        type="button"
-                        onClick={() => updateItemQuantity(item.id, itemQuantityById[item.id] - 1)}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21]"
-                        aria-label={`Decrease quantity of ${item.name}`}
-                      >
-                        <Minus size={14} />
-                      </button>
-                      <span className="min-w-[22px] text-center text-sm font-bold leading-none">
-                        {itemQuantityById[item.id]}
-                      </span>
+                  <div className="mt-auto flex items-center justify-between pt-4">
+                    <span className="text-lg font-semibold text-[#7d2419] sm:text-xl">{formatCurrency(item.price)}</span>
+                    {itemQuantityById[item.id] ? (
+                      <div className="inline-flex items-center rounded-full border border-[#8f2a1d] bg-[#7d2419] p-1 text-[#fff3df] shadow-[0_4px_12px_rgba(60,20,10,0.2)]">
+                        <button
+                          type="button"
+                          onClick={() => updateItemQuantity(item.id, itemQuantityById[item.id] - 1)}
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21]"
+                          aria-label={`Decrease quantity of ${item.name}`}
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className="min-w-[22px] text-center text-sm font-bold leading-none">
+                          {itemQuantityById[item.id]}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21]"
+                          aria-label={`Increase quantity of ${item.name}`}
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    ) : (
                       <button
                         type="button"
                         onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21]"
-                        aria-label={`Increase quantity of ${item.name}`}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-[#7d2419] px-3 py-1.5 text-sm font-semibold text-[#fff3df] transition-colors hover:bg-[#942d21] sm:gap-2 sm:px-4 sm:py-2"
                       >
-                        <Plus size={14} />
+                        <Plus size={14} /> Add
                       </button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-[#7d2419] px-3 py-1.5 text-sm font-semibold text-[#fff3df] transition-colors hover:bg-[#942d21] sm:gap-2 sm:px-4 sm:py-2"
-                    >
-                      <Plus size={14} /> Add
-                    </button>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-            </motion.article>
-          ))}
-        </section>
+              </motion.article>
+            ))}
+          </section>
 
-        {filteredItems.length === 0 && (
-          <div className="mt-10 rounded-3xl border border-dashed border-[#dbc9aa] bg-[#fff7ea] p-8 text-center text-[#6f5f4a]">
-            No dishes match your search.
-          </div>
-        )}
+          {filteredItems.length === 0 && (
+            <div className="mt-10 rounded-3xl border border-dashed border-[#dbc9aa] bg-[#fff7ea] p-8 text-center text-[#6f5f4a]">
+              No dishes match your search.
+            </div>
+          )}
+        </div>
       </div>
 
       {cartCount > 0 && (
