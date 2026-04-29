@@ -145,7 +145,7 @@ export const AboutJourneySection = () => {
         </p>
       </div>
 
-      <div ref={desktopSceneRef} className="relative mt-4 hidden min-h-[82vh] lg:block">
+      <div ref={desktopSceneRef} className="relative mt-4 hidden min-h-[82dvh] lg:block">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_22%,rgba(255,255,255,0.45),transparent_38%),radial-gradient(circle_at_86%_70%,rgba(180,126,54,0.16),transparent_33%)]" />
 
         <div className="absolute inset-0">
