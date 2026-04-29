@@ -25,7 +25,7 @@ export const Navigation = () => {
               <img
                 src="/logo1.png"
                 alt="Singh's Dining lion logo"
-                className="absolute -left-7 top-1/2 h-14 w-14 -translate-y-1/2 object-contain drop-shadow-[0_6px_18px_rgba(0,0,0,0.45)]"
+                className="absolute -left-5 top-1/2 h-16 w-16 -translate-y-1/2 object-contain drop-shadow-[0_6px_18px_rgba(0,0,0,0.45)]"
                 loading="eager"
                 draggable={false}
               />
