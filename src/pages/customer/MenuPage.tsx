@@ -165,40 +165,39 @@ export const MenuPage = () => {
                   </span>
                 </div>
 
-                  <div className="mt-auto flex items-center justify-between pt-4">
-                    <span className="text-lg font-semibold text-[#7d2419] sm:text-xl">{formatCurrency(item.price)}</span>
-                    {itemQuantityById[item.id] ? (
-                      <div className="inline-flex items-center rounded-full border border-[#8f2a1d] bg-[#7d2419] p-1 text-[#fff3df] shadow-[0_4px_12px_rgba(60,20,10,0.2)]">
-                        <button
-                          type="button"
-                          onClick={() => updateItemQuantity(item.id, itemQuantityById[item.id] - 1)}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21]"
-                          aria-label={`Decrease quantity of ${item.name}`}
-                        >
-                          <Minus size={14} />
-                        </button>
-                        <span className="min-w-[22px] text-center text-sm font-bold leading-none">
-                          {itemQuantityById[item.id]}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21]"
-                          aria-label={`Increase quantity of ${item.name}`}
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
-                    ) : (
+                <div className="mt-auto flex items-center justify-between pt-4">
+                  <span className="text-lg font-semibold text-[#7d2419] sm:text-xl">{formatCurrency(item.price)}</span>
+                  {itemQuantityById[item.id] ? (
+                    <div className="inline-flex items-center rounded-full border border-[#8f2a1d] bg-[#7d2419] p-1 text-[#fff3df] shadow-[0_4px_12px_rgba(60,20,10,0.2)]">
+                      <button
+                        type="button"
+                        onClick={() => updateItemQuantity(item.id, itemQuantityById[item.id] - 1)}
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21]"
+                        aria-label={`Decrease quantity of ${item.name}`}
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <span className="min-w-[22px] text-center text-sm font-bold leading-none">
+                        {itemQuantityById[item.id]}
+                      </span>
                       <button
                         type="button"
                         onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-[#7d2419] px-3 py-1.5 text-sm font-semibold text-[#fff3df] transition-colors hover:bg-[#942d21] sm:gap-2 sm:px-4 sm:py-2"
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21]"
+                        aria-label={`Increase quantity of ${item.name}`}
                       >
-                        <Plus size={14} /> Add
+                        <Plus size={14} />
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[#7d2419] px-3 py-1.5 text-sm font-semibold text-[#fff3df] transition-colors hover:bg-[#942d21] sm:gap-2 sm:px-4 sm:py-2"
+                    >
+                      <Plus size={14} /> Add
+                    </button>
+                  )}
                 </div>
               </motion.article>
             ))}
