@@ -4,7 +4,9 @@ import {
   Calendar, 
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Utensils,
+  Map
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store';
@@ -13,6 +15,8 @@ import { signOutStaffPortal } from '@/lib/supabaseAdminApi';
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/employee' },
   { icon: Calendar, label: 'Bookings', href: '/employee/bookings' },
+  { icon: Utensils, label: 'Menu', href: '/employee/menu' },
+  { icon: Map, label: 'Floor Plan', href: '/employee/floor-plan' },
 ];
 
 export const EmployeeSidebar = () => {

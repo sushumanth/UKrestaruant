@@ -10,7 +10,8 @@ import type {
   TableStatus,
   DailyReport,
   RestaurantSettings,
-  TimeSlot 
+  TimeSlot,
+  MenuItem 
 } from '@/types';
 
 // Auth Store
@@ -101,7 +102,7 @@ interface TableState {
   tables: RestaurantTable[];
   selectedTable: RestaurantTable | null;
   setTables: (tables: RestaurantTable[]) => void;
-  updateTableStatus: (tableId: string, status: TableStatus) => void;
+  updateTableStatus: (tableId: string, status: TableStatus, timeSlot?: string | null) => void;
   updateTablePosition: (tableId: string, x: number, y: number) => void;
   setSelectedTable: (table: RestaurantTable | null) => void;
 }
@@ -110,15 +111,15 @@ export const useTableStore = create<TableState>()((set) => ({
   tables: [],
   selectedTable: null,
   setTables: (tables) => set({ tables }),
-  updateTableStatus: (tableId, status) => {
+  updateTableStatus: (tableId, status, timeSlot = null) => {
     set((state) => ({
       tables: state.tables.map((t) =>
-        t.id === tableId ? { ...t, status } : t
+        t.id === tableId ? { ...t, status, timeSlot } : t
       ),
     }));
 
     if (isSupabaseConfigured) {
-      void updateTableStatusInSupabase(tableId, status).catch((error: unknown) => {
+      void updateTableStatusInSupabase(tableId, status, timeSlot).catch((error: unknown) => {
         console.warn('Failed to sync table status to Supabase:', error);
       });
     }
@@ -182,6 +183,40 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
   settings: null,
   setSettings: (settings) => set({ settings }),
 }));
+
+// Menu Store
+interface MenuState {
+  menuItems: MenuItem[];
+  setMenuItems: (menuItems: MenuItem[]) => void;
+  upsertMenuItem: (menuItem: MenuItem) => void;
+  removeMenuItem: (menuItemId: string) => void;
+}
+
+export const useMenuStore = create<MenuState>()(
+  persist(
+    (set) => ({
+      menuItems: [],
+      setMenuItems: (menuItems) => set({ menuItems }),
+      upsertMenuItem: (menuItem) =>
+        set((state) => {
+          const exists = state.menuItems.some((item) => item.id === menuItem.id);
+
+          if (!exists) {
+            return { menuItems: [...state.menuItems, menuItem] };
+          }
+
+          return {
+            menuItems: state.menuItems.map((item) => (item.id === menuItem.id ? menuItem : item)),
+          };
+        }),
+      removeMenuItem: (menuItemId) =>
+        set((state) => ({
+          menuItems: state.menuItems.filter((item) => item.id !== menuItemId),
+        })),
+    }),
+    { name: 'menu-storage' }
+  )
+);
 
 // Menu Cart Store
 interface MenuCartItem {

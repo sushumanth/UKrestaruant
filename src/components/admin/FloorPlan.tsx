@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTableStore, useBookingStore } from '@/store';
-import type { RestaurantTable, Booking } from '@/types';
+import type { RestaurantTable, Booking, TableStatus } from '@/types';
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,7 @@ export const FloorPlan = ({
   readOnly = false,
   onTableClick 
 }: FloorPlanProps) => {
-  const { tables: storeTables } = useTableStore();
+  const { tables: storeTables, updateTableStatus } = useTableStore();
   const { bookings: storeBookings } = useBookingStore();
   const [selectedTable, setSelectedTable] = useState<RestaurantTable | null>(null);
 
@@ -54,6 +54,29 @@ export const FloorPlan = ({
     return statusColors.table[status as keyof typeof statusColors.table] || 'bg-slate-500';
   };
 
+  const getTableGeometry = (capacity: number) => {
+    const shape = capacity <= 4 ? 'round' : capacity <= 6 ? 'square' : 'rectangle';
+
+    return {
+      shape,
+      width: shape === 'round' ? 60 : shape === 'square' ? 70 : 100,
+      height: shape === 'rectangle' ? 80 : shape === 'round' ? 60 : 70,
+    };
+  };
+
+  const getTablePosition = (tableNumber: number) => ({
+    left: 100 + ((tableNumber - 1) % 10) * 120,
+    top: 100 + Math.floor((tableNumber - 1) / 10) * 100,
+  });
+
+  const statusActions: Array<{ status: TableStatus; label: string; className: string }> = [
+    { status: 'available', label: 'Set Available', className: 'border-emerald-200 text-emerald-700 hover:bg-emerald-50' },
+    { status: 'booked', label: 'Mark Booked', className: 'border-rose-200 text-rose-700 hover:bg-rose-50' },
+    { status: 'reserved', label: 'Reserve', className: 'border-amber-200 text-amber-700 hover:bg-amber-50' },
+    { status: 'seated', label: 'Mark Seated', className: 'border-blue-200 text-blue-700 hover:bg-blue-50' },
+    { status: 'blocked', label: 'Block Table', className: 'border-slate-200 text-slate-700 hover:bg-slate-50' },
+  ];
+
   return (
     <div className="relative">
       {/* Floor Plan Grid */}
@@ -65,6 +88,8 @@ export const FloorPlan = ({
         {tables.map((table) => {
           const booking = getTableBooking(table.id);
           const isSelected = selectedTable?.id === table.id;
+          const geometry = getTableGeometry(table.capacity);
+          const position = getTablePosition(table.tableNumber);
           
           return (
             <div
@@ -76,17 +101,17 @@ export const FloorPlan = ({
                 ${isSelected ? 'ring-2 ring-amber-700 ring-offset-2 ring-offset-amber-50' : ''}
               `}
               style={{
-                left: `${table.x}px`,
-                top: `${table.y}px`,
-                width: `${table.width}px`,
-                height: `${table.height}px`,
+                left: `${position.left}px`,
+                top: `${position.top}px`,
+                width: `${geometry.width}px`,
+                height: `${geometry.height}px`,
               }}
             >
               <div
                 className={`
                   w-full h-full rounded-lg border-2 flex flex-col items-center justify-center shadow-md
                   ${getStatusColor(table.status)}
-                  ${table.shape === 'round' ? 'rounded-full' : 'rounded-lg'}
+                  ${geometry.shape === 'round' ? 'rounded-full' : 'rounded-lg'}
                 `}
               >
                 <span className="font-mono text-xs text-white/90">T{table.tableNumber}</span>
@@ -143,17 +168,34 @@ export const FloorPlan = ({
                 </div>
               )}
 
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {statusActions.map((action) => (
+                  <Button
+                    key={action.status}
+                    variant="outline"
+                    className={action.className}
+                    onClick={() => {
+                      updateTableStatus(selectedTable.id, action.status);
+                      setSelectedTable(null);
+                    }}
+                    disabled={selectedTable.status === action.status}
+                  >
+                    {action.label}
+                  </Button>
+                ))}
+              </div>
+
               <div className="flex gap-3">
-                <Button 
+                <Button
                   className="flex-1 bg-amber-700 hover:bg-amber-800 text-white"
                   onClick={() => {
-                    // Update table status logic
+                    updateTableStatus(selectedTable.id, 'seated');
                     setSelectedTable(null);
                   }}
                 >
-                  Mark as Seated
+                  Mark Seated
                 </Button>
-                <Button 
+                <Button
                   className="flex-1 border border-amber-200 text-amber-700 hover:bg-amber-50"
                   onClick={() => setSelectedTable(null)}
                 >

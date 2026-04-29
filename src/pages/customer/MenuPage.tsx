@@ -1,23 +1,11 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Clock3, Leaf, Minus, Plus, Search, ShoppingBag, Star } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '@/lib/mockData';
-import { useMenuCartStore } from '@/store';
-
-type MenuCategory = 'starters' | 'mains' | 'biryani' | 'bread' | 'dessert';
-
-type MenuItem = {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: MenuCategory;
-  image: string;
-  rating: number;
-  prepTime: number;
-  isVeg: boolean;
-};
+import { formatMenuRating, getVisibleMenuItems } from '@/lib/menuUtils';
+import { useMenuCartStore, useMenuStore } from '@/store';
+import type { MenuCategory } from '@/types';
 
 const categories: Array<{ id: MenuCategory; label: string }> = [
   { id: 'starters', label: 'Starters' },
@@ -27,99 +15,9 @@ const categories: Array<{ id: MenuCategory; label: string }> = [
   { id: 'dessert', label: 'Dessert' },
 ];
 
-const menuItems: MenuItem[] = [
-  {
-    id: 'starter-1',
-    name: 'Paneer Tikka',
-    description: 'Char-grilled cottage cheese with smoky spice marinade.',
-    price: 8.5,
-    category: 'starters',
-    image: '/dining_room.jpg',
-    rating: 4.8,
-    prepTime: 14,
-    isVeg: true,
-  },
-  {
-    id: 'starter-2',
-    name: 'Chicken 65',
-    description: 'Crispy fried chicken tossed in South Indian spices.',
-    price: 9.5,
-    category: 'starters',
-    image: '/kitchen_team.jpg',
-    rating: 4.7,
-    prepTime: 12,
-    isVeg: false,
-  },
-  {
-    id: 'main-1',
-    name: 'Butter Chicken',
-    description: 'Tender chicken in creamy tomato butter gravy.',
-    price: 13.9,
-    category: 'mains',
-    image: '/chef_plating.jpg',
-    rating: 4.9,
-    prepTime: 18,
-    isVeg: false,
-  },
-  {
-    id: 'main-2',
-    name: 'Dal Makhani',
-    description: 'Slow-cooked black lentils finished with cream.',
-    price: 11.5,
-    category: 'mains',
-    image: '/homepa1.png',
-    rating: 4.7,
-    prepTime: 16,
-    isVeg: true,
-  },
-  {
-    id: 'biryani-1',
-    name: 'Lamb Biryani',
-    description: 'Fragrant basmati rice with slow-cooked lamb.',
-    price: 14.9,
-    category: 'biryani',
-    image: '/dessert.jpg',
-    rating: 4.8,
-    prepTime: 22,
-    isVeg: false,
-  },
-  {
-    id: 'biryani-2',
-    name: 'Veg Dum Biryani',
-    description: 'Saffron basmati layered with vegetables and herbs.',
-    price: 12.2,
-    category: 'biryani',
-    image: '/backgroundtheme1.png',
-    rating: 4.6,
-    prepTime: 20,
-    isVeg: true,
-  },
-  {
-    id: 'bread-1',
-    name: 'Garlic Naan',
-    description: 'Tandoor-baked naan topped with butter and garlic.',
-    price: 3.5,
-    category: 'bread',
-    image: '/homepa1.png',
-    rating: 4.7,
-    prepTime: 8,
-    isVeg: true,
-  },
-  {
-    id: 'dessert-1',
-    name: 'Gulab Jamun',
-    description: 'Warm milk-solid dumplings in cardamom syrup.',
-    price: 5.2,
-    category: 'dessert',
-    image: '/dessert.jpg',
-    rating: 4.9,
-    prepTime: 6,
-    isVeg: true,
-  },
-];
-
 export const MenuPage = () => {
   const { items, addItem, updateItemQuantity } = useMenuCartStore();
+  const { menuItems } = useMenuStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<MenuCategory | 'all'>('all');
   const heroRef = useRef<HTMLElement | null>(null);
@@ -134,38 +32,14 @@ export const MenuPage = () => {
   const heroTextY = useTransform(scrollYProgress, [0, 1], [0, -26]);
   const heroTextOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.72]);
 
-  const filteredItems = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
+  const filteredItems = getVisibleMenuItems(menuItems, searchQuery, activeCategory);
 
-    return menuItems.filter((item) => {
-      const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
-      const matchesQuery =
-        !query ||
-        item.name.toLowerCase().includes(query) ||
-        item.description.toLowerCase().includes(query);
-
-      return matchesCategory && matchesQuery;
-    });
-  }, [activeCategory, searchQuery]);
-
-  const cartCount = useMemo(
-    () => items.reduce((sum, item) => sum + item.quantity, 0),
-    [items],
-  );
-
-  const cartTotal = useMemo(
-    () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    [items],
-  );
-
-  const itemQuantityById = useMemo(
-    () =>
-      items.reduce<Record<string, number>>((acc, item) => {
-        acc[item.id] = item.quantity;
-        return acc;
-      }, {}),
-    [items],
-  );
+  const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const cartTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const itemQuantityById = items.reduce<Record<string, number>>((acc, item) => {
+    acc[item.id] = item.quantity;
+    return acc;
+  }, {});
 
   return (
     <div className="min-h-screen bg-[#f8f0e1] pt-20 text-[#2d241b]">
@@ -274,17 +148,22 @@ export const MenuPage = () => {
                       </span>
                     )}
                   </div>
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold sm:px-2.5 sm:py-1 sm:text-xs ${item.isVeg ? 'bg-[#e7f8e7] text-[#2d7a2d]' : 'bg-[#ffe8e8] text-[#c41e1e]'}`}>
+                    <Leaf size={12} />
+                    {item.isVeg ? 'Veg' : 'Non-Veg'}
+                  </span>
+                </div>
 
-                  <div className="mt-3 flex min-h-[20px] items-center gap-6 text-[12px] text-[#7d6a57] sm:mt-4 sm:min-h-[22px] sm:text-sm">
-                    <span className="inline-flex items-center gap-1.5 tabular-nums">
-                      <Star size={13} className="text-[#b9832f] sm:h-[14px] sm:w-[14px]" />
-                      {item.rating.toFixed(1)}
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 tabular-nums">
-                      <Clock3 size={13} className="sm:h-[14px] sm:w-[14px]" />
-                      {item.prepTime} min
-                    </span>
-                  </div>
+                <div className="mt-3 flex min-h-[20px] items-center gap-6 text-[12px] text-[#7d6a57] sm:mt-4 sm:min-h-[22px] sm:text-sm">
+                  <span className="inline-flex items-center gap-1.5 tabular-nums">
+                    <Star size={13} className="text-[#b9832f] sm:h-[14px] sm:w-[14px]" />
+                    {formatMenuRating(item.rating)}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 tabular-nums">
+                    <Clock3 size={13} className="sm:h-[14px] sm:w-[14px]" />
+                    {item.prepTime} min
+                  </span>
+                </div>
 
                   <div className="mt-auto flex items-center justify-between pt-4">
                     <span className="text-lg font-semibold text-[#7d2419] sm:text-xl">{formatCurrency(item.price)}</span>

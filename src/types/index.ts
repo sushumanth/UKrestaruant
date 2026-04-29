@@ -2,6 +2,8 @@
 
 export type UserRole = 'admin' | 'employee' | 'customer';
 
+export type MenuCategory = 'starters' | 'mains' | 'biryani' | 'bread' | 'dessert';
+
 export interface User {
   id: string;
   email: string;
@@ -19,11 +21,9 @@ export interface RestaurantTable {
   tableNumber: number;
   capacity: number;
   status: TableStatus;
-  x: number;
-  y: number;
-  shape: 'round' | 'square' | 'rectangle';
-  width: number;
-  height: number;
+  timeSlot?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export type BookingStatus = 'pending' | 'confirmed' | 'arrived' | 'seated' | 'completed' | 'cancelled' | 'no_show';
@@ -85,6 +85,23 @@ export interface RestaurantSettings {
   defaultDepositAmount: number;
   cancellationDeadlineHours: number;
   autoReleaseMinutes: number;
+}
+
+export interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: MenuCategory;
+  image: string;
+  rating: number;
+  prepTime: number;
+  isVeg: boolean;
+  tags: string[];
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Component Props Types

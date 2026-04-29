@@ -5,6 +5,7 @@ import {
   Map, 
   BarChart3, 
   Settings, 
+  UtensilsCrossed,
   LogOut,
   ChevronLeft,
   ChevronRight
@@ -16,6 +17,7 @@ import { signOutStaffPortal } from '@/lib/supabaseAdminApi';
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin' },
   { icon: Calendar, label: 'Bookings', href: '/admin/bookings' },
+  { icon: UtensilsCrossed, label: 'Menu', href: '/admin/menu' },
   { icon: Map, label: 'Floor Plan', href: '/admin/floor-plan' },
   { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
   { icon: Settings, label: 'Settings', href: '/admin/settings' },
