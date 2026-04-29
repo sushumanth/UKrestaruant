@@ -254,6 +254,7 @@ function App() {
           <Route index element={<EmployeeDashboard />} />
           <Route path="bookings" element={<EmployeeBookings />} />
           <Route path="menu" element={<EmployeeMenu />} />
+          <Route path="floor-plan" element={<AdminFloorPlan />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

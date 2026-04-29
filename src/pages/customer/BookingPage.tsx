@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Calendar,
@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar as DateCalendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 import { useBookingStore, useMenuCartStore, useTableStore } from '@/store';
 import { formatDate, formatTime, generateBookingId, findOptimalTable, formatCurrency } from '@/lib/mockData';
 import { saveBookingToSupabase } from '@/lib/supabaseBookingApi';
@@ -25,6 +26,17 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 
 // Mock Stripe key - in production, use environment variable
 const stripePromise = loadStripe('pk_test_your_publishable_key');
+
+const baseSlotTimes = [
+  '11:00',  '11:30', 
+  '12:00',  '12:30', 
+  '13:00',  '13:30', 
+  '14:00',  '14:30', 
+  '18:00',  '18:30', 
+  '19:00', '19:30', 
+  '20:00',  '20:30', 
+  '21:00',  '21:30',
+];
 
 const PaymentForm = ({ 
   onSuccess, 
@@ -127,6 +139,7 @@ const PaymentForm = ({
 export const BookingPage = () => {
   const navigate = useNavigate();
   const { 
+    bookings,
     selectedDate, 
     selectedTime, 
     selectedGuests, 
@@ -135,7 +148,7 @@ export const BookingPage = () => {
     setSelectedTime,
     setSelectedGuests,
   } = useBookingStore();
-  const { tables, selectedTable, setSelectedTable } = useTableStore();
+  const { tables, selectedTable, setSelectedTable, updateTableStatus } = useTableStore();
   const { items: cartItems, clearCart } = useMenuCartStore();
 
   // Form state - MUST be before early return
@@ -184,17 +197,6 @@ export const BookingPage = () => {
     '18:00', '19:00', '20:00', '21:00'
   ];
 
-  const baseSlotTimes = [
-    '11:00', '11:15', '11:30', '11:45',
-    '12:00', '12:15', '12:30', '12:45',
-    '13:00', '13:15', '13:30', '13:45',
-    '14:00', '14:15', '14:30', '14:45',
-    '18:00', '18:15', '18:30', '18:45',
-    '19:00', '19:15', '19:30', '19:45',
-    '20:00', '20:15', '20:30', '20:45',
-    '21:00', '21:15', '21:30', '21:45',
-  ];
-
   // Memoized slot computation - uses draft values for real-time updates
   const visibleSlots = useMemo(() => {
     const filteredTimes = draftTimeFilter === 'All Times'
@@ -206,7 +208,57 @@ export const BookingPage = () => {
       const available = seed % 7 !== 0;
       return { time, available };
     });
-  }, [baseSlotTimes, draftDate, draftGuests, draftTimeFilter]);
+  }, [draftDate, draftGuests, draftTimeFilter]);
+
+  const selectedBookingDate = useMemo(() => format(draftDate, 'yyyy-MM-dd'), [draftDate]);
+
+  const availableTables = useMemo(() => {
+    if (!selectedSlotTime) {
+      return [];
+    }
+
+    const occupiedStatuses = ['pending', 'confirmed', 'arrived', 'seated'];
+    const selectedTime = selectedSlotTime.slice(0, 5);
+
+    return tables
+      .slice()
+      .sort((left, right) => left.tableNumber - right.tableNumber)
+      .filter((table) => {
+        const isTooSmall = table.capacity < draftGuests;
+        const isBookedForSlot = bookings.some(
+          (booking) =>
+            booking.date === selectedBookingDate &&
+            booking.time.slice(0, 5) === selectedTime &&
+            occupiedStatuses.includes(booking.status) &&
+            (booking.tableId === table.id || booking.tableNumber === table.tableNumber)
+        );
+
+        return table.status !== 'blocked' && !isTooSmall && !isBookedForSlot;
+      });
+  }, [bookings, draftGuests, selectedBookingDate, selectedSlotTime, tables]);
+
+  useEffect(() => {
+    if (!selectedTable) {
+      return;
+    }
+
+    const stillAvailable = availableTables.some((table) => table.id === selectedTable.id);
+
+    if (!stillAvailable) {
+      setSelectedTable(null);
+    }
+  }, [availableTables, selectedTable, setSelectedTable]);
+
+  const handleTimeFilterSelect = (time: string) => {
+    setDraftTimeFilter(time);
+
+    if (time === 'All Times') {
+      setSelectedSlotTime('');
+      return;
+    }
+
+    setSelectedSlotTime(time);
+  };
 
   const applySearchFilters = () => {
     // Collapse all sections and reset slot selection for a clean UX
@@ -216,7 +268,7 @@ export const BookingPage = () => {
 
   const continueWithSelectedSlot = () => {
     if (!selectedSlotTime) return;
-    setSelectedDate(draftDate.toISOString().split('T')[0]);
+    setSelectedDate(format(draftDate, 'yyyy-MM-dd'));
     setSelectedTime(selectedSlotTime);
     setSelectedGuests(draftGuests);
   };
@@ -378,9 +430,9 @@ export const BookingPage = () => {
                       {timeFilterOptions.map(time => (
                         <button
                           key={time}
-                          onClick={() => setDraftTimeFilter(time)}
+                          onClick={() => handleTimeFilterSelect(time)}
                           className={`py-2 rounded-lg font-medium text-sm transition-all ${
-                            draftTimeFilter === time
+                            selectedSlotTime === time || draftTimeFilter === time
                               ? 'bg-amber-600 text-white shadow-md'
                               : 'bg-white border border-black/15 text-black/70 hover:border-amber-400'
                           }`}
@@ -434,6 +486,58 @@ export const BookingPage = () => {
                       {selectedSlotTime ? `Continue with ${selectedSlotTime}` : 'Select a Time Slot'}
                     </button>
                   </div>
+
+                  {selectedSlotTime && (
+                    <div className="border-t border-black/8 bg-white px-6 py-5 space-y-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-700/70">Available Tables</p>
+                          <p className="text-sm text-amber-900/75">
+                            {formatDate(draftDate.toISOString().split('T')[0])} at {formatTime(selectedSlotTime)}
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+                          {availableTables.length} open
+                        </span>
+                      </div>
+
+                      {availableTables.length > 0 ? (
+                        <div className="grid max-h-64 grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3">
+                          {availableTables.map((table) => (
+                            <button
+                              key={table.id}
+                              type="button"
+                              onClick={() => setSelectedTable(table)}
+                              className={`rounded-2xl border px-3 py-3 text-left transition-all ${selectedTable?.id === table.id
+                                ? 'border-amber-700 bg-amber-100 shadow-md ring-2 ring-amber-200'
+                                : 'border-amber-200 bg-amber-50/70 hover:border-amber-400 hover:bg-amber-50'
+                                }`}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <p className="font-serif text-lg text-amber-950">T{table.tableNumber}</p>
+                                  <p className="text-xs text-amber-700/70">{table.capacity} guests</p>
+                                </div>
+                                {selectedTable?.id === table.id && (
+                                  <span className="rounded-full bg-amber-700 px-2 py-1 text-[10px] font-semibold text-white">
+                                    Selected
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
+                          No tables are available for this date and time. Choose another slot.
+                        </div>
+                      )}
+
+                      <p className="text-xs text-amber-700/60">
+                        Selecting a table is optional. If you skip it, the system will assign the best available table when you complete the booking.
+                      </p>
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -486,6 +590,11 @@ export const BookingPage = () => {
     }
 
     addBooking(newBooking);
+
+    if (chosenTable) {
+      const timeSlot = new Date(`${selectedDate}T${selectedTime}:00`).toISOString();
+      updateTableStatus(chosenTable.id, 'booked', timeSlot);
+    }
 
     void sendBookingConfirmationEmail(newBooking).then((result) => {
       if (!result.ok) {

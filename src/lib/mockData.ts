@@ -14,20 +14,12 @@ export const generateTables = (): RestaurantTable[] => {
   
   for (let i = 1; i <= 50; i++) {
     const capacity = capacities[Math.floor(Math.random() * capacities.length)];
-    const shape = capacity <= 4 ? 'round' : capacity <= 6 ? 'square' : 'rectangle';
-    const width = shape === 'round' ? 60 : shape === 'square' ? 70 : 100;
-    const height = shape === 'rectangle' ? 80 : width;
     
     tables.push({
       id: `table-${i}`,
       tableNumber: i,
       capacity,
       status: Math.random() > 0.7 ? 'booked' : 'available',
-      x: 100 + ((i - 1) % 10) * 120,
-      y: 100 + Math.floor((i - 1) / 10) * 100,
-      shape,
-      width,
-      height,
     });
   }
   return tables;
@@ -281,15 +273,24 @@ export const generateTimeSlots = (date: string): { time: string; available: bool
   void date;
   const slots: { time: string; available: boolean; availableTables: number }[] = [];
 
-  for (let hour = 0; hour < 24; hour++) {
-    const time = `${String(hour).padStart(2, '0')}:00`;
-    const availableTables = Math.floor(Math.random() * 15) + 5;
+  const windows = [
+    { startHour: 11, endHour: 15 },
+    { startHour: 18, endHour: 22 },
+  ];
 
-    slots.push({
-      time,
-      available: availableTables > 0,
-      availableTables,
-    });
+  for (const window of windows) {
+    for (let hour = window.startHour; hour < window.endHour; hour += 1) {
+      for (const minutes of [0, 15, 30, 45]) {
+        const time = `${String(hour).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        const availableTables = Math.floor(Math.random() * 15) + 5;
+
+        slots.push({
+          time,
+          available: availableTables > 0,
+          availableTables,
+        });
+      }
+    }
   }
   
   return slots;
@@ -304,6 +305,7 @@ export const findOptimalTable = (
   time: string
 ): RestaurantTable | null => {
   // Filter available tables
+  const normalizedTime = time.slice(0, 5);
   const availableTables = tables.filter((table) => {
     // Check capacity
     if (table.capacity < guests) return false;
@@ -311,9 +313,9 @@ export const findOptimalTable = (
     // Check if table is already booked for this time
     const isBooked = existingBookings.some(
       (b) => 
-        b.tableId === table.id &&
+        (b.tableId === table.id || b.tableNumber === table.tableNumber) &&
         b.date === date &&
-        b.time === time &&
+        b.time.slice(0, 5) === normalizedTime &&
         ['confirmed', 'arrived', 'seated'].includes(b.status)
     );
     

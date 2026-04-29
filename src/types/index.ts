@@ -21,11 +21,9 @@ export interface RestaurantTable {
   tableNumber: number;
   capacity: number;
   status: TableStatus;
-  x: number;
-  y: number;
-  shape: 'round' | 'square' | 'rectangle';
-  width: number;
-  height: number;
+  timeSlot?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export type BookingStatus = 'pending' | 'confirmed' | 'arrived' | 'seated' | 'completed' | 'cancelled' | 'no_show';

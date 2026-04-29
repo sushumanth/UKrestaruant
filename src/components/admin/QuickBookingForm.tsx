@@ -23,7 +23,7 @@ const guestOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 export const QuickBookingForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const { addBooking, bookings } = useBookingStore();
-  const { tables } = useTableStore();
+  const { tables, updateTableStatus } = useTableStore();
   
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState('');
@@ -75,6 +75,10 @@ export const QuickBookingForm = ({ onSuccess }: { onSuccess?: () => void }) => {
     };
 
     addBooking(newBooking);
+    if (optimalTable) {
+      const timeSlot = new Date(`${dateStr}T${time}:00`).toISOString();
+      updateTableStatus(optimalTable.id, 'booked', timeSlot);
+    }
     void saveBookingToSupabase(newBooking).then((result) => {
       if (!result.ok) {
         console.warn('Quick booking save to Supabase skipped:', result.error);

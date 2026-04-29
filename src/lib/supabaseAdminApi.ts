@@ -30,11 +30,9 @@ type DbTableRow = {
   table_number: number;
   capacity: number;
   status: TableStatus;
-  x: number;
-  y: number;
-  shape: 'round' | 'square' | 'rectangle';
-  width: number;
-  height: number;
+  time_slot: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 type DbSettingsRow = {
@@ -122,11 +120,9 @@ const mapTableRow = (row: DbTableRow): RestaurantTable => ({
   tableNumber: row.table_number,
   capacity: row.capacity,
   status: row.status,
-  x: row.x,
-  y: row.y,
-  shape: row.shape,
-  width: row.width,
-  height: row.height,
+  timeSlot: row.time_slot ?? null,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
 });
 
 const mapSettingsRow = (row: DbSettingsRow): RestaurantSettings => ({
@@ -272,7 +268,7 @@ export const fetchPublicOperationalData = async (): Promise<{
   }
 
   const [tablesResponse, settingsResponse, menuItemsResponse] = await Promise.all([
-    supabase.from('restaurant_tables').select('*').order('table_number', { ascending: true }),
+    supabase.from('restaurant_tables').select('id, table_number, capacity, status, time_slot, created_at, updated_at').order('table_number', { ascending: true }),
     supabase.from('restaurant_settings').select('*').limit(1).maybeSingle<DbSettingsRow>(),
     supabase
       .from('menu_items')
@@ -433,19 +429,43 @@ export const updateBookingStatusInSupabase = async (bookingId: string, status: B
   }
 };
 
-export const updateTableStatusInSupabase = async (tableId: string, status: TableStatus): Promise<void> => {
+export const updateTableStatusInSupabase = async (tableId: string, status: TableStatus, timeSlot: string | null = null): Promise<void> => {
   if (!supabase) {
     return;
   }
 
   const { error } = await supabase
     .from('restaurant_tables')
-    .update({ status, updated_at: new Date().toISOString() })
+    .update({ status, time_slot: timeSlot, updated_at: new Date().toISOString() })
     .eq('id', tableId);
 
   if (error) {
     throw new Error(error.message);
   }
+};
+
+export const createRestaurantTableInSupabase = async (table: RestaurantTable): Promise<RestaurantTable> => {
+  if (!supabase) {
+    return table;
+  }
+
+  const { data, error } = await supabase
+    .from('restaurant_tables')
+    .insert({
+      id: table.id,
+      table_number: table.tableNumber,
+      capacity: table.capacity,
+      status: table.status,
+      time_slot: table.timeSlot ?? null,
+    })
+    .select('id, table_number, capacity, status, time_slot, created_at, updated_at')
+    .single<DbTableRow>();
+
+  if (error || !data) {
+    throw new Error(error?.message ?? 'Failed to create table.');
+  }
+
+  return mapTableRow(data);
 };
 
 export const updateRestaurantSettingsInSupabase = async (payload: {

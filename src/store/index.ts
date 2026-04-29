@@ -102,7 +102,7 @@ interface TableState {
   tables: RestaurantTable[];
   selectedTable: RestaurantTable | null;
   setTables: (tables: RestaurantTable[]) => void;
-  updateTableStatus: (tableId: string, status: TableStatus) => void;
+  updateTableStatus: (tableId: string, status: TableStatus, timeSlot?: string | null) => void;
   updateTablePosition: (tableId: string, x: number, y: number) => void;
   setSelectedTable: (table: RestaurantTable | null) => void;
 }
@@ -111,15 +111,15 @@ export const useTableStore = create<TableState>()((set) => ({
   tables: [],
   selectedTable: null,
   setTables: (tables) => set({ tables }),
-  updateTableStatus: (tableId, status) => {
+  updateTableStatus: (tableId, status, timeSlot = null) => {
     set((state) => ({
       tables: state.tables.map((t) =>
-        t.id === tableId ? { ...t, status } : t
+        t.id === tableId ? { ...t, status, timeSlot } : t
       ),
     }));
 
     if (isSupabaseConfigured) {
-      void updateTableStatusInSupabase(tableId, status).catch((error: unknown) => {
+      void updateTableStatusInSupabase(tableId, status, timeSlot).catch((error: unknown) => {
         console.warn('Failed to sync table status to Supabase:', error);
       });
     }

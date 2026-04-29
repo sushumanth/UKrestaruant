@@ -79,11 +79,7 @@ create table if not exists public.restaurant_tables (
   table_number integer not null unique,
   capacity integer not null check (capacity > 0),
   status text not null check (status in ('available', 'booked', 'reserved', 'seated', 'blocked')),
-  x integer not null default 0,
-  y integer not null default 0,
-  shape text not null check (shape in ('round', 'square', 'rectangle')),
-  width integer not null check (width > 0),
-  height integer not null check (height > 0),
+  time_slot timestamptz null,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
@@ -336,12 +332,7 @@ insert into public.restaurant_tables (
   id,
   table_number,
   capacity,
-  status,
-  x,
-  y,
-  shape,
-  width,
-  height
+  status
 )
 select
   'table-' || g::text as id,
@@ -352,26 +343,7 @@ select
     when g % 10 = 9 then 6
     else 8
   end as capacity,
-  'available' as status,
-  100 + ((g - 1) % 10) * 120 as x,
-  100 + floor((g - 1) / 10.0)::int * 100 as y,
-  case
-    when g % 10 in (1,2,3,4,5,6,7,8) then 'round'
-    when g % 10 = 9 then 'square'
-    else 'rectangle'
-  end as shape,
-  case
-    when g % 10 in (1,2,3,4,5,6,7,8) then 60
-    when g % 10 = 9 then 70
-    else 100
-  end as width,
-  case
-    when g % 10 = 0 then 80
-    else case
-      when g % 10 in (1,2,3,4,5,6,7,8) then 60
-      else 70
-    end
-  end as height
+  'available' as status
 from generate_series(1, 50) g
 where not exists (select 1 from public.restaurant_tables);
 
@@ -559,7 +531,7 @@ using (public.is_admin());
 
 drop policy if exists "Public read tables" on public.restaurant_tables;
 drop policy if exists "Staff admin update tables" on public.restaurant_tables;
-drop policy if exists "Admin insert tables" on public.restaurant_tables;
+drop policy if exists "Staff admin insert tables" on public.restaurant_tables;
 drop policy if exists "Admin delete tables" on public.restaurant_tables;
 
 create policy "Public read tables"
@@ -575,11 +547,11 @@ to authenticated
 using (public.is_staff_or_admin())
 with check (public.is_staff_or_admin());
 
-create policy "Admin insert tables"
+create policy "Staff admin insert tables"
 on public.restaurant_tables
 for insert
 to authenticated
-with check (public.is_admin());
+with check (public.is_staff_or_admin());
 
 create policy "Admin delete tables"
 on public.restaurant_tables
