@@ -4,7 +4,7 @@ import { Footer } from '@/components/customer/Footer';
 
 export const CustomerLayout = () => {
   const location = useLocation();
-  const shouldHideFooter = ['/book', '/confirmation'].includes(location.pathname);
+  const shouldHideFooter = ['/booking', '/online-order', '/confirmation'].includes(location.pathname);
 
   return (
     <div className="min-h-screen pastel-luxe-bg text-[#F4F6FA]">

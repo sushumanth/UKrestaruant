@@ -1,12 +1,16 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ShoppingBag } from 'lucide-react';
+import { Menu, X, ShoppingBag, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useMenuCartStore } from '@/store';
+import { useCustomerAuthStore, useMenuCartStore } from '@/store';
+import { signOutCustomer } from '@/lib/supabaseCustomerApi';
 
 export const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+  const { customer, isCustomerAuthenticated, logoutCustomer } = useCustomerAuthStore();
   const cartItems = useMenuCartStore((state) => state.items);
   const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
@@ -14,6 +18,27 @@ export const Navigation = () => {
   const aboutHref = isHomePage ? '#about-us' : '/#about-us';
   const galleryHref = isHomePage ? '#gallery' : '/#gallery';
   const contactHref = isHomePage ? '#contact' : '/#contact';
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+        setIsUserDropdownOpen(false);
+      }
+    }
+
+    if (isUserDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isUserDropdownOpen]);
+
+  const handleCustomerSignOut = async () => {
+    await signOutCustomer();
+    logoutCustomer();
+    setIsMobileMenuOpen(false);
+    setIsUserDropdownOpen(false);
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b bg-[linear-gradient(90deg,rgba(74,9,7,0.96),rgba(52,8,6,0.96))] border-[#8d5a25]/45 shadow-[0_10px_30px_rgba(0,0,0,0.35)] py-2">
@@ -63,7 +88,7 @@ export const Navigation = () => {
               Order Online
             </Link>
             <Link
-              to="/book"
+              to="/booking"
               className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
             >
               Book Table
@@ -98,16 +123,70 @@ export const Navigation = () => {
                 </span>
               )}
             </Link>
+            {isCustomerAuthenticated ? (
+              <div className="relative" ref={userDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                  className="p-2 rounded-lg transition-colors text-[#f4dfb6] hover:text-[#ffe9bf] hover:bg-[#8d5a25]/20"
+                >
+                  <User size={20} strokeWidth={1.5} />
+                </button>
+                
+                <AnimatePresence>
+                  {isUserDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 mt-2 w-48 rounded-lg bg-[linear-gradient(135deg,rgba(66,10,7,0.98),rgba(41,8,6,0.98))] border border-[#8d5a25]/45 shadow-2xl overflow-hidden z-50"
+                    >
+                      <Link
+                        to="/customer/dashboard"
+                        className="block w-full px-4 py-3 text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf] hover:bg-[#8d5a25]/30 text-left border-b border-[#8d5a25]/30"
+                        onClick={() => setIsUserDropdownOpen(false)}
+                      >
+                        Dashboard
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={handleCustomerSignOut}
+                        className="block w-full px-4 py-3 text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf] hover:bg-[#8d5a25]/30 text-left"
+                      >
+                        Logout
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <Link
+                to={cartItemCount > 0 ? `/customer/auth?redirect=${encodeURIComponent('/online-order')}` : '/customer/auth?redirect=/booking'}
+                className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
 
           {/* CTA Button */}
           <div className="hidden md:block">
-            <Link
-              to="/book"
-              className="relative overflow-hidden inline-flex items-center justify-center rounded-lg px-5 py-2 text-[13px] font-semibold uppercase tracking-[0.06em] transition-all duration-300 bg-[#d7a44f] text-[#2f180b] hover:bg-[#e2b160]"
-            >
-              Book A Table
-            </Link>
+            {isCustomerAuthenticated ? (
+              <Link
+                to="/booking"
+                className="relative overflow-hidden inline-flex items-center justify-center rounded-lg px-5 py-2 text-[13px] font-semibold uppercase tracking-[0.06em] transition-all duration-300 bg-[#d7a44f] text-[#2f180b] hover:bg-[#e2b160]"
+              >
+                Book A Table
+              </Link>
+            ) : (
+              <Link
+                to={cartItemCount > 0 ? `/customer/auth?redirect=${encodeURIComponent('/online-order')}` : '/customer/auth?redirect=/booking'}
+                className="relative overflow-hidden inline-flex items-center justify-center rounded-lg px-5 py-2 text-[13px] font-semibold uppercase tracking-[0.06em] transition-all duration-300 bg-[#d7a44f] text-[#2f180b] hover:bg-[#e2b160]"
+              >
+                Sign In to Book
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -153,7 +232,7 @@ export const Navigation = () => {
                 Order Online
               </Link>
               <Link
-                to="/book"
+                to="/booking"
                 className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -193,12 +272,38 @@ export const Navigation = () => {
                   </span>
                 )}
               </Link>
+              {isCustomerAuthenticated ? (
+                <>
+                  <Link
+                    to="/customer/dashboard"
+                    className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {customer ? `${customer.firstName} Dashboard` : 'My Bookings'}
+                  </Link>
+                  <button
+                    type="button"
+                    className="text-left text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
+                    onClick={handleCustomerSignOut}
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to={cartItemCount > 0 ? `/customer/auth?redirect=${encodeURIComponent('/online-order')}` : '/customer/auth?redirect=/booking'}
+                  className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
+              )}
               <Link
-                to="/book"
+                to={isCustomerAuthenticated ? '/booking' : (cartItemCount > 0 ? `/customer/auth?redirect=${encodeURIComponent('/online-order')}` : '/customer/auth?redirect=/booking')}
                 className="mt-6 flex justify-center items-center py-3.5 text-lg font-semibold rounded-xl transition-all bg-[#d7a44f] text-[#2f180b] hover:bg-[#e2b160]"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Book A Table
+                {isCustomerAuthenticated ? 'Book A Table' : 'Sign In to Book'}
               </Link>
             </div>
           </motion.div>

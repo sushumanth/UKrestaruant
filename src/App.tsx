@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useAuthStore } from '@/store';
+import { useAuthStore, useCustomerAuthStore } from '@/store';
 import { generateTables, generateBookings, mockUsers, mockSettings, generateReports } from '@/lib/mockData';
 import { mockMenuItems } from '@/lib/mockData';
 import { useTableStore, useBookingStore, useSettingsStore, useAnalyticsStore, useMenuStore } from '@/store';
@@ -12,6 +12,7 @@ import {
   fetchStaffOperationalData,
   resolveCurrentStaffUser,
 } from '@/lib/supabaseAdminApi';
+import { resolveCurrentCustomer } from '@/lib/supabaseCustomerApi';
 
 // Layouts
 import { CustomerLayout } from '@/layouts/CustomerLayout';
@@ -22,8 +23,11 @@ import { EmployeeLayout } from '@/layouts/EmployeeLayout';
 import { HomePage } from '@/pages/customer/HomePage';
 import { MenuPage } from '@/pages/customer/MenuPage';
 import { CartPage } from '@/pages/customer/CartPage';
+import { OrderOnlinePage } from '@/pages/customer/order_online';
 import { BookingPage } from '@/pages/customer/BookingPage';
 import { BookingConfirmationPage } from '@/pages/customer/BookingConfirmationPage';
+import { CustomerAuthPage } from '@/pages/customer/CustomerAuthPage';
+import { CustomerDashboardPage } from '@/pages/customer/CustomerDashboardPage';
 import { AdminDashboard } from '@/pages/admin/AdminDashboard';
 import { AdminBookings } from '@/pages/admin/AdminBookings';
 import { AdminMenu } from '@/pages/admin/AdminMenu';
@@ -59,6 +63,18 @@ const ProtectedRoute = ({
   return <>{children}</>;
 };
 
+const CustomerProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isCustomerAuthenticated } = useCustomerAuthStore();
+  const location = useLocation();
+
+  if (!isCustomerAuthenticated) {
+    const redirectTarget = `${location.pathname}${location.search}`;
+    return <Navigate to={`/customer/auth?redirect=${encodeURIComponent(redirectTarget)}`} replace />;
+  }
+
+  return <>{children}</>;
+};
+
 const ScrollToTop = () => {
   const { pathname } = useLocation();
 
@@ -78,6 +94,7 @@ const ScrollToTop = () => {
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
   const { user, isAuthenticated, login, logout } = useAuthStore();
+  const { loginCustomer, logoutCustomer } = useCustomerAuthStore();
   const { setTables } = useTableStore();
   const { setBookings } = useBookingStore();
   const { setSettings } = useSettingsStore();
@@ -206,6 +223,32 @@ function App() {
   }, [isAuthenticated, setBookings, setMenuItems, setReports, setSettings, setTables, user]);
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      return;
+    }
+
+    let isMounted = true;
+
+    void (async () => {
+      const currentCustomer = await resolveCurrentCustomer();
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (currentCustomer) {
+        loginCustomer(currentCustomer);
+      } else {
+        logoutCustomer();
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [loginCustomer, logoutCustomer]);
+
+  useEffect(() => {
     ScrollTrigger.refresh();
   }, []);
 
@@ -220,12 +263,13 @@ function App() {
         <Route path="/" element={<CustomerLayout />}>
           <Route index element={<HomePage />} />
           <Route path="menu" element={<MenuPage />} />
+          <Route path="online-order" element={<OrderOnlinePage />} />
           <Route path="cart" element={<CartPage />} />
-          <Route path="book" element={<BookingPage />} />
           <Route path="confirmation" element={<BookingConfirmationPage />} />
         </Route>
 
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/customer/auth" element={<CustomerAuthPage />} />
 
         <Route
           path="/admin"
@@ -255,6 +299,30 @@ function App() {
           <Route path="bookings" element={<EmployeeBookings />} />
           <Route path="menu" element={<EmployeeMenu />} />
           <Route path="floor-plan" element={<AdminFloorPlan />} />
+        </Route>
+
+        <Route path="/book" element={<Navigate to="/booking" replace />} />
+
+        <Route
+          path="/booking"
+          element={
+            <CustomerProtectedRoute>
+              <CustomerLayout />
+            </CustomerProtectedRoute>
+          }
+        >
+          <Route index element={<BookingPage />} />
+        </Route>
+
+        <Route
+          path="/customer/dashboard"
+          element={
+            <CustomerProtectedRoute>
+              <CustomerLayout />
+            </CustomerProtectedRoute>
+          }
+        >
+          <Route index element={<CustomerDashboardPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

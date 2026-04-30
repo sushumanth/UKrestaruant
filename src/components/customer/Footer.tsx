@@ -80,7 +80,7 @@ export const Footer = () => {
             <h4 className="font-serif text-lg text-[#F4F6FA] mb-6">Quick Links</h4>
             <ul className="space-y-3">
               <li>
-                <Link to="/book" className="text-[#AFB8C8] text-sm hover:text-[#D4A23A] transition-colors">
+                <Link to="/booking" className="text-[#AFB8C8] text-sm hover:text-[#D4A23A] transition-colors">
                   Book a Table
                 </Link>
               </li>

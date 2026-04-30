@@ -4,6 +4,7 @@ import { isSupabaseConfigured } from '@/lib/supabase';
 import { updateBookingStatusInSupabase, updateTableStatusInSupabase } from '@/lib/supabaseAdminApi';
 import type { 
   User, 
+  CustomerAccount,
   RestaurantTable, 
   Booking, 
   BookingStatus, 
@@ -291,3 +292,23 @@ export const useMockDataStore = create<MockDataState>()((set) => ({
   isMockMode: !isSupabaseConfigured,
   toggleMockMode: () => set((state) => ({ isMockMode: !state.isMockMode })),
 }));
+
+// Customer Auth Store
+interface CustomerAuthState {
+  customer: CustomerAccount | null;
+  isCustomerAuthenticated: boolean;
+  loginCustomer: (customer: CustomerAccount) => void;
+  logoutCustomer: () => void;
+}
+
+export const useCustomerAuthStore = create<CustomerAuthState>()(
+  persist(
+    (set) => ({
+      customer: null,
+      isCustomerAuthenticated: false,
+      loginCustomer: (customer) => set({ customer, isCustomerAuthenticated: true }),
+      logoutCustomer: () => set({ customer: null, isCustomerAuthenticated: false }),
+    }),
+    { name: 'customer-auth-storage' }
+  )
+);

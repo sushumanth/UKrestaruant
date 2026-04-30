@@ -151,7 +151,7 @@ export const HomePage = () => {
                     Explore Menu
                   </Link>
                   <Link
-                    to="/book"
+                    to="/booking"
                     className="inline-flex items-center gap-2 rounded-full border border-[#9f7c42] bg-transparent px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#4a2511] transition-colors hover:bg-[#fff7e8]"
                   >
                     Reserve Now <ArrowRight size={16} />
@@ -226,7 +226,7 @@ export const HomePage = () => {
               <span className="text-amber-700 text-xs font-bold tracking-widest uppercase">Tonight is filling fast</span>
               <h2 className="font-serif text-amber-900 text-4xl sm:text-5xl leading-tight mt-2">Today&apos;s Popular Tables</h2>
             </div>
-            <Link to="/book" className="inline-flex items-center gap-2 px-6 py-2 border-2 border-amber-700 text-amber-700 hover:bg-amber-700 hover:text-white font-semibold rounded-full transition-all">
+            <Link to="/booking" className="inline-flex items-center gap-2 px-6 py-2 border-2 border-amber-700 text-amber-700 hover:bg-amber-700 hover:text-white font-semibold rounded-full transition-all">
               Book now <ArrowRight size={16} />
             </Link>
           </div>
@@ -334,7 +334,7 @@ export const HomePage = () => {
                     <Mail size={16} /> hello@luxereserve.co
                   </a>
                 </div>
-                <Link to="/book" className="inline-flex items-center gap-2 mt-7 px-8 py-3 bg-amber-700 hover:bg-amber-800 text-white font-semibold rounded-full transition-all shadow-lg">
+                <Link to="/booking" className="inline-flex items-center gap-2 mt-7 px-8 py-3 bg-amber-700 hover:bg-amber-800 text-white font-semibold rounded-full transition-all shadow-lg">
                   Book Now <ArrowRight size={18} />
                 </Link>
               </div>

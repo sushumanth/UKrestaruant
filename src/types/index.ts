@@ -14,6 +14,15 @@ export interface User {
   createdAt: string;
 }
 
+export interface CustomerAccount {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  createdAt: string;
+}
+
 export type TableStatus = 'available' | 'booked' | 'reserved' | 'seated' | 'blocked';
 
 export interface RestaurantTable {
