@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { CalendarDays, ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
+import DishFrame from '../ui/DishFrame';
 
 type SignatureDish = {
   name: string;
@@ -102,25 +103,6 @@ export const PremiumThemeSection = () => {
 
   return (
     <>
-      <svg width="0" height="0" className="absolute -z-10" aria-hidden="true">
-        <defs>
-          <clipPath id="mughal-card" clipPathUnits="objectBoundingBox">
-            <path d="
-              M 0.05,1
-              L 0,0.95
-              L 0,0.14
-              C 0.13,0.14 0.28,0.08 0.38,0.04
-              C 0.43,0.02 0.47,0 0.5,0
-              C 0.53,0 0.57,0.02 0.62,0.04
-              C 0.72,0.08 0.87,0.14 1,0.14
-              L 1,0.95
-              L 0.95,1
-              Z
-            " />
-          </clipPath>
-        </defs>
-      </svg>
-
       <section
         className="relative w-full overflow-hidden py-4 sm:py-8"
         style={{
@@ -182,7 +164,7 @@ export const PremiumThemeSection = () => {
                 style={{ scrollbarWidth: 'none' }}
               >
                 {/* FIX APPLIED HERE: Added items-stretch and pt-4/pb-8 for shadows */}
-                <div className="flex items-stretch snap-x snap-mandatory gap-4 pt-4 pb-8">
+                <div className="flex items-stretch snap-x snap-mandatory gap-6 pt-4 pb-8">
                   {signatureDishes.map((dish, i) => (
                     <motion.div
                       key={dish.name + i}
@@ -192,56 +174,19 @@ export const PremiumThemeSection = () => {
                       viewport={{ once: true, amount: 0.2 }}
                       transition={{ duration: 0.4, delay: i * 0.07, ease: 'easeOut' }}
                       // FIX APPLIED HERE: Added flex and h-auto
-                      className="flex h-auto w-[calc((100%-0.75rem)/2)] min-w-[140px] shrink-0 snap-start sm:w-[280px] sm:min-w-0 lg:w-[300px]"
-                      style={{
-                        filter:
-                          'drop-shadow(0 8px 18px rgba(66,36,10,0.12)) drop-shadow(0 0 0.5px rgba(196,160,83,0.8))',
-                        transform: 'translateZ(0)',
-                      }}
+                      className="relative flex h-auto w-[calc((100%-0.75rem)/2)] min-w-[140px] shrink-0 snap-start sm:w-[280px] sm:min-w-0 lg:w-[300px]"
                     >
-                      {/* FIX APPLIED HERE: Added w-full */}
-                      <article
-                        className="group flex w-full h-full cursor-default flex-col border border-[#d5bb86]"
-                        style={{ clipPath: 'url(#mughal-card)', background: 'linear-gradient(180deg,#fff7e8 0%,#f9efdb 100%)' }}
-                      >
-                        <div className="relative w-full overflow-hidden pt-[70%] sm:pt-[62%] shrink-0">
-                          <img
-                            src={dish.image}
-                            alt={dish.name}
-                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                            loading="lazy"
-                            draggable={false}
-                          />
-                          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#f9efdb]/70 to-transparent" />
-                        </div>
-
-                        <div
-                          className="flex flex-1 flex-col items-center justify-between px-3 pb-4 pt-3 text-center sm:px-4 sm:pb-5 sm:pt-3"
-                          style={{ borderTop: '1px solid #e0c794', background: '#f9efdb' }}
-                        >
-                          <div>
-                            <h3 className="min-h-[38px] font-serif text-[16px] font-normal leading-tight text-[#2a1e0e] sm:min-h-[46px] sm:text-[clamp(17px,1.7vw,21px)]">
-                              {dish.name}
-                            </h3>
-
-                            <p className="mt-1.5 min-h-[36px] px-1 text-[10px] leading-relaxed text-[#6b4f2a] sm:mt-2 sm:min-h-[34px] sm:text-[12px]">
-                              <span className="sm:hidden">
-                                {dish.description.length > 40
-                                  ? `${dish.description.slice(0, 40).trimEnd()}...`
-                                  : dish.description}
-                              </span>
-                              <span className="hidden sm:inline">{dish.description}</span>
-                            </p>
-                          </div>
-
-                          <Link
-                            to="/menu"
-                            className="mt-4 inline-flex items-center rounded border border-[#c4a053] bg-[#f0dfb6] px-4 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-[#3d2806] transition-colors hover:bg-[#e3cd97] sm:px-5 sm:py-1.5 sm:text-[10px] sm:tracking-[0.12em]"
-                          >
-                            Order Now
-                          </Link>
-                        </div>
-                      </article>
+                      <DishFrame
+              name={dish.name}
+              image={dish.image}
+              description={dish.description}
+            />
+             {i !== signatureDishes.length - 1 && (
+                <div className="pointer-events-none absolute right-[-4px] top-0 hidden h-full md:block">
+                  <div className="absolute left-1/2 top-0 h-full w-[2px] -translate-x-1/2 bg-[#d8c498]" />
+                  <div className="absolute left-1/2 top-0 h-full w-[7px] -translate-x-1/2 bg-gradient-to-b from-transparent via-[#e8db62]/45 to-transparent blur-[1px]" />
+                </div>
+              )}
                     </motion.div>
                   ))}
                 </div>
