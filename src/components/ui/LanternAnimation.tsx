@@ -385,7 +385,7 @@ const topMaskInnerStyle =
   return (
     <div
       ref={lanternBoxRef}
-      className={`absolute z-40 pointer-events-auto flex justify-center items-start ${className}`}
+      className={`absolute z-40 pointer-events-auto ${className}`}
       onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}

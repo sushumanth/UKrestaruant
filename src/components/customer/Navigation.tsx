@@ -21,7 +21,7 @@ export const Navigation = () => {
         <div className="flex items-center justify-between h-16 transition-all duration-300">
           {/* Logo */}
           <Link to="/" className="group inline-flex items-center">
-            <div className="relative flex items-center">
+            <div className="relative flex items-center p-3">
               <img
                 src="/logo1.png"
                 alt="Singh's Dining lion logo"
@@ -32,10 +32,10 @@ export const Navigation = () => {
               <div className="relative z-10 pl-7 leading-none">
                 <div className="flex items-end gap-2">
                   <span className="font-serif text-[22px] tracking-wide text-[#F4F6FA]">Singh&apos;s</span>
-                  <span className="mb-1 inline-block h-4 w-px bg-[#D4A23A]/70" />
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#D4A23A]">Dining</span>
+                  <span className="inline-block h-4 w-px bg-[#D4A23A]/70" />
+                  <span className="pb-1 text-[11px] font-semibold uppercase tracking-[0.32em] text-[#D4A23A]">Dining</span>
                 </div>
-                <span className="mt-1 block text-[10px] uppercase tracking-[0.28em] text-[#AFB8C8]">
+                <span className="pt-2 block text-[10px] uppercase tracking-[0.28em] text-[#AFB8C8]">
                   By Rangrez
                 </span>
               </div>
@@ -55,19 +55,7 @@ export const Navigation = () => {
               className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
             >
               Menu
-            </Link>
-            <Link
-              to="/menu"
-              className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-            >
-              Order Online
-            </Link>
-            <Link
-              to="/book"
-              className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-            >
-              Book Table
-            </Link>
+            </Link> 
             <a
               href={aboutHref}
               className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
@@ -97,16 +85,6 @@ export const Navigation = () => {
                   {cartItemCount}
                 </span>
               )}
-            </Link>
-          </div>
-
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            <Link
-              to="/book"
-              className="relative overflow-hidden inline-flex items-center justify-center rounded-lg px-5 py-2 text-[13px] font-semibold uppercase tracking-[0.06em] transition-all duration-300 bg-[#d7a44f] text-[#2f180b] hover:bg-[#e2b160]"
-            >
-              Book A Table
             </Link>
           </div>
 
@@ -144,20 +122,6 @@ export const Navigation = () => {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Menu
-              </Link>
-              <Link
-                to="/menu"
-                className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Order Online
-              </Link>
-              <Link
-                to="/book"
-                className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Book Table
               </Link>
               <a
                 href={aboutHref}
