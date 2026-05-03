@@ -10,8 +10,6 @@ type JourneyStep = {
   title: string;
   description: string;
   image: string;
-  top: string;
-  left: string;
 };
 
 const journeySteps: JourneyStep[] = [
@@ -19,209 +17,161 @@ const journeySteps: JourneyStep[] = [
     title: 'Market-Fresh Sourcing',
     description: 'Premium produce and handpicked spices arrive fresh each morning.',
     image: '/Market-Fresh.png',
-    top: '58%',
-    left: '15%',
   },
   {
     title: 'Kitchen Craftsmanship',
     description: 'Our chefs slow-cook gravies and roast masalas with precision.',
     image: '/KitchenCraftsmanship.png',
-    top: '32%',
-    left: '35%',
   },
   {
     title: 'Signature Plating',
     description: 'Every dish is plated with modern elegance and royal warmth.',
     image: '/SignaturePlating.png',
-    top: '58%',
-    left: '55%',
   },
   {
     title: 'Luxury Dining Room',
     description: 'A refined ambience curated for memorable evenings in London.',
     image: '/lucry-dinning.png',
-    top: '32%',
-    left: '75%',
   },
 ];
 
 export const AboutJourneySection = () => {
   const prefersReducedMotion = useReducedMotion();
-  const desktopSceneRef = useRef<HTMLDivElement | null>(null);
-  const pathRef = useRef<SVGPathElement | null>(null);
-  const carriageRef = useRef<HTMLDivElement | null>(null);
-  const stepRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
+  const carriageRef = useRef<HTMLDivElement>(null);
+  
 
   useEffect(() => {
-    if (prefersReducedMotion) {
-      return;
-    }
+    if (prefersReducedMotion) return;
 
-    const mm = gsap.matchMedia();
+    const ctx = gsap.context(() => {
+      // Desktop Animation (1024px +)
+      const mm = gsap.matchMedia();
 
-    mm.add('(min-width: 1024px)', () => {
-      if (!desktopSceneRef.current || !pathRef.current || !carriageRef.current) {
-        return;
-      }
+      mm.add("(min-width: 1024px)", () => {
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top top",
+            end: "+=3000",
+            pin: true,
+            scrub: 1,
+          },
+        });
 
-      const stepCards = stepRefs.current.filter((step): step is HTMLDivElement => Boolean(step));
-      if (!stepCards.length) {
-        return;
-      }
-
-      gsap.set(stepCards, { autoAlpha: 0, y: 28, scale: 0.96 });
-      gsap.set(stepCards[0], { autoAlpha: 1, y: 0, scale: 1 });
-      gsap.set(carriageRef.current, { autoAlpha: 1, xPercent: -50, yPercent: -50, transformOrigin: '50% 50%' });
-
-      const scrollTimeline = gsap.timeline({
-        defaults: { ease: 'none' },
-        scrollTrigger: {
-          trigger: desktopSceneRef.current,
-          start: 'top top',
-          end: '+=2400',
-          pin: true,
-          scrub: 1,
-          anticipatePin: 1,
-        },
-      });
-
-      scrollTimeline.to(
-        carriageRef.current,
-        {
-          duration: 1,
+        // 1. Animate the carriage along the path
+        tl.to(carriageRef.current, {
           motionPath: {
-            path: pathRef.current,
-            align: pathRef.current,
+            path: pathRef.current!,
+            align: pathRef.current!,
             alignOrigin: [0.5, 0.5],
             autoRotate: true,
-            start: 0,
-            end: 1,
           },
-        },
-        0,
-      );
+          ease: "none",
+        }, 0);
 
-      stepCards.forEach((stepCard, index) => {
-        if (index === 0) {
-          return;
-        }
-
-        const progress = index / Math.max(stepCards.length - 1, 1);
-        const revealAt = Math.max(progress - 0.06, 0);
-
-        scrollTimeline.to(
-          stepCard,
-          {
-            autoAlpha: 1,
-            y: 0,
-            scale: 1,
-            duration: 0.12,
-            ease: 'power2.out',
-          },
-          revealAt,
-        );
+        // 2. Animate cards appearing as the carriage passes
+        const cards = gsap.utils.toArray<HTMLElement>(".journey-card");
+        cards.forEach((card, i) => {
+          tl.fromTo(card, 
+            { autoAlpha: 0, y: 50, scale: 0.9 },
+            { autoAlpha: 1, y: 0, scale: 1, duration: 0.2 },
+            (i / cards.length) * 0.8 // Stagger reveal based on path progress
+          );
+        });
       });
+    }, containerRef);
 
-      return () => {
-        scrollTimeline.scrollTrigger?.kill();
-        scrollTimeline.kill();
-      };
-    });
-
-    return () => {
-      mm.revert();
-    };
+    return () => ctx.revert();
   }, [prefersReducedMotion]);
 
   return (
-    <section className="relative mt-0 overflow-hidden bg-[linear-gradient(150deg,#f5ecd9_0%,#f0e2c2_45%,#f6efde_100%)]">
-      <div className="mx-auto max-w-7xl px-6 pt-5 text-center sm:px-8 sm:pt-7 lg:px-12">
+    <section 
+      ref={containerRef}
+      className="relative overflow-hidden bg-[#f5ecd9] py-16 lg:py-0"
+    >
+      {/* Background Decorative Gradient */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(185,140,69,0.15),transparent_70%)]" />
+
+      {/* Header Section */}
+      <div className="relative z-10 mx-auto max-w-7xl px-6 text-center lg:pt-20">
         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8d6435]">Our Culinary Journey</p>
-        <h3 className="mt-3 font-serif text-[clamp(32px,4.2vw,60px)] leading-[0.92] text-[#2f1e0b]">
+        <h3 className="mt-3 font-serif text-[clamp(32px,5vw,60px)] leading-none text-[#2f1e0b]">
           Scroll Through The Story
         </h3>
-        <p className="mx-auto mt-4 max-w-3xl text-[15px] leading-relaxed text-[#6b4c2e] sm:text-[16px]">
-          A cinematic walkthrough of how each plate travels from market freshness to your table.
-        </p>
       </div>
 
-      <div ref={desktopSceneRef} className="relative mt-4 hidden min-h-[82dvh] lg:block">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_22%,rgba(255,255,255,0.45),transparent_38%),radial-gradient(circle_at_86%_70%,rgba(180,126,54,0.16),transparent_33%)]" />
+      {/* DESKTOP VIEW: Path & Carriage (Visible on lg+) */}
+      <div className="relative mx-auto hidden h-[80vh] max-w-7xl lg:block">
+        <svg 
+          viewBox="0 0 1200 500" 
+          className="absolute inset-0 h-full w-full opacity-30"
+          preserveAspectRatio="xMidYMid meet"
+        >
+          <path
+            ref={pathRef}
+            d="M100 350 C 250 350 300 150 450 150 C 600 150 650 350 800 350 C 950 350 1000 150 1100 150"
+            fill="none"
+            stroke="#8d6435"
+            strokeWidth="2"
+            strokeDasharray="8 8"
+          />
+        </svg>
 
-        <div className="absolute inset-0">
-          <svg viewBox="0 0 1200 500" className="h-full w-full" aria-hidden="true">
-            <path
-              ref={pathRef}
-              d="M120 270 C 250 190 330 110 430 118 C 560 128 578 286 715 272 C 860 258 910 126 1060 102"
-              fill="none"
-              stroke="rgba(153,111,52,0.72)"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeDasharray="2 12"
-            />
-          </svg>
-        </div>
-
+        {/* Moving Marker */}
         <div ref={carriageRef} className="absolute left-0 top-0 z-30">
-          <div className="relative">
-            <span className="absolute inset-0 rounded-full bg-[#cb9548]/35 blur-lg" />
-            <div className="relative flex h-14 w-14 items-center justify-center rounded-full border border-[#c99753] bg-[linear-gradient(135deg,#2f1b10,#5b3518)] shadow-[0_8px_18px_rgba(40,20,8,0.35)]">
-              <span className="inline-flex h-10 w-10 overflow-hidden rounded-full border border-[#d7aa62]/65 bg-[#1a0d06]">
-                <img
-                  src="/logosolo.png"
-                  alt="Journey marker"
-                  className="h-full w-full scale-[1.16] object-cover"
-                  loading="lazy"
-                  draggable={false}
-                />
-              </span>
-            </div>
-          </div>
+           <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-[#c99753] bg-[#2f1b10] shadow-xl">
+              <img src="/logosolo.png" alt="marker" className="h-8 w-8 rounded-full object-cover" />
+           </div>
         </div>
 
-        <div className="absolute inset-0">
-          {journeySteps.map((step, index) => (
-            <div
-              key={step.title}
-              ref={(node) => {
-                stepRefs.current[index] = node;
-              }}
-              className="absolute z-20 w-[280px] overflow-hidden rounded-2xl border border-[#c9a46a]/65 bg-[#fff8eb]/96 shadow-[0_18px_42px_rgba(70,44,16,0.18)] backdrop-blur-[2px]"
-              style={{ top: step.top, left: step.left, transform: 'translate(-50%, -50%)' }}
+        {/* Floating Cards - Positioned via Grid/Flex instead of hardcoded Top/Left */}
+        <div className="relative flex h-full items-center justify-around px-10">
+          {journeySteps.map((step, i) => (
+            <div 
+              key={i} 
+              className="journey-card invisible flex w-64 flex-col rounded-2xl border border-[#c9a46a]/40 bg-white/80 p-4 shadow-xl backdrop-blur-md"
+              style={{ marginTop: i % 2 === 0 ? '160px' : '-160px' }} // Zig-zag pattern
             >
-              <img src={step.image} alt={step.title} className="h-36 w-full object-cover" loading="lazy" draggable={false} />
-              <div className="p-4">
-                <h4 className="font-serif text-[28px] leading-[0.92] text-[#2f1d0a]">{step.title}</h4>
-                <p className="mt-2 text-sm leading-relaxed text-[#6f5434]">{step.description}</p>
-              </div>
+              <img src={step.image} className="h-32 w-full rounded-lg object-cover" alt={step.title} />
+              <h4 className="mt-4 font-serif text-xl text-[#2f1e0b]">{step.title}</h4>
+              <p className="mt-2 text-sm text-[#6f5434]">{step.description}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-5 pb-8 pt-5 sm:px-8 lg:hidden">
-        <div className="relative mx-auto max-w-lg">
-          <div className="absolute bottom-6 left-4 top-6 w-px bg-[linear-gradient(180deg,rgba(185,140,69,0.2),rgba(185,140,69,0.8),rgba(185,140,69,0.2))]" />
+      {/* MOBILE/TABLET VIEW: Vertical Timeline (Visible below lg) */}
+      <div className="relative z-10 mx-auto max-w-2xl px-6 pt-12 lg:hidden">
+        <div className="absolute left-10 top-12 bottom-12 w-px bg-dashed bg-[#8d6435]/30" 
+             style={{ backgroundImage: 'linear-gradient(to bottom, #8d6435 50%, transparent 50%)', backgroundSize: '1px 15px' }} 
+        />
+        
+        <div className="space-y-12">
+          {journeySteps.map((step, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              className="relative flex items-start gap-8"
+            >
+              {/* Dot */}
+              <div className="relative z-10 mt-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-[#c99753] bg-[#f5ecd9]">
+                <div className="h-2 w-2 rounded-full bg-[#8d6435]" />
+              </div>
 
-          <div className="space-y-5">
-            {journeySteps.map((step, index) => (
-              <motion.article
-                key={step.title}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.25 }}
-                transition={{ duration: 0.45, delay: index * 0.06 }}
-                className="relative ml-8 overflow-hidden rounded-2xl border border-[#cfad76]/65 bg-[#fff8eb] shadow-[0_14px_34px_rgba(70,44,16,0.12)]"
-              >
-                <span className="absolute -left-8 top-6 inline-flex h-4 w-4 items-center justify-center rounded-full border border-[#ba8d4a] bg-[#f4e4c2]" />
-                <img src={step.image} alt={step.title} className="h-40 w-full object-cover" loading="lazy" draggable={false} />
-                <div className="p-4">
-                  <h4 className="font-serif text-[30px] leading-[0.9] text-[#2f1d0a]">{step.title}</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-[#6f5434]">{step.description}</p>
+              {/* Card */}
+              <div className="overflow-hidden rounded-2xl border border-[#cfad76]/50 bg-white shadow-lg">
+                <img src={step.image} className="h-48 w-full object-cover" alt={step.title} />
+                <div className="p-6">
+                  <h4 className="font-serif text-2xl text-[#2f1d0a]">{step.title}</h4>
+                  <p className="mt-2 text-[#6f5434]">{step.description}</p>
                 </div>
-              </motion.article>
-            ))}
-          </div>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
