@@ -3,7 +3,7 @@ import { CalendarDays, Crown, Soup, Truck, Wheat } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const experiencePoints = [
-  { icon: Soup, title: 'Soup Bowl', subtitle: 'Authentic Punjabi Recipes' },
+  { icon: Soup, title: 'Soup Bowl', subtitle: 'Authentic Traditional Recipes' },
   { icon: Wheat, title: 'Wheat Stalk', subtitle: 'Fresh & Premium Ingredients' },
   { icon: Crown, title: 'Royal Crown', subtitle: 'Royal Ambience & Hospitality' },
   { icon: Truck, title: 'Delivery Van', subtitle: 'Takeaway & Delivery' },
@@ -120,7 +120,7 @@ export const RoyalExperienceSection = () => {
         <div className="relative min-h-[44vh] w-full lg:min-h-[68vh]">
           <img
             src="/imaginbtmhome.png"
-            alt="Royal Punjabi restaurant interior"
+            alt="Royal restaurant interior"
             className="h-full w-full object-cover object-[center_60%]"
             loading="lazy"
           />

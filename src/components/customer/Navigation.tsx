@@ -15,12 +15,19 @@ export const Navigation = () => {
   const galleryHref = isHomePage ? '#gallery' : '/#gallery';
   const contactHref = isHomePage ? '#contact' : '/#contact';
 
+  const handleHomeClick = () => {
+    if (isHomePage) {
+      // If already on home page, scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b bg-[linear-gradient(90deg,rgba(74,9,7,0.96),rgba(52,8,6,0.96))] border-[#8d5a25]/45 shadow-[0_10px_30px_rgba(0,0,0,0.35)] py-2">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 transition-all duration-300">
           {/* Logo */}
-          <Link to="/" className="group inline-flex items-center">
+          <Link to="/" onClick={handleHomeClick} className="group inline-flex items-center">
             <div className="relative flex items-center">
               <img
                 src="/logo1.png"
@@ -46,6 +53,7 @@ export const Navigation = () => {
           <div className="hidden xl:flex items-center gap-7">
             <Link
               to="/"
+              onClick={handleHomeClick}
               className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
             >
               Home
@@ -57,16 +65,10 @@ export const Navigation = () => {
               Menu
             </Link>
             <Link
-              to="/menu"
+              to="/order"
               className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
             >
               Order Online
-            </Link>
-            <Link
-              to="/book"
-              className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-            >
-              Book Table
             </Link>
             <a
               href={aboutHref}
@@ -86,9 +88,13 @@ export const Navigation = () => {
             >
               Contact
             </a>
+          </div>
+
+          {/* Desktop actions */}
+          <div className="hidden xl:flex items-center gap-3">
             <Link
               to="/cart"
-              className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
+              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf] hover:bg-white/5"
             >
               <ShoppingBag size={15} />
               Cart
@@ -97,16 +103,6 @@ export const Navigation = () => {
                   {cartItemCount}
                 </span>
               )}
-            </Link>
-          </div>
-
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            <Link
-              to="/book"
-              className="relative overflow-hidden inline-flex items-center justify-center rounded-lg px-5 py-2 text-[13px] font-semibold uppercase tracking-[0.06em] transition-all duration-300 bg-[#d7a44f] text-[#2f180b] hover:bg-[#e2b160]"
-            >
-              Book A Table
             </Link>
           </div>
 
@@ -133,7 +129,10 @@ export const Navigation = () => {
             <div className="px-6 py-8 flex flex-col space-y-5 shadow-2xl">
               <Link
                 to="/"
-                className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
+                className="text{
+                  setIsMobileMenuOpen(false);
+                  handleHomeClick();
+                }on-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Home
@@ -146,18 +145,11 @@ export const Navigation = () => {
                 Menu
               </Link>
               <Link
-                to="/menu"
+                to="/order"
                 className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Order Online
-              </Link>
-              <Link
-                to="/book"
-                className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Book Table
               </Link>
               <a
                 href={aboutHref}
@@ -192,13 +184,6 @@ export const Navigation = () => {
                     {cartItemCount}
                   </span>
                 )}
-              </Link>
-              <Link
-                to="/book"
-                className="mt-6 flex justify-center items-center py-3.5 text-lg font-semibold rounded-xl transition-all bg-[#d7a44f] text-[#2f180b] hover:bg-[#e2b160]"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Book A Table
               </Link>
             </div>
           </motion.div>

@@ -160,7 +160,7 @@ export const HeroSection = () => {
       <div className="relative z-20 mx-auto max-w-7xl px-5 pb-8 sm:px-6 sm:pb-10 lg:px-8 lg:pb-44">
         <div className="max-w-[36rem]">
           <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#d2aa64] sm:mb-3 sm:text-[11px] sm:tracking-[0.22em]">
-            Authentic Punjabi Dining Experience
+            Authentic Dining Experience
           </p>
 
           <div className="mb-3 inline-flex rounded-full border border-[#cfa664]/45 bg-[linear-gradient(120deg,rgba(24,13,8,0.78),rgba(12,8,5,0.66))] px-3.5 py-1.5 text-[9.5px] font-semibold uppercase tracking-[0.14em] text-[#f2d7a1] shadow-[0_6px_16px_rgba(0,0,0,0.28)] sm:hidden">
@@ -172,7 +172,7 @@ export const HeroSection = () => {
             className="w-full max-w-2xl overflow-visible"
             preserveAspectRatio="xMinYMid meet"
             role="img"
-            aria-label="An Indian Punjabi Restaurant - Experience in London"
+            aria-label="An Indian Restaurant - Experience in London"
           >
             <defs>
               <linearGradient id="heroTitleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -206,7 +206,7 @@ export const HeroSection = () => {
                 letterSpacing: '-0.02em',
               }}
             >
-              An Indian Punjabi
+              An Indian Royal
             </text>
 
             {/* Line 2: Restaurant */}
@@ -252,7 +252,7 @@ export const HeroSection = () => {
 
           <div className="mt-7 flex flex-col gap-3.5 sm:mt-8 sm:flex-row sm:flex-wrap">
             <Link
-              to="/menu"
+              to="/order"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#7a3e19] bg-[linear-gradient(90deg,#67130f,#7d1712)] px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#7b1913,#94221a)] sm:w-auto"
             >
               Order Online

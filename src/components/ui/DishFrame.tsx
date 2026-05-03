@@ -89,7 +89,7 @@ export default function DishFrame({ name, description, image }: DishFrameProps) 
             </p>
 
             <Link
-              to="/menu"
+              to="/order"
               className="mt-1 inline-flex items-center rounded-[10px] border border-[#d2bb8a] bg-[#f4e7ca] px-5 py-[4px] text-[9px] font-bold uppercase tracking-[0.08em] text-[#5a1e1e] transition-colors duration-300 hover:bg-[#5a1e1e] hover:text-[#fff4dd] sm:px-6 sm:py-[9px] sm:text-[10px]"
             >
               Order Now
