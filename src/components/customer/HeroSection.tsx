@@ -1,4 +1,3 @@
-
 import { ArrowRight, CalendarClock, Clock3, PhoneCall } from 'lucide-react';
 
 import { Link } from 'react-router-dom';
@@ -32,51 +31,47 @@ const operatingHighlights = [
   },
 ];
 
-const floatingFoodAccents = [
-  { title: 'Proudly Non-Halal restaurant', top: '70%', left: '10%' },
-  // { title: 'Clay Oven Craft', top: '41%', left: '71%' },
-  // { title: 'Royal Plating', top: '60%', left: '67%' },
-];
-
 export const HeroSection = () => {
   return (
     <section
-      className="relative overflow-hidden bg-[#140705] pt-16 sm:pt-20 lg:min-h-screen lg:pt-28">
+      className="relative min-h-[100svh] overflow-hidden bg-[#140705]">
       <div className="absolute inset-0">
-
+        <div className='relative h-full w-full overflow-hidden'>
+          {/* London background */}
         <div className="absolute inset-0 z-0 overflow-hidden">
   <img
     src="/london.webp"
-    alt="London SKyline"
-    className="absolute w-full h-full top-10 right-0 scale-[0.65] origin-top-right object-cover"
+    alt="London Skyline"
+    className="absolute inset-0 w-full h-full object-cover lg:top-10 lg:right-0 lg:scale-[0.65] lg:origin-top-right lg:object-center"
     draggable={false}
   />
 </div>
-
+{/* room interior */}
 <div className="absolute inset-0 z-10">
   <img
     src="/room-interior.webp"
     alt="Restaurant Interior"
-    className="w-full h-full object-cover"
+    className="w-full h-full object-cover lg:object-center object-[40%_center] sm:object-[60%_center]"
     draggable={false}
   />
 </div>
         
-        <Lantern
-  className="top-0 right-[41%] w-[240px] h-[360px]"
-  imgClassName="h-[300px]"
+        {/* <div className="absolute inset-0 z-[11] bg-[linear-gradient(180deg,rgba(8,4,2,0.18)_0%,rgba(8,4,2,0.18)_30%,rgba(8,4,2,0.28)_68%,rgba(8,4,2,0.50)_100%)]" /> */}
+<Lantern
+  className="lg:flex justify-center items-start w-[200px] sm:w-[210px] md:w-[230px] lg:w-[240px] left-[85%] -translate-x-1/2 sm:left-[52%] md:left-[53%] lg:right-[41%]" //lg:flex justify-center items-start top-0 left-[85%] -translate-x-1/2 w-[200px] h-[300px] sm:-top-[15%] sm:left-[52%] sm:w-[210px] sm:h-[315px] md:top-[-10%] md:left-[53%] md:w-[230px] md:h-[345px] lg:top-0 lg:left-auto lg:right-[41%] lg:translate-x-0 lg:w-[240px] lg:h-[360px] 
+  imgClassName="h-[250px] sm:h-[260px] md:h-[275px] lg:h-[300px] "
   heavyWind={true}
   topMask={{
     enabled: true,
     color: "0,0,0",
 
-    width: 100,
-    height: 260,
+    width: 70,
+    height: 200,
 
     fromOpacity: 0.95,
     midOpacity: 0.72,
     midPoint: "34%",
-    fadeEnd: "82%",
+    fadeEnd: "80%",
 
     x: 0,
     y: 0,
@@ -87,16 +82,16 @@ export const HeroSection = () => {
   glow={{
     enabled: true,
     color: "255,139,10",
-    size: 100,
-    blur: 22,
-    opacity: 0.32,
+    size: 90,
+    blur: 18,
+    opacity: 0.30,
     x: 0,
     y: 100,
   }}
 />
 
 <Lantern
-  className="top-[-15%] right-[-5%] w-[320px] h-[460px]"
+  className="hidden lg:flex justify-center items-start top-[-15%] right-[-5%] w-[320px] h-[460px]"
   imgClassName="h-[420px]"
   heavyWind={false}
   topMask={{
@@ -127,49 +122,15 @@ export const HeroSection = () => {
     y: 150,
   }}
 />
-
-       <div className="pointer-events-none absolute inset-0 z-[15] hidden lg:block">
-  {floatingFoodAccents.map((accent) => (
-    <div
-      key={accent.title}
-      className="absolute group"
-      style={{ top: accent.top, left: accent.left }}
-    >
-      {/* Outer Glow */}
-      <div className="absolute inset-0 blur-xl opacity-40 bg-gradient-to-r from-[#cfa664]/30 via-[#f2d7a1]/40 to-[#cfa664]/30 rounded-xl" />
-
-      {/* Badge */}
-      <div className="relative px-5 py-3 bg-gradient-to-b from-[#2b1a10] via-[#1a0f08] to-[#120904] border border-[#cfa664]/50 shadow-[0_10px_30px_rgba(0,0,0,0.6)] rounded-md overflow-hidden">
-        
-        {/* Gold Inner Border */}
-        <div className="absolute inset-0 border border-[#f2d7a1]/20 rounded-md pointer-events-none" />
-
-        {/* Shine Effect */}
-        <div className="absolute top-0 left-[-100%] w-[200%] h-full bg-gradient-to-r from-transparent via-white/10 to-transparent"/>
-
-        {/* Text */}
-        <span className="relative text-[11px] tracking-[0.2em] uppercase font-semibold text-[#f2d7a1]">
-          {accent.title}
-        </span>
-      </div>
-    </div>
-  ))}
 </div>
-      </div>
-
-      <div className="relative z-20 mx-auto max-w-7xl px-5 pb-8 sm:px-6 sm:pb-10 lg:px-8 lg:pb-44">
-        <div className="max-w-[36rem]">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#d2aa64] sm:mb-3 sm:text-[11px] sm:tracking-[0.22em]">
-            Authentic Dining Experience
-          </p>
-
-          <div className="mb-3 inline-flex rounded-full border border-[#cfa664]/45 bg-[linear-gradient(120deg,rgba(24,13,8,0.78),rgba(12,8,5,0.66))] px-3.5 py-1.5 text-[9.5px] font-semibold uppercase tracking-[0.14em] text-[#f2d7a1] shadow-[0_6px_16px_rgba(0,0,0,0.28)] sm:hidden">
-            Proudly Non-Halal Restaurant
-          </div>
-
+</div>
+ {/* context */}
+       <div className="relative z-20 mx-auto flex flex-col min-h-[100svh] w-full items-start justify-end px-5 pb-[130px] pt-24 md:px-6 md:pb-[120px] lg:justify-center lg:pl-8 lg:pb-[150px] xl:pl-16"> {/* relative z-20 mx-auto flex min-h-[100svh] w-full max-w-7xl items-end px-5 pt-[110px] pb-[162px] sm:px-6 sm:pt-[120px] sm:pb-[170px] lg:items-center lg:px-8 lg:pt-10 lg:pb-[120px] */}
+        {/* relative z-20 mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col justify-end px-5 pb-[110px] pt-24 sm:px-6 sm:pb-[120px] lg:justify-center lg:pl-12 lg:pb-0 xl:pl-16 */}
+         <div className="w-full max-w-[19rem] sm:max-w-[22rem] md:max-w-[34rem] lg:max-w-[48rem] xl:max-w-[56rem]"> {/* w-full max-w-[19rem] sm:max-w-[22rem] md:max-w-[25rem] lg:max-w-[34rem] xl:max-w-[38rem] */} {/* w-full max-w-[17rem] overflow-visible sm:max-w-[21rem] md:max-w-[24rem] lg:max-w-[34rem] xl:max-w-[38rem] */}
           <svg
-            viewBox="0 0 900 280"
-            className="w-full max-w-2xl overflow-visible"
+            viewBox="0 0 800 280"
+            className="w-full overflow-visible" 
             preserveAspectRatio="xMinYMid meet"
             role="img"
             aria-label="An Indian Restaurant - Experience in London"
@@ -193,7 +154,7 @@ export const HeroSection = () => {
             {/* Line 1: An Indian Punjabi */}
             <text
               x="0"
-              y="70"
+              y="150"
               fill="url(#heroTitleGradient)"
               stroke="#f7d89f"
               strokeWidth="0.8"
@@ -206,32 +167,13 @@ export const HeroSection = () => {
                 letterSpacing: '-0.02em',
               }}
             >
-              An Indian Royal
-            </text>
-
-            {/* Line 2: Restaurant */}
-            <text
-              x="0"
-              y="135"
-              fill="url(#heroTitleGradient)"
-              stroke="#f7d89f"
-              strokeWidth="0.8"
-              filter="url(#heroTitleGlow)"
-              style={{
-                fontFamily: "'Playfair Display', 'Georgia', serif",
-                fontSize: '56px',
-                fontWeight: '700',
-                fontStyle: 'italic',
-                letterSpacing: '-0.02em',
-              }}
-            >
-              Restaurant
+              An Indian Restaurant
             </text>
 
             {/* Line 3: Experience in London (Script) */}
             <text
               x="0"
-              y="210"
+              y="240"
               fill="url(#heroTitleGradient)"
               stroke="#f7d89f"
               strokeWidth="0.9"
@@ -246,52 +188,73 @@ export const HeroSection = () => {
               Experience in London
             </text>
           </svg>
-          <p className="mt-6 max-w-[36rem] text-[clamp(14px,5vw,17px)] leading-relaxed text-[#e8d8bc] sm:mt-7 sm:text-[15px]">
+          <p className="max-w-[18rem] text-[13px] leading-relaxed text-[#e8d8bc] md:max-w-[22rem] md:text-[14px] lg:max-w-[34rem] lg:text-[17px]"> {/* mt-1 max-w-[18rem] text-[13px] leading-relaxed text-[#e8d8bc] sm:max-w-[22rem] sm:text-[14px] lg:max-w-[34rem] lg:text-[17px] */}
            Traditional flavours, Royal ambiance - A true taste of Punjab in the heart of London. Experience the rich heritage and vibrant culture of India with every bite.
           </p>
 
-          <div className="mt-7 flex flex-col gap-3.5 sm:mt-8 sm:flex-row sm:flex-wrap">
+          <div className="mt-3 mb-3 inline-flex rounded-full border border-[#cfa664]/45 bg-[linear-gradient(120deg,rgba(24,13,8,0.78),rgba(12,8,5,0.66))] px-3.5 py-1.5 text-[9.5px] font-semibold uppercase tracking-[0.14em] text-[#f2d7a1] shadow-[0_6px_16px_rgba(0,0,0,0.28)] md:hidden">
+            Proudly Non-Halal Restaurant
+          </div>
+
+          <div className="mt-1 flex flex-col items-start gap-3 md:flex-row px-1 md:px-1 md:mt-0 lg:mt-5"> 
+            {/* mt-5 flex flex-col gap-3 sm:mt-7 sm:flex-row sm:flex-wrap px-1 sm:px-0 */} 
+            {/* inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#7a3e19] bg-[linear-gradient(90deg,#67130f,#7d1712)] px-2 py-2.5 sm:px-3 sm:py-3 lg:px-6 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#7b1913,#94221a)] sm:w-auto */}
+            {/* inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#1e6a4f] bg-[linear-gradient(90deg,#0f3328,#124437)] px-2 py-2.5 sm:px-3 sm:py-3 lg:px-6 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#134132,#1a5a47)] sm:w-auto */}
             <Link
               to="/order"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#7a3e19] bg-[linear-gradient(90deg,#67130f,#7d1712)] px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#7b1913,#94221a)] sm:w-auto"
+              className="gap-2 rounded-xl border border-[#7a3e19] bg-[linear-gradient(90deg,#67130f,#7d1712)] px-4 py-2.5 md:px-4 md:py-3 lg:px-6 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#7b1913,#94221a)] md:w-auto"
             >
               Order Online
             </Link>
             <Link
               to="/book"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#1e6a4f] bg-[linear-gradient(90deg,#0f3328,#124437)] px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#134132,#1a5a47)] sm:w-auto"
+              className="inline-flex items-center gap-2 rounded-xl border border-[#1e6a4f] bg-[linear-gradient(90deg,#0f3328,#124437)] px-4 py-2.5 md:px-4 md:py-3 lg:px-6 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#134132,#1a5a47)] md:w-auto"
             >
               Book Your Table <ArrowRight size={16} />
             </Link>
           </div>
+
+<div className="mt-8 hidden lg:inline-flex rounded-full border border-[#f2d7a1]/25 bg-[linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.05))] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#f2d7a1] shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
+            Proudly Non-Halal Restaurant
+          </div>
         </div>
       </div>
 
-      <div className="relative z-20 w-full border-y border-[#c7a86f] bg-[linear-gradient(90deg,#faefd7_0%,#f4e4bf_48%,#f9edd4_100%)] shadow-[0_-10px_20px_rgba(12,8,4,0.22)] lg:absolute lg:inset-x-0 lg:bottom-0">
-        {/* CHANGED: Defaulted to grid-cols-2 for mobile, adjusted gap and padding */}
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-2 gap-y-4 px-4 py-5 sm:grid-cols-3 sm:px-6 lg:grid-cols-5 lg:gap-1 lg:px-8 lg:py-4">
-          {operatingHighlights.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div
-                key={`${item.title}-${item.subtitle}`}
-                // CHANGED: Removed the excessive horizontal/vertical padding on mobile
-                className="flex items-center gap-2.5 border-[#d7be90] lg:border-r lg:px-2 lg:py-2 last:lg:border-r-0"
-              >
-                {/* CHANGED: Added `shrink-0` to prevent the circle from squishing, slightly reduced mobile circle size */}
-                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#9f7e44] bg-[#f9edd6] text-[#6a4e20] sm:h-9 sm:w-9">
-                  <Icon size={16} className="sm:h-[17px] sm:w-[17px]" />
-                </span>
-                <div>
-                  {/* CHANGED: Reduced font size strictly for mobile to fit side-by-side nicely */}
-                  <p className="text-[13px] font-semibold leading-tight text-[#2f2415] sm:text-base">{item.title}</p>
-                  <p className="text-[10px] font-semibold uppercase leading-tight tracking-[0.05em] text-[#654d27] sm:text-[11px] sm:tracking-[0.08em]">{item.subtitle}</p>
+      <div className="absolute inset-x-2 bottom-[1px] z-30 sm:inset-x-3 lg:inset-x-6 mb-0 sm:mb-1 md:mb-2 lg:mb-3">
+        <div className="mx-auto max-w-7xl rounded-[22px] border border-[#f2d7a1]/15 bg-[linear-gradient(135deg,rgba(18,10,7,0.58),rgba(60,39,22,0.24))] shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+          <div className="grid grid-cols-3 gap-x-1 gap-y-1 px-1 py-1 sm:grid-cols-3 sm:px-1 sm:py-1 lg:grid-cols-5 lg:gap-2 lg:px-5 lg:py-4">
+            {operatingHighlights.map((item, index) => {
+              const Icon = item.icon;
+
+              return (
+                <div
+                  key={`${item.title}-${item.subtitle}`}
+                  className={`
+                    flex items-center gap-2.5 rounded-xl px-1 py-1.5
+                    ${index === 4 ? 'col-span-2 sm:col-span-1' : ''}
+                    ${index !== 4 ? 'lg:border-r lg:border-[#f2d7a1]/10' : ''}
+                    lg:px-3
+                  `}
+                >
+                  <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#f2d7a1]/20 bg-white/10 text-[#f2d7a1] backdrop-blur-md sm:h-9 sm:w-9">
+                    <Icon size={15} />
+                  </span>
+
+                  <div>
+                    <p className="text-[11px] font-semibold leading-tight text-white/90 sm:text-[12px] lg:text-[15px]">
+                      {item.title}
+                    </p>
+                    <p className="mt-0.5 text-[9px] font-medium uppercase leading-tight tracking-[0.08em] text-[#f2d7a1]/80 sm:text-[10px] lg:text-[11px]">
+                      {item.subtitle}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
+
     </section>
   );
 };

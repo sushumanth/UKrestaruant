@@ -39,10 +39,10 @@ export const Navigation = () => {
               <div className="relative z-10 pl-7 leading-none">
                 <div className="flex items-end gap-2">
                   <span className="font-serif text-[22px] tracking-wide text-[#F4F6FA]">Singh&apos;s</span>
-                  <span className="mb-1 inline-block h-4 w-px bg-[#D4A23A]/70" />
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#D4A23A]">Dining</span>
+                  <span className="inline-block h-4 w-px bg-[#D4A23A]/70" />
+                  <span className="pb-1 text-[11px] font-semibold uppercase tracking-[0.32em] text-[#D4A23A]">Dining</span>
                 </div>
-                <span className="mt-1 block text-[10px] uppercase tracking-[0.28em] text-[#AFB8C8]">
+                <span className="pt-2 block text-[10px] uppercase tracking-[0.28em] text-[#AFB8C8]">
                   By Rangrez
                 </span>
               </div>
@@ -63,13 +63,7 @@ export const Navigation = () => {
               className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
             >
               Menu
-            </Link>
-            <Link
-              to="/order"
-              className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-            >
-              Order Online
-            </Link>
+            </Link> 
             <a
               href={aboutHref}
               className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
@@ -143,13 +137,6 @@ export const Navigation = () => {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Menu
-              </Link>
-              <Link
-                to="/order"
-                className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Order Online
               </Link>
               <a
                 href={aboutHref}
