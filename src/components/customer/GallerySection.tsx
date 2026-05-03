@@ -197,6 +197,7 @@ export const GallerySection = () => {
       previewIndex: -1,
     };
 
+    
     const pointer = new THREE.Vector2();
     const raycaster = new THREE.Raycaster();
     const cardRuntimes: CardRuntime[] = [];
