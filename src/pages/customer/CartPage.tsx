@@ -1,10 +1,11 @@
-import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Minus, Plus, ShoppingBag, Trash2, ChevronLeft } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
 import { formatCurrency } from '@/lib/mockData';
 import { useMenuCartStore } from '@/store';
 
 export const CartPage = () => {
+  const navigate = useNavigate();
   const { items, updateItemQuantity, removeItem, clearCart } = useMenuCartStore();
 
   const subtotal = useMemo(
@@ -21,16 +22,25 @@ export const CartPage = () => {
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-[#f8f0e1] px-5 pt-24 text-[#2d241b] sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl rounded-[32px] border border-[#ead6b8] bg-[#fffaf1] p-8 text-center shadow-[0_18px_46px_rgba(78,45,18,0.08)]">
-          <ShoppingBag size={42} className="mx-auto text-[#7d2419]" />
-          <h1 className="mt-4 font-serif text-[clamp(34px,5vw,54px)] leading-none text-[#2c2117]">Your cart is empty</h1>
-          <p className="mx-auto mt-3 max-w-xl text-[#685949]">Add dishes from the menu to see them here.</p>
-          <Link
-            to="/menu"
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#7d2419] px-5 py-3 text-sm font-semibold text-[#fff3df] shadow-[0_12px_24px_rgba(125,36,25,0.2)] transition-colors hover:bg-[#962c20]"
+        <div className="mx-auto max-w-3xl">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-[#7d2419] hover:text-[#962c20] transition-colors"
           >
-            Browse menu
-          </Link>
+            <ChevronLeft size={18} /> Back
+          </button>
+          <div className="rounded-[32px] border border-[#ead6b8] bg-[#fffaf1] p-8 text-center shadow-[0_18px_46px_rgba(78,45,18,0.08)]">
+            <ShoppingBag size={42} className="mx-auto text-[#7d2419]" />
+            <h1 className="mt-4 font-serif text-[clamp(34px,5vw,54px)] leading-none text-[#2c2117]">Your cart is empty</h1>
+            <p className="mx-auto mt-3 max-w-xl text-[#685949]">Add dishes from the menu to see them here.</p>
+            <Link
+              to="/order"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#7d2419] px-5 py-3 text-sm font-semibold text-[#fff3df] shadow-[0_12px_24px_rgba(125,36,25,0.2)] transition-colors hover:bg-[#962c20]"
+            >
+              Browse menu
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -39,6 +49,13 @@ export const CartPage = () => {
   return (
     <div className="min-h-screen bg-[#f8f0e1] pt-24 text-[#2d241b]">
       <div className="mx-auto max-w-7xl px-5 pb-16 sm:px-6 lg:px-8">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-[#7d2419] hover:text-[#962c20] transition-colors"
+        >
+          <ChevronLeft size={18} /> Back
+        </button>
         <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
           <section className="rounded-[30px] border border-[#ead6b8] bg-[#fffaf1] p-5 shadow-[0_16px_34px_rgba(83,50,17,0.06)] sm:p-6">
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[#ead7ba] pb-4">

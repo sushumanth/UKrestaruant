@@ -1,9 +1,9 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Clock3, Leaf, Minus, Plus, Search, ShoppingBag, Star } from 'lucide-react';
+import { Leaf, Minus, Plus, Search, ShoppingBag } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '@/lib/mockData';
-import { formatMenuRating, getVisibleMenuItems } from '@/lib/menuUtils';
+import { getVisibleMenuItems } from '@/lib/menuUtils';
 import { useMenuCartStore, useMenuStore } from '@/store';
 import type { MenuCategory } from '@/types';
 
@@ -15,7 +15,7 @@ const categories: Array<{ id: MenuCategory; label: string }> = [
   { id: 'dessert', label: 'Dessert' },
 ];
 
-export const MenuPage = () => {
+export const OrderPage = () => {
   const { items, addItem, updateItemQuantity } = useMenuCartStore();
   const { menuItems } = useMenuStore();
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,7 +50,7 @@ export const MenuPage = () => {
         >
           <motion.img
             src="/Memus.png"
-            alt="Menu hero"
+            alt="Order online"
             className="h-[36vh] w-full object-cover object-center sm:h-[46vh]"
             style={{ y: heroImageY, scale: heroImageScale }}
             loading="eager"
@@ -69,7 +69,7 @@ export const MenuPage = () => {
                 WebkitTextStroke: '1px rgba(255,225,168,0.52)',
               }}
             >
-              MENU
+              ORDER ONLINE
             </h1>
           </motion.div>
         </section>
@@ -81,11 +81,11 @@ export const MenuPage = () => {
             transition={{ duration: 0.45, ease: 'easeOut' }}
             className="mt-4 max-w-3xl text-sm text-[#6f5f4a] sm:text-base"
           >
-            Scroll and explore signature dishes with a smooth, cinematic menu experience.
+            Browse and order your favorite dishes for delivery right to your door.
           </motion.p>
 
           <section className="sticky top-16 z-20 mt-6 rounded-3xl border border-[#ead6b8] bg-[#fffaf1]/95 p-4 shadow-[0_10px_30px_rgba(83,50,17,0.08)] backdrop-blur">
-            <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto] lg:items-center">
               <div className="relative">
                 <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a6d49]" />
                 <input
@@ -115,6 +115,17 @@ export const MenuPage = () => {
                   </button>
                 ))}
               </div>
+
+              {cartCount > 0 && (
+                <Link
+                  to="/cart"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#7d2419] px-4 py-2 text-sm font-semibold text-[#fff3df] shadow-md hover:bg-[#962c20]"
+                >
+                  <ShoppingBag size={16} />
+                  Cart ({cartCount})
+                  {cartTotal > 0 && <span className="ml-1">{formatCurrency(cartTotal)}</span>}
+                </Link>
+              )}
             </div>
           </section>
 
@@ -130,16 +141,9 @@ export const MenuPage = () => {
                 <div className="flex flex-1 flex-col p-3 sm:p-5">
                   <div className="flex min-h-[50px] items-start justify-between gap-3 sm:min-h-[50px]">
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-start gap-2">
-                        <h3 className="font-serif text-[clamp(18px,4.2vw,26px)] leading-[0.95] text-[#2d2319] sm:text-2xl flex-1">
-                          {item.name}
-                        </h3>
-                        {item.isVeg && (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-[#e7f8e7] px-2 py-0.5 text-[10px] font-semibold text-[#2d7a2d] sm:px-2.5 sm:py-1 sm:text-xs flex-shrink-0">
-                            <Leaf size={12} /> Veg
-                          </span>
-                        )}
-                      </div>
+                      <h3 className="font-serif text-[clamp(18px,4.2vw,26px)] leading-[0.95] text-[#2d2319] sm:text-2xl">
+                        {item.name}
+                      </h3>
                       <p className="mt-1 min-h-[44px] text-[12px] leading-[1.35] text-[#6f5f4a] sm:mt-2 sm:min-h-[48px] sm:text-sm">
                         <span className="sm:hidden">
                           {item.description.length > 52
@@ -149,82 +153,66 @@ export const MenuPage = () => {
                         <span className="hidden sm:inline">{item.description}</span>
                       </p>
                     </div>
-                  </div>
-                  </div>
-
-                <div className="mt-3 flex min-h-[20px] items-center gap-6 text-[12px] text-[#7d6a57] sm:mt-4 sm:min-h-[22px] sm:text-sm">
-                  <span className="inline-flex items-center gap-1.5 tabular-nums">
-                    <Star size={13} className="text-[#b9832f] sm:h-[14px] sm:w-[14px]" />
-                    {formatMenuRating(item.rating)}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 tabular-nums">
-                    <Clock3 size={13} className="sm:h-[14px] sm:w-[14px]" />
-                    {item.prepTime} min
-                  </span>
-                </div>
-
-                <div className="mt-auto flex items-center justify-between pt-4">
-                  <span className="text-lg font-semibold text-[#7d2419] sm:text-xl">{formatCurrency(item.price)}</span>
-                  {itemQuantityById[item.id] ? (
-                    <div className="inline-flex items-center rounded-full border border-[#8f2a1d] bg-[#7d2419] p-1 text-[#fff3df] shadow-[0_4px_12px_rgba(60,20,10,0.2)]">
-                      <button
-                        type="button"
-                        onClick={() => updateItemQuantity(item.id, itemQuantityById[item.id] - 1)}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21]"
-                        aria-label={`Decrease quantity of ${item.name}`}
-                      >
-                        <Minus size={14} />
-                      </button>
-                      <span className="min-w-[22px] text-center text-sm font-bold leading-none">
-                        {itemQuantityById[item.id]}
+                    {item.isVeg && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[#e7f8e7] px-2 py-0.5 text-[10px] font-semibold text-[#2d7a2d] sm:px-2.5 sm:py-1 sm:text-xs">
+                        <Leaf size={12} /> Veg
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21]"
-                        aria-label={`Increase quantity of ${item.name}`}
-                      >
-                        <Plus size={14} />
-                      </button>
+                    )}
+                  </div>
+
+                  <div className="mt-auto pt-3 sm:pt-5">
+                    <div className="flex items-center justify-between gap-2 sm:gap-3">
+                      <span className="font-serif text-[clamp(20px,4vw,28px)] text-[#7d2419]">
+                        {formatCurrency(item.price)}
+                      </span>
+                      {itemQuantityById[item.id] ? (
+                        <div className="flex items-center gap-1.5 rounded-full border border-[#dbc7a2] bg-[#fff7ea] px-1.5 py-1 sm:gap-2 sm:px-2 sm:py-1.5">
+                          <button
+                            type="button"
+                            onClick={() => updateItemQuantity(item.id, itemQuantityById[item.id] - 1)}
+                            className="p-0.5 text-[#7d531f] hover:text-[#5c3d14]"
+                          >
+                            <Minus size={14} />
+                          </button>
+                          <span className="w-4 text-center text-xs font-semibold text-[#4d3e2c] sm:w-6 sm:text-sm">
+                            {itemQuantityById[item.id]}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateItemQuantity(item.id, itemQuantityById[item.id] + 1)}
+                            className="p-0.5 text-[#7d531f] hover:text-[#5c3d14]"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => addItem(item)}
+                          className="rounded-full bg-[#7d2419] px-2 py-1 text-[10px] font-semibold text-[#fff3df] transition-colors hover:bg-[#962c20] sm:px-3 sm:py-2 sm:text-xs"
+                        >
+                          + Add
+                        </button>
+                      )}
                     </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-[#7d2419] px-3 py-1.5 text-sm font-semibold text-[#fff3df] transition-colors hover:bg-[#942d21] sm:gap-2 sm:px-4 sm:py-2"
-                    >
-                      <Plus size={14} /> Add
-                    </button>
-                  )}
+                  </div>
                 </div>
               </motion.article>
             ))}
           </section>
 
           {filteredItems.length === 0 && (
-            <div className="mt-10 rounded-3xl border border-dashed border-[#dbc9aa] bg-[#fff7ea] p-8 text-center text-[#6f5f4a]">
-              No dishes match your search.
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-12 text-center py-12"
+            >
+              <ShoppingBag size={48} className="mx-auto text-[#bfa584] mb-4" />
+              <p className="text-[#6f5f4a] text-lg">No dishes found in this category</p>
+            </motion.div>
           )}
         </div>
       </div>
-
-      {cartCount > 0 && (
-        <div className="fixed bottom-5 left-1/2 z-40 w-[min(92vw,560px)] -translate-x-1/2 rounded-2xl border border-[#a24a31] bg-[#7d2419] p-4 text-[#fff3df] shadow-[0_14px_40px_rgba(60,20,10,0.35)]">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.12em] text-[#ffd9c6]">Cart</p>
-              <p className="mt-1 text-sm font-medium">{cartCount} item(s) · {formatCurrency(cartTotal)}</p>
-            </div>
-            <Link
-              to="/cart"
-              className="inline-flex items-center gap-2 rounded-full bg-[#f5d8b0] px-4 py-2 text-sm font-semibold text-[#6b1f15]"
-            >
-              <ShoppingBag size={15} /> View Cart
-            </Link>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -197,7 +197,7 @@ export const PremiumThemeSection = () => {
              <div className="relative w-full min-h-[220px] overflow-hidden rounded-2xl border border-[#6f2f22]">
                 <img
                   src="/bookorderimg.png"
-                  alt="Order online Punjabi food"
+                  alt="Order online Indian food"
                   className="absolute inset-0 w-full h-full object-cover object-[75%_center]"
                   loading="lazy"
                 />
@@ -209,10 +209,10 @@ export const PremiumThemeSection = () => {
                     Order Online
                   </h3>
                   <p className="mt-3 text-[13px] text-[#f5e8cc]/90 leading-relaxed">
-                    Enjoy your favourite Punjabi dishes at home with quick London delivery.
+                    Enjoy your favourite dishes at home with quick London delivery.
                   </p>
                   <Link
-                    to="/menu"
+                    to="/order"
                     className="mt-5 inline-flex items-center gap-2 rounded-lg border border-[#c8994b] bg-[#3f0808]/70 px-5 py-2 text-xs font-bold uppercase tracking-wide text-[#f8e3b8] hover:bg-[#5a1212]/80 transition"
                   >
                     <ShoppingBag size={14} />

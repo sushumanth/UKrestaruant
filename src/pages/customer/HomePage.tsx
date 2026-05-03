@@ -3,6 +3,7 @@ import { HeroSection } from '@/components/customer/HeroSection';
 import { AboutJourneySection } from '@/components/customer/AboutJourneySection';
 import { PremiumThemeSection } from '@/components/customer/PremiumThemeSection';
 import { RoyalExperienceSection } from '@/components/customer/RoyalExperienceSection';
+import { GallerySection } from '@/components/customer/GallerySection';
 import { AnimatedFoodDoodle } from '@/components/customer/AnimatedFoodDoodle';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Clock3, Mail, PhoneCall, Star } from 'lucide-react';
@@ -20,7 +21,7 @@ const kitchenHighlights = [
   },
   {
     title: 'Royal Ambiance',
-    description: 'Elegant interiors inspired by classic Punjabi heritage.',
+    description: 'Elegant interiors inspired by classic heritage and tradition.',
     image: '/RoyalAmbiance.png',
   },
   {
@@ -101,7 +102,7 @@ export const HomePage = () => {
                     transition={{ duration: 1.2, ease: "easeOut" }}
                     stroke="#4a2511" strokeWidth="1"
                   >
-                    Crafted Punjabi
+                    Crafted Royal
                   </motion.text>
                   <motion.text
                     x="0" y="175"
@@ -134,7 +135,7 @@ export const HomePage = () => {
                   transition={{ duration: 0.8, delay: 1 }}
                   className="mt-6 max-w-2xl text-[#6b4c3a] text-[clamp(16px,1.7vw,20px)] leading-relaxed font-medium"
                 >
-                  From slow-cooked curries to charcoal-grilled favourites, every dish is prepared with traditional methods and premium ingredients. We blend timeless Punjabi hospitality with a polished London dining experience.
+                  From slow-cooked curries to charcoal-grilled favourites, every dish is prepared with traditional methods and premium ingredients. We blend timeless hospitality with a polished London dining experience.
                 </motion.p>
 
                 <motion.div 
@@ -309,6 +310,8 @@ export const HomePage = () => {
             ))}
           </div>
         </section> */}
+
+        <GallerySection />
 
         <section id="contact" className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 mt-20 scroll-mt-24">
           <motion.div
