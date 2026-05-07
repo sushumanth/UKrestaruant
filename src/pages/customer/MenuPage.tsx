@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { formatCurrency } from '@/lib/mockData';
 import { formatMenuRating, getVisibleMenuItems } from '@/lib/menuUtils';
 import { useMenuCartStore, useMenuStore } from '@/store';
-import type { MenuCategory } from '@/types';
+import type { MenuCategory, MenuItem } from '@/types';
 
 const categories: Array<{ id: MenuCategory; label: string }> = [
   { id: 'starters', label: 'Starters' },
@@ -42,8 +42,7 @@ export const MenuPage = () => {
   }, {});
 
   return (
-    <div className="min-h-screen bg-[#f8f0e1] pt-20 text-[#2d241b]">
-      <div className="w-full pb-16">
+    <div className="min-h-screen bg-[#f8f0e1] pb-16 text-[#2d241b]">
         <section
           ref={heroRef}
           className="relative isolate -mt-2 w-full overflow-hidden rounded-none border-y border-[#e7d4b2] shadow-none"
@@ -51,15 +50,16 @@ export const MenuPage = () => {
           <motion.img
             src="/Memus.png"
             alt="Menu hero"
-            className="h-[36vh] w-full object-cover object-center sm:h-[46vh]"
+            className="h-[36vh] w-full object-cover object-center md:h-[40vh] lg:h-[54vh] select-none"
             style={{ y: heroImageY, scale: heroImageScale }}
             loading="eager"
             draggable={false}
+            aria-hidden="true"
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(18,10,5,0.28)_0%,rgba(18,10,5,0.36)_55%,rgba(18,10,5,0.5)_100%)]" />
 
           <motion.div
-            className="absolute inset-0 flex items-center justify-center"
+            className="absolute inset-0 flex items-center justify-center select-none"
             style={{ y: heroTextY, opacity: heroTextOpacity }}
           >
             <h1
@@ -74,157 +74,241 @@ export const MenuPage = () => {
           </motion.div>
         </section>
 
-        <div className="mx-auto w-full max-w-[1400px] px-5 sm:px-6 lg:px-10">
+        <div className="mx-auto w-full px-4 md:px-6 lg:px-8 xl:px-10">
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: 'easeOut' }}
-            className="mt-4 max-w-3xl text-sm text-[#6f5f4a] sm:text-base"
+            className="mt-4 text-center text-sm text-[#6f5f4a] sm:text-base md:mt-6 lg:mt-8"
           >
             Scroll and explore signature dishes with a smooth, cinematic menu experience.
           </motion.p>
 
-          <section className="sticky top-16 z-20 mt-6 rounded-3xl border border-[#ead6b8] bg-[#fffaf1]/95 p-4 shadow-[0_10px_30px_rgba(83,50,17,0.08)] backdrop-blur">
-            <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
-              <div className="relative">
-                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a6d49]" />
+          <section className="mt-4 rounded-2xl border border-[#ead6b8] bg-[#fffaf1]/95 p-3 shadow-[0_10px_30px_rgba(83,50,17,0.08)] select-none md:mt-6 md:rounded-3xl md:p-4 lg:mt-8 lg:p-5">
+            <div className="flex flex-col gap-3 lg:flex-row lg:justify-between lg:items-center"> {/*  grid gap-3 lg:grid-cols-[1fr_auto] */}
+              <div className="relative w-full lg:flex-1">
+                <Search 
+                  size={18} 
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a6d49]"
+                  aria-hidden="true"
+                />
                 <input
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Search dishes"
-                  className="h-12 w-full rounded-2xl border border-[#dcc9a4] bg-white pl-10 pr-4 text-[#2d241b] outline-none focus:border-[#c26d37]"
+                  placeholder="Search dishes.."
+                  className="h-11 w-full rounded-xl border border-[#dcc9a4] bg-white pl-10 pr-4 text-sm text-[#2d241b] outline-none placeholder:text-[#9a8b75] focus:border-[#c26d37] focus:ring-2 focus:ring-[#c26d37]/20 md:h-12 md:pl-11 md:text-base"
+                  aria-label='Search Menu Items'
                 />
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveCategory('all')}
-                  className={`rounded-full px-4 py-2 text-sm font-medium ${activeCategory === 'all' ? 'bg-[#7d2419] text-[#fff3df]' : 'bg-[#f5ead7] text-[#6c583f]'}`}
-                >
-                  All
-                </button>
-                {categories.map((category) => (
-                  <button
-                    key={category.id}
-                    type="button"
-                    onClick={() => setActiveCategory(category.id)}
-                    className={`rounded-full px-4 py-2 text-sm font-medium ${activeCategory === category.id ? 'bg-[#7d2419] text-[#fff3df]' : 'bg-[#f5ead7] text-[#6c583f]'}`}
-                  >
-                    {category.label}
-                  </button>
-                ))}
+              <div className="flex flex-wrap shrink-0 items-center gap-2">
+              <FilterPill 
+                label="All" 
+                isActive={activeCategory === 'all'} 
+                onClick={() => setActiveCategory('all')} 
+              />
+              {categories.map((category) => (
+                <FilterPill
+                  key={category.id}
+                  label={category.label}
+                  isActive={activeCategory === category.id}
+                  onClick={() => setActiveCategory(category.id)}
+                />
+              ))}
               </div>
             </div>
           </section>
 
-          <section className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
+          <section className="mt-4 grid grid-cols-1 gap-3 md:mt-6 md:gap-4 lg:gap-5 xl:gap-8 sm:gap-5 md:grid-cols-2 lg:grid-cols-4">
             {filteredItems.map((item) => (
-              <motion.article
-                key={item.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#ead7ba] bg-[#fffaf1] shadow-[0_12px_26px_rgba(83,50,17,0.07)] sm:rounded-3xl sm:shadow-[0_16px_34px_rgba(83,50,17,0.06)]"
-              >
-                <img src={item.image} alt={item.name} className="h-28 w-full object-cover sm:h-48" loading="lazy" />
-                <div className="flex flex-1 flex-col p-3 sm:p-5">
-                  <div className="flex min-h-[50px] items-start justify-between gap-3 sm:min-h-[50px]">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-start gap-2">
-                        <h3 className="font-serif text-[clamp(18px,4.2vw,26px)] leading-[0.95] text-[#2d2319] sm:text-2xl flex-1">
-                          {item.name}
-                        </h3>
-                        {item.isVeg && (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-[#e7f8e7] px-2 py-0.5 text-[10px] font-semibold text-[#2d7a2d] sm:px-2.5 sm:py-1 sm:text-xs flex-shrink-0">
-                            <Leaf size={12} /> Veg
-                          </span>
-                        )}
-                      </div>
-                      <p className="mt-1 min-h-[44px] text-[12px] leading-[1.35] text-[#6f5f4a] sm:mt-2 sm:min-h-[48px] sm:text-sm">
-                        <span className="sm:hidden">
-                          {item.description.length > 52
-                            ? `${item.description.slice(0, 52).trimEnd()}...`
-                            : item.description}
-                        </span>
-                        <span className="hidden sm:inline">{item.description}</span>
-                      </p>
-                    </div>
-                  </div>
-                  </div>
-
-                <div className="mt-3 flex min-h-[20px] items-center gap-6 text-[12px] text-[#7d6a57] sm:mt-4 sm:min-h-[22px] sm:text-sm">
-                  <span className="inline-flex items-center gap-1.5 tabular-nums">
-                    <Star size={13} className="text-[#b9832f] sm:h-[14px] sm:w-[14px]" />
-                    {formatMenuRating(item.rating)}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 tabular-nums">
-                    <Clock3 size={13} className="sm:h-[14px] sm:w-[14px]" />
-                    {item.prepTime} min
-                  </span>
-                </div>
-
-                <div className="mt-auto flex items-center justify-between pt-4">
-                  <span className="text-lg font-semibold text-[#7d2419] sm:text-xl">{formatCurrency(item.price)}</span>
-                  {itemQuantityById[item.id] ? (
-                    <div className="inline-flex items-center rounded-full border border-[#8f2a1d] bg-[#7d2419] p-1 text-[#fff3df] shadow-[0_4px_12px_rgba(60,20,10,0.2)]">
-                      <button
-                        type="button"
-                        onClick={() => updateItemQuantity(item.id, itemQuantityById[item.id] - 1)}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21]"
-                        aria-label={`Decrease quantity of ${item.name}`}
-                      >
-                        <Minus size={14} />
-                      </button>
-                      <span className="min-w-[22px] text-center text-sm font-bold leading-none">
-                        {itemQuantityById[item.id]}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21]"
-                        aria-label={`Increase quantity of ${item.name}`}
-                      >
-                        <Plus size={14} />
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-[#7d2419] px-3 py-1.5 text-sm font-semibold text-[#fff3df] transition-colors hover:bg-[#942d21] sm:gap-2 sm:px-4 sm:py-2"
-                    >
-                      <Plus size={14} /> Add
-                    </button>
-                  )}
-                </div>
-              </motion.article>
-            ))}
+              <MenuCard
+              key={item.id}
+              item={item}
+              quantity={itemQuantityById[item.id] || 0}
+              onAdd={() => addItem({ 
+                id: item.id, 
+                name: item.name, 
+                image: item.image, 
+                price: item.price 
+              })}
+              onUpdateQty={(qty) => updateItemQuantity(item.id, qty)}
+            />
+          ))}
           </section>
 
           {filteredItems.length === 0 && (
-            <div className="mt-10 rounded-3xl border border-dashed border-[#dbc9aa] bg-[#fff7ea] p-8 text-center text-[#6f5f4a]">
-              No dishes match your search.
-            </div>
+            <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-8 rounded-2xl border border-dashed border-[#dbc9aa] bg-[#fff7ea] p-6 text-center text-[#6f5f4a] md:mt-10 md:rounded-3xl md:p-8"
+            >
+              <p className="text-sm sm:text-base">
+              No dishes match "<span className="font-medium text-[#7d2419]">{searchQuery}</span>". 
+              Try another search or browse all categories.
+            </p>
+            </motion.div>
           )}
         </div>
-      </div>
 
       {cartCount > 0 && (
-        <div className="fixed bottom-5 left-1/2 z-40 w-[min(92vw,560px)] -translate-x-1/2 rounded-2xl border border-[#a24a31] bg-[#7d2419] p-4 text-[#fff3df] shadow-[0_14px_40px_rgba(60,20,10,0.35)]">
+        <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="fixed bottom-4 left-1/2 z-40 w-[min(100vw-2rem)] max-w-md -translate-x-1/2 rounded-2xl border border-[#a24a31] bg-[#7d2419] p-4 text-[#fff3df] shadow-[0_14px_40px_rgba(60,20,10,0.35)] md:bottom-6 md:w-[min(92vw,560px)] md:rounded-3xl md:p-5"
+          >
           <div className="flex items-center justify-between gap-4">
-            <div>
+            <div className='min-w-0'>
               <p className="text-xs uppercase tracking-[0.12em] text-[#ffd9c6]">Cart</p>
-              <p className="mt-1 text-sm font-medium">{cartCount} item(s) · {formatCurrency(cartTotal)}</p>
+              <p className="mt-1 truncate text-sm font-medium md:text-base">{cartCount} item(s) · {formatCurrency(cartTotal)}</p>
             </div>
             <Link
               to="/cart"
-              className="inline-flex items-center gap-2 rounded-full bg-[#f5d8b0] px-4 py-2 text-sm font-semibold text-[#6b1f15]"
+              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#f5d8b0] px-4 py-2.5 text-sm font-semibold text-[#6b1f15] transition-colors hover:bg-[#e8c99a] focus:outline-none focus:ring-2 focus:ring-[#f5d8b0] focus:ring-offset-2 focus:ring-offset-[#7d2419] md:px-5 md:py-3"
             >
-              <ShoppingBag size={15} /> View Cart
+              <ShoppingBag size={16} className="sm:size-5" />
+              <span className="hidden sm:inline">View Cart</span>
+              <span className="sm:hidden">Cart</span>
             </Link>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
+  );
+};
+
+const FilterPill = ({ 
+  label, 
+  isActive, 
+  onClick 
+}: { 
+  label: string; 
+  isActive: boolean; 
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`rounded-full px-3.5 py-2 text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-[#7d2419] focus:ring-offset-2 focus:ring-offset-[#fffaf1] sm:px-4 sm:py-2.5 sm:text-sm ${
+      isActive
+        ? 'bg-[#7d2419] text-[#fff3df] shadow-[0_4px_12px_rgba(125,36,25,0.25)]'
+        : 'bg-[#f5ead7] text-[#6c583f] hover:bg-[#ecd8b8] active:bg-[#e0c9a5]'
+    }`}
+    aria-pressed={isActive}
+  >
+    {label}
+  </button>
+);
+
+const MenuCard = ({
+  item,
+  quantity,
+  onAdd,
+  onUpdateQty,
+}: {
+  item: MenuItem;
+  quantity: number;
+  onAdd: () => void;
+  onUpdateQty: (qty: number) => void;
+}) => {
+  return (
+    <motion.article
+      layout
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#ead7ba] bg-[#fffaf1] shadow-[0_8px_20px_rgba(83,50,17,0.05)] transition-shadow hover:shadow-[0_16px_32px_rgba(83,50,17,0.08)] sm:rounded-3xl"
+    >
+      {/* Image */}
+      <div className="relative h-36 w-full overflow-hidden sm:h-48 lg:h-52">
+        <img
+          src={item.image}
+          alt={item.name}
+          className="no-select h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          loading="lazy"
+          width={400}
+          height={300}
+        />
+        {item.isVeg ? (
+          <span className="absolute no-select left-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#e7f8e7] px-2 py-0.5 text-[10px] font-semibold text-[#2d7a2d] backdrop-blur-sm md:px-2.5 md:py-1.5 sm:tex-xs lg:px-3 lg:py-2">
+            <Leaf size={11} /> Veg
+          </span>
+        ) : (
+          <span className="absolute no-select left-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#fde7e5] px-2 py-0.5 text-[10px] font-semibold text-[#9c2f27] backdrop-blur-sm md:px-2.5 md:py-1.5 sm:tex-xs lg:px-3 lg:py-2">
+            <span className="inline-block h-2 w-2 rounded-full border border-current" /> Non-Veg
+          </span>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="flex flex-1 flex-col p-1 md:p-3 lg:p-4">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-serif text-lg font-medium leading-tight text-[#2d2319] sm:text-xl lg:text-2xl">
+            {item.name}
+          </h3>
+        </div>
+
+        {/* Description */}
+        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[#6f5f4a] md:mt-2 lg:mt-3 sm:text-sm lg:line-clamp-3">
+          {item.description}
+        </p>
+
+        {/* Meta: Rating & Prep Time */}
+        <div className="mt-1 flex items-center gap-4 text-xs text-[#7d6a57] md:mt-2 lg:mt-3 sm:text-sm">
+          {/* <span className="inline-flex items-center gap-1.5">
+            <Star size={13} className="text-[#b9832f] sm:size-[14px]" aria-hidden="true" />
+            <span className="tabular-nums">{formatMenuRating(item.rating)}</span>
+          </span> */}
+          <span className="inline-flex items-center gap-1.5">
+            <Clock3 size={13} className="sm:size-[14px]" aria-hidden="true" />
+            <span className="tabular-nums">{item.prepTime} min</span>
+          </span>
+        </div>
+
+        {/* Price & Actions */}
+        <div className="mt-auto flex items-center justify-between pt-1 md:pt-2 lg:pt-3">
+          <span className="text-base font-semibold text-[#7d2419] sm:text-lg lg:text-xl">
+            {formatCurrency(item.price)}
+          </span>
+
+          {quantity > 0 ? (
+            <div 
+              className="no-select inline-flex items-center rounded-full border border-[#8f2a1d] bg-[#7d2419] p-1 text-[#fff3df] shadow-[0_4px_12px_rgba(60,20,10,0.2)]"
+              role="group"
+              aria-label={`Quantity controls for ${item.name}`}
+            >
+              <button
+                type="button"
+                onClick={() => onUpdateQty(quantity - 1)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-[#942d21] focus:outline-none focus:ring-2 focus:ring-[#fff3df]/50"
+                aria-label={`Remove one ${item.name}`}
+              >
+                <Minus size={14} aria-hidden="true" />
+              </button>
+              <span className="min-w-[26px] text-center text-sm font-bold leading-none" aria-live="polite">
+                {quantity}
+              </span>
+              <button
+                type="button"
+                onClick={onAdd}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-[#942d21] focus:outline-none focus:ring-2 focus:ring-[#fff3df]/50"
+                aria-label={`Add one ${item.name}`}
+              >
+                <Plus size={14} aria-hidden="true" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={onAdd}
+              className="inline-flex items-center gap-2 rounded-full bg-[#7d2419] px-2 py-1 text-sm font-semibold text-[#fff3df] transition-colors hover:bg-[#942d21] focus:outline-none focus:ring-2 focus:ring-[#7d2419] focus:ring-offset-2 focus:ring-offset-[#fffaf1] md:px-3 md:py-1.5 lg:px-4 lg:py-2"
+              aria-label={`Add ${item.name} to cart`}
+            >
+              <Plus size={14} aria-hidden="true" />
+              <span>Add</span>
+            </button>
+          )}
+        </div>
+      </div>
+    </motion.article>
   );
 };

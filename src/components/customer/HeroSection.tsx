@@ -2,6 +2,7 @@ import { ArrowRight, CalendarClock, Clock3, PhoneCall } from 'lucide-react';
 
 import { Link } from 'react-router-dom';
 import Lantern from '../ui/LanternAnimation';
+import { useRef } from 'react';
 
 const operatingHighlights = [
   {
@@ -32,12 +33,46 @@ const operatingHighlights = [
 ];
 
 export const HeroSection = () => {
+
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
   return (
     <section
       className="relative min-h-[100svh] overflow-hidden bg-[#140705]">
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 select-none">
         <div className='relative h-full w-full overflow-hidden'>
-          {/* London background */}
+         
+<div className="absolute inset-0 z-0 overflow-hidden">
+  <video
+    ref={videoRef}
+    className="absolute inset-0 h-full w-full object-cover lg:top-10 lg:right-0 lg:scale-[0.65] lg:origin-top-right lg:object-center"
+    autoPlay
+    muted
+    loop
+    playsInline
+    preload="metadata"
+    poster='/london.webp'
+    onLoadedData={() => {
+      if (videoRef.current) {
+        videoRef.current.playbackRate = 1;
+      }
+    }}
+  >
+    <source src="/london_vid.webm" type="video/webm" />
+    <source src="/london_vid.mp4" type="video/mp4" />
+  </video>
+</div>
+
+{/* LAYER 6: Steam (Over Food) */}
+{/* <div className="absolute bottom-[15%] left-1/2 -translate-x-1/2 z-20 w-[60%] max-w-xl no-select">
+  <img
+    src="steam.webp"
+    alt="Steam"
+    className="w-full h-auto opacity-80"
+    draggable={false}
+  />
+</div> */}
+          {/* London background 
         <div className="absolute inset-0 z-0 overflow-hidden">
   <img
     src="/london.webp"
@@ -46,17 +81,17 @@ export const HeroSection = () => {
     draggable={false}
   />
 </div>
-{/* room interior */}
+{/* ROOM INTERIOR */}
 <div className="absolute inset-0 z-10">
   <img
     src="/room-interior.webp"
     alt="Restaurant Interior"
-    className="w-full h-full object-cover lg:object-center object-[40%_center] sm:object-[60%_center]"
+    className="no-select w-full h-full object-cover lg:object-center object-[40%_center] sm:object-[60%_center]"
+    loading="lazy"
     draggable={false}
   />
 </div>
         
-        {/* <div className="absolute inset-0 z-[11] bg-[linear-gradient(180deg,rgba(8,4,2,0.18)_0%,rgba(8,4,2,0.18)_30%,rgba(8,4,2,0.28)_68%,rgba(8,4,2,0.50)_100%)]" /> */}
 <Lantern
   className="lg:flex justify-center items-start w-[200px] sm:w-[210px] md:w-[230px] lg:w-[240px] left-[85%] -translate-x-1/2 sm:left-[52%] md:left-[53%] lg:right-[41%]" //lg:flex justify-center items-start top-0 left-[85%] -translate-x-1/2 w-[200px] h-[300px] sm:-top-[15%] sm:left-[52%] sm:w-[210px] sm:h-[315px] md:top-[-10%] md:left-[53%] md:w-[230px] md:h-[345px] lg:top-0 lg:left-auto lg:right-[41%] lg:translate-x-0 lg:w-[240px] lg:h-[360px] 
   imgClassName="h-[250px] sm:h-[260px] md:h-[275px] lg:h-[300px] "
@@ -68,10 +103,10 @@ export const HeroSection = () => {
     width: 70,
     height: 200,
 
-    fromOpacity: 0.95,
+    fromOpacity: 1,
     midOpacity: 0.72,
-    midPoint: "34%",
-    fadeEnd: "80%",
+    midPoint: "50%",
+    fadeEnd: "85%",
 
     x: 0,
     y: 0,
@@ -103,11 +138,11 @@ export const HeroSection = () => {
 
     fromOpacity: 1,
     midOpacity: 0.72,
-    midPoint: "36%",
-    fadeEnd: "76%",
+    midPoint: "45%",
+    fadeEnd: "70%",
 
     x: 0,
-    y: 0,
+    y: 15,
 
     sideFadeStart: "24%",
     sideFadeEnd: "76%",
@@ -125,12 +160,11 @@ export const HeroSection = () => {
 </div>
 </div>
  {/* context */}
-       <div className="relative z-20 mx-auto flex flex-col min-h-[100svh] w-full items-start justify-end px-5 pb-[130px] pt-24 md:px-6 md:pb-[120px] lg:justify-center lg:pl-8 lg:pb-[150px] xl:pl-16"> {/* relative z-20 mx-auto flex min-h-[100svh] w-full max-w-7xl items-end px-5 pt-[110px] pb-[162px] sm:px-6 sm:pt-[120px] sm:pb-[170px] lg:items-center lg:px-8 lg:pt-10 lg:pb-[120px] */}
-        {/* relative z-20 mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col justify-end px-5 pb-[110px] pt-24 sm:px-6 sm:pb-[120px] lg:justify-center lg:pl-12 lg:pb-0 xl:pl-16 */}
-         <div className="w-full max-w-[19rem] sm:max-w-[22rem] md:max-w-[34rem] lg:max-w-[48rem] xl:max-w-[56rem]"> {/* w-full max-w-[19rem] sm:max-w-[22rem] md:max-w-[25rem] lg:max-w-[34rem] xl:max-w-[38rem] */} {/* w-full max-w-[17rem] overflow-visible sm:max-w-[21rem] md:max-w-[24rem] lg:max-w-[34rem] xl:max-w-[38rem] */}
+       <div className="relative z-20 mx-auto flex flex-col min-h-[100svh] w-full items-start justify-end px-5 pb-[140px] pt-24 md:px-6 md:pb-[160px] lg:justify-center lg:pl-8 xl:pl-16">
+         <div className="w-full max-w-[19rem] sm:max-w-[22rem] md:max-w-[34rem] lg:max-w-[48rem] xl:max-w-[56rem]">
           <svg
-            viewBox="0 0 800 280"
-            className="w-full overflow-visible" 
+            viewBox="0 0 850 120"
+            className="block w-full overflow-visible select-none" 
             preserveAspectRatio="xMinYMid meet"
             role="img"
             aria-label="An Indian Restaurant - Experience in London"
@@ -154,7 +188,7 @@ export const HeroSection = () => {
             {/* Line 1: An Indian Punjabi */}
             <text
               x="0"
-              y="150"
+              y="20"
               fill="url(#heroTitleGradient)"
               stroke="#f7d89f"
               strokeWidth="0.8"
@@ -173,7 +207,7 @@ export const HeroSection = () => {
             {/* Line 3: Experience in London (Script) */}
             <text
               x="0"
-              y="240"
+              y="90"
               fill="url(#heroTitleGradient)"
               stroke="#f7d89f"
               strokeWidth="0.9"
@@ -196,10 +230,7 @@ export const HeroSection = () => {
             Proudly Non-Halal Restaurant
           </div>
 
-          <div className="mt-1 flex flex-col items-start gap-3 md:flex-row px-1 md:px-1 md:mt-0 lg:mt-5"> 
-            {/* mt-5 flex flex-col gap-3 sm:mt-7 sm:flex-row sm:flex-wrap px-1 sm:px-0 */} 
-            {/* inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#7a3e19] bg-[linear-gradient(90deg,#67130f,#7d1712)] px-2 py-2.5 sm:px-3 sm:py-3 lg:px-6 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#7b1913,#94221a)] sm:w-auto */}
-            {/* inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#1e6a4f] bg-[linear-gradient(90deg,#0f3328,#124437)] px-2 py-2.5 sm:px-3 sm:py-3 lg:px-6 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#134132,#1a5a47)] sm:w-auto */}
+          <div className="mt-1 flex flex-col items-start gap-3 md:flex-row px-1 md:px-1 md:mt-0 lg:mt-5 select-none"> 
             <Link
               to="/order"
               className="gap-2 rounded-xl border border-[#7a3e19] bg-[linear-gradient(90deg,#67130f,#7d1712)] px-4 py-2.5 md:px-4 md:py-3 lg:px-6 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#7b1913,#94221a)] md:w-auto"
@@ -214,13 +245,13 @@ export const HeroSection = () => {
             </Link>
           </div>
 
-<div className="mt-8 hidden lg:inline-flex rounded-full border border-[#f2d7a1]/25 bg-[linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.05))] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#f2d7a1] shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
+<div className="mt-8 hidden lg:inline-flex rounded-full select-none border border-[#f2d7a1]/25 bg-[linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.05))] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#f2d7a1] shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
             Proudly Non-Halal Restaurant
           </div>
         </div>
       </div>
 
-      <div className="absolute inset-x-2 bottom-[1px] z-30 sm:inset-x-3 lg:inset-x-6 mb-0 sm:mb-1 md:mb-2 lg:mb-3">
+      <div className="no-select absolute inset-x-2 bottom-[1px] z-30 sm:inset-x-3 lg:inset-x-6 mb-0 sm:mb-1 md:mb-2 lg:mb-3">
         <div className="mx-auto max-w-7xl rounded-[22px] border border-[#f2d7a1]/15 bg-[linear-gradient(135deg,rgba(18,10,7,0.58),rgba(60,39,22,0.24))] shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl">
           <div className="grid grid-cols-3 gap-x-1 gap-y-1 px-1 py-1 sm:grid-cols-3 sm:px-1 sm:py-1 lg:grid-cols-5 lg:gap-2 lg:px-5 lg:py-4">
             {operatingHighlights.map((item, index) => {
@@ -235,6 +266,7 @@ export const HeroSection = () => {
                     ${index !== 4 ? 'lg:border-r lg:border-[#f2d7a1]/10' : ''}
                     lg:px-3
                   `}
+                  draggable={false}
                 >
                   <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#f2d7a1]/20 bg-white/10 text-[#f2d7a1] backdrop-blur-md sm:h-9 sm:w-9">
                     <Icon size={15} />
@@ -254,7 +286,6 @@ export const HeroSection = () => {
           </div>
         </div>
       </div>
-
     </section>
   );
 };
