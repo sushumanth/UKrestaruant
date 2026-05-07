@@ -174,6 +174,7 @@ export const GallerySection = () => {
     let scrollUpdateScheduled = false;
     let lastFrameTime = 0;
 
+    
     const runtime = {
       scrollRotation: 0,
       dragRotation: 0,
