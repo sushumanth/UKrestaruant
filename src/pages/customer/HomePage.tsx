@@ -7,7 +7,7 @@ import { RoyalExperienceSection } from '@/components/customer/RoyalExperienceSec
 import { GallerySection } from '@/components/customer/GallerySection';
 import { AnimatedFoodDoodle } from '@/components/customer/AnimatedFoodDoodle';
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowRight, Clock3, Mail, PhoneCall, Star } from 'lucide-react';
+import { ArrowRight, Mail, PhoneCall } from 'lucide-react';
 
 const kitchenHighlights = [
   {
@@ -64,7 +64,7 @@ export const HomePage = () => {
       requestAnimationFrame(scrollToTarget);
     });
   }, [hash]);
-  
+
 
   return (
     <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #e8e4df 0%, #f5f1ed 100%)' }}>
