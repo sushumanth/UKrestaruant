@@ -87,17 +87,21 @@ const loadTexture = (src: string) =>
 
 const supportsWebGL = () => {
   if (typeof window === 'undefined') return false;
-  const canvas = document.createElement('canvas');
-  return Boolean(canvas.getContext('webgl2') || canvas.getContext('webgl'));
+  try {
+    const canvas = document.createElement('canvas');
+    return Boolean(canvas.getContext('webgl2') || canvas.getContext('webgl'));
+  } catch {
+    return false;
+  }
 };
 
+// FIX: Removed the `window.innerWidth < 768` check entirely.
+// That was the root cause — DevTools side-docking shrinks the viewport below 768px,
+// triggering a teardown. We only gate on WebGL support and reduced-motion preference.
 const shouldUseThree = () => {
   if (typeof window === 'undefined') return false;
-
   const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const isSmallScreen = window.innerWidth < 768;
-
-  return supportsWebGL() && !motionQuery.matches && !isSmallScreen;
+  return supportsWebGL() && !motionQuery.matches;
 };
 
 const GalleryFallbackGrid = () => (
@@ -105,7 +109,7 @@ const GalleryFallbackGrid = () => (
     {galleryItems.map((item, index) => (
       <div
         key={item.src}
-        className={`group relative overflow-hidden rounded-[28px] border border-[#d9bf91] bg-[#160c08] shadow-[0_16px_38px_rgba(52,22,11,0.18)] ${index === 0 ? 'sm:col-span-2 sm:row-span-2' : ''}`}
+        className={`group relative overflow-hidden rounded-[28px] border border-[#e2c8a0] bg-[#fff6e8] shadow-[0_16px_38px_rgba(148,103,57,0.18)] ${index === 0 ? 'sm:col-span-2 sm:row-span-2' : ''}`}
       >
         <div className={index === 0 ? 'aspect-[1.35/1]' : 'aspect-[0.9/1]'}>
           <img
@@ -115,10 +119,10 @@ const GalleryFallbackGrid = () => (
             loading="lazy"
           />
         </div>
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,4,3,0.08)_0%,rgba(8,4,3,0.45)_58%,rgba(8,4,3,0.92)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(255,245,231,0.7)_60%,rgba(235,215,187,0.96)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 p-5">
-          <p className="font-serif text-[clamp(20px,3vw,30px)] leading-none text-[#f7e2bc]">{item.title}</p>
-          <p className="mt-2 max-w-md text-sm text-[#f1d8aa]/80">{item.subtitle}</p>
+          <p className="font-serif text-[clamp(20px,3vw,30px)] leading-none text-[#5b351a]">{item.title}</p>
+          <p className="mt-2 max-w-md text-sm text-[#6f4a2a]/85">{item.subtitle}</p>
         </div>
       </div>
     ))}
@@ -133,27 +137,13 @@ export const GallerySection = () => {
   const previewPanelRef = useRef<HTMLDivElement | null>(null);
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [useThreeMode, setUseThreeMode] = useState(false);
+  // FIX: Compute useThreeMode once on mount and never change it again.
+  // This prevents DevTools resize events from toggling the mode and nuking the scene.
+  const [useThreeMode] = useState(() => shouldUseThree());
   const [isSceneReady, setIsSceneReady] = useState(false);
 
   const activeItem = useMemo(() => galleryItems[activeIndex] ?? galleryItems[0], [activeIndex]);
   const previewItem = previewIndex !== null ? galleryItems[previewIndex] : null;
-
-  useEffect(() => {
-    setUseThreeMode(shouldUseThree());
-
-    const handleViewportChange = () => {
-      setUseThreeMode(shouldUseThree());
-    };
-
-    window.addEventListener('resize', handleViewportChange);
-    window.addEventListener('orientationchange', handleViewportChange);
-
-    return () => {
-      window.removeEventListener('resize', handleViewportChange);
-      window.removeEventListener('orientationchange', handleViewportChange);
-    };
-  }, []);
 
   useEffect(() => {
     if (!introRef.current) return;
@@ -184,7 +174,6 @@ export const GallerySection = () => {
     let scrollUpdateScheduled = false;
 
     const runtime = {
-      // FIX: start cameraZ at 10.5 for more breathing room
       scrollRotation: 0,
       dragRotation: 0,
       cameraZ: 10.5,
@@ -197,7 +186,6 @@ export const GallerySection = () => {
       previewIndex: -1,
     };
 
-    
     const pointer = new THREE.Vector2();
     const raycaster = new THREE.Raycaster();
     const cardRuntimes: CardRuntime[] = [];
@@ -213,13 +201,16 @@ export const GallerySection = () => {
       ease: 'power2.out',
     });
 
+    // FIX: onResize now reads the host element's actual dimensions every time,
+    // which correctly handles DevTools panels opening/closing.
     const onResize = () => {
       if (!renderer || !camera || !canvasHostRef.current) return;
       const width = canvasHostRef.current.clientWidth;
       const height = canvasHostRef.current.clientHeight;
+      if (width === 0 || height === 0) return; // guard against zero-size during DevTools transitions
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
+      renderer.setSize(width, height, false); // false = don't set CSS size, avoids feedback loops
       scheduleScrollUpdate();
     };
 
@@ -238,7 +229,6 @@ export const GallerySection = () => {
 
     const scheduleScrollUpdate = () => {
       if (scrollUpdateScheduled) return;
-
       scrollUpdateScheduled = true;
       scrollRafId = window.requestAnimationFrame(() => {
         scrollUpdateScheduled = false;
@@ -304,10 +294,8 @@ export const GallerySection = () => {
       }
 
       scene = new THREE.Scene();
-      // FIX: fog starts further away (18 instead of 14) so side cards aren't swallowed
       scene.fog = new THREE.Fog(new THREE.Color('#120806'), 18, 40);
 
-      // FIX: camera Y = 0 (was 0.15), no vertical offset causing top clip
       camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
       camera.position.set(0, 0, runtime.cameraZ);
 
@@ -321,9 +309,10 @@ export const GallerySection = () => {
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.12;
 
-      const width = canvasHostRef.current.clientWidth;
-      const height = canvasHostRef.current.clientHeight;
-      renderer.setSize(width, height);
+      // FIX: Set canvas style to fill its container absolutely.
+      // This makes it immune to layout shifts caused by DevTools opening.
+      renderer.domElement.style.position = 'absolute';
+      renderer.domElement.style.inset = '0';
       renderer.domElement.style.width = '100%';
       renderer.domElement.style.height = '100%';
       renderer.domElement.style.display = 'block';
@@ -331,6 +320,9 @@ export const GallerySection = () => {
       renderer.domElement.style.cursor = 'grab';
 
       canvasHostRef.current.appendChild(renderer.domElement);
+
+      // Initial size
+      onResize();
 
       const ambient = new THREE.AmbientLight(0xfff0df, 1.35);
       const hemi = new THREE.HemisphereLight(0xfff2df, 0x2a1109, 1.15);
@@ -347,7 +339,6 @@ export const GallerySection = () => {
       const carousel = new THREE.Group();
       scene.add(carousel);
 
-      // FIX: reduced radius from 6.2 → 5.8 so cards fit better in view
       const radius = 5.8;
       const cardHeight = 3.0;
 
@@ -364,7 +355,7 @@ export const GallerySection = () => {
         const cardWidth = cardHeight * aspect;
 
         const group = new THREE.Group();
-        group.userData = { index }; // FIX: store index on group for raycasting
+        group.userData = { index };
 
         const frameGeometry = new THREE.PlaneGeometry(cardWidth + 0.54, cardHeight + 0.54);
         const backgroundGeometry = new THREE.PlaneGeometry(cardWidth + 0.28, cardHeight + 0.28);
@@ -396,10 +387,8 @@ export const GallerySection = () => {
 
         const frame = new THREE.Mesh(frameGeometry, frameMaterial);
         frame.position.z = -0.12;
-
         const backdrop = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
         backdrop.position.z = -0.06;
-
         const image = new THREE.Mesh(imageGeometry, imageMaterial);
         image.position.z = 0.01;
 
@@ -425,6 +414,8 @@ export const GallerySection = () => {
       });
 
       const animate = () => {
+        if (disposed) return;
+
         const totalRotation = runtime.scrollRotation + runtime.dragRotation;
         const anglePerCard = (Math.PI * 2) / galleryItems.length;
 
@@ -435,11 +426,10 @@ export const GallerySection = () => {
 
           const x = Math.sin(angle) * radius;
           const z = Math.cos(angle) * radius - radius;
-          // FIX: reduced Y wave from 0.42 → 0.12 so cards stay vertically centered
           const y = Math.sin(angle * 0.55) * 0.12;
 
           card.group.position.set(x, y, z + card.selected.value * 0.85);
-          card.group.lookAt(0, 0, 0); // FIX: lookAt Y=0 not y*0.05, keeps cards level
+          card.group.lookAt(0, 0, 0);
 
           const entryBoost = 0.5 + card.entry.value * 0.5;
           const scale =
@@ -463,7 +453,6 @@ export const GallerySection = () => {
           setActiveIndex(nextActiveIndex);
         }
 
-        // FIX: camera Y stays at 0 — no scroll-driven Y drift that was causing top clipping
         camera!.position.z = gsap.utils.interpolate(camera!.position.z, runtime.cameraZ, 0.06);
         camera!.position.y = gsap.utils.interpolate(camera!.position.y, 0, 0.05);
         camera!.lookAt(0, 0, 0);
@@ -475,13 +464,38 @@ export const GallerySection = () => {
       animate();
       setIsSceneReady(true);
 
+      // FIX: Use ResizeObserver on the canvas host element instead of window resize.
+      // ResizeObserver fires correctly when the host element's actual size changes,
+      // whether from DevTools, browser zoom, or window resize — without false positives.
+      const resizeObserver = new ResizeObserver(() => {
+        onResize();
+      });
+      resizeObserver.observe(canvasHostRef.current);
+
       window.addEventListener('scroll', scheduleScrollUpdate, { passive: true });
-      window.addEventListener('resize', scheduleScrollUpdate);
       window.addEventListener('orientationchange', scheduleScrollUpdate);
       scheduleScrollUpdate();
 
-      onResize();
+      // Entry animation
+      const loadTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      if (introRef.current) {
+        loadTl.fromTo(
+          introRef.current.querySelectorAll('[data-gallery-hero]'),
+          { opacity: 0, y: 18 },
+          { opacity: 1, y: 0, duration: 0.8, stagger: 0.08 },
+          0,
+        );
+      }
+      if (canvasHostRef.current) {
+        loadTl.fromTo(
+          canvasHostRef.current,
+          { opacity: 0, scale: 0.98, y: 24 },
+          { opacity: 1, scale: 1, y: 0, duration: 1.05, ease: 'expo.out' },
+          0.1,
+        );
+      }
 
+      // Pointer events
       const handlePointerMove = (event: PointerEvent) => {
         if (!renderer || !camera) return;
 
@@ -504,7 +518,6 @@ export const GallerySection = () => {
           true,
         );
         const hitObject = hits[0]?.object;
-        // FIX: walk up to find the group with userData.index set
         let hitGroup: THREE.Group | null = null;
         if (hitObject) {
           let obj: THREE.Object3D | null = hitObject;
@@ -535,7 +548,6 @@ export const GallerySection = () => {
 
       const handlePointerUp = () => {
         if (!runtime.isDragging) return;
-
         runtime.isDragging = false;
         renderer!.domElement.style.cursor = runtime.hoveredIndex >= 0 ? 'pointer' : 'grab';
 
@@ -543,7 +555,6 @@ export const GallerySection = () => {
           openPreview(runtime.hoveredIndex);
           return;
         }
-
         snapToNearestCard();
       };
 
@@ -566,32 +577,10 @@ export const GallerySection = () => {
       renderer.domElement.addEventListener('pointerleave', handlePointerLeave);
       renderer.domElement.addEventListener('click', handleClick);
 
-      window.addEventListener('resize', onResize);
-
-      const loadTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-      if (introRef.current) {
-        loadTl.fromTo(
-          introRef.current.querySelectorAll('[data-gallery-hero]'),
-          { opacity: 0, y: 18 },
-          { opacity: 1, y: 0, duration: 0.8, stagger: 0.08 },
-          0,
-        );
-      }
-
-      if (canvasHostRef.current) {
-        loadTl.fromTo(
-          canvasHostRef.current,
-          { opacity: 0, scale: 0.98, y: 24 },
-          { opacity: 1, scale: 1, y: 0, duration: 1.05, ease: 'expo.out' },
-          0.1,
-        );
-      }
-
       return () => {
+        resizeObserver.disconnect();
         window.removeEventListener('scroll', scheduleScrollUpdate);
-        window.removeEventListener('resize', scheduleScrollUpdate);
         window.removeEventListener('orientationchange', scheduleScrollUpdate);
-        window.removeEventListener('resize', onResize);
         renderer?.domElement.removeEventListener('pointermove', handlePointerMove);
         renderer?.domElement.removeEventListener('pointerdown', handlePointerDown);
         renderer?.domElement.removeEventListener('pointerup', handlePointerUp);
@@ -605,13 +594,21 @@ export const GallerySection = () => {
     return () => {
       disposed = true;
       window.cancelAnimationFrame(scrollRafId);
-      gsap.killTweensOf(runtime);
       window.cancelAnimationFrame(rafId);
+      gsap.killTweensOf(runtime);
 
       listenerCleanupPromise.then((cleanup) => cleanup?.()).catch(() => undefined);
 
       if (renderer) {
+        // FIX: Remove the canvas from the DOM before disposing the renderer.
+        // Without this, a stale canvas element lingers in the host div, and if
+        // the effect re-runs (e.g. React StrictMode), a second canvas gets appended
+        // on top of the orphaned one.
+        if (renderer.domElement.parentNode) {
+          renderer.domElement.parentNode.removeChild(renderer.domElement);
+        }
         renderer.dispose();
+        renderer = null;
       }
       scene = null;
       camera = null;
@@ -673,34 +670,34 @@ export const GallerySection = () => {
       id="gallery"
       className="relative isolate w-full overflow-hidden scroll-mt-24 px-6 py-12 sm:px-10 sm:py-14 lg:px-16 lg:py-16 xl:px-24"
       style={{
-  background: `
-    radial-gradient(circle at 15% 20%, rgba(255, 210, 140, 0.18), transparent 35%),
-    radial-gradient(circle at 85% 25%, rgba(255, 140, 60, 0.12), transparent 40%),
-    radial-gradient(circle at 50% 90%, rgba(120, 60, 20, 0.18), transparent 45%),
-    linear-gradient(135deg, #0f0a06 0%, #1a1209 25%, #2b1a0f 55%, #120a06 100%)
-  `,
-}}
+        background: `
+          radial-gradient(circle at 15% 20%, rgba(255, 244, 222, 0.9), transparent 55%),
+          radial-gradient(circle at 85% 25%, rgba(255, 214, 163, 0.6), transparent 50%),
+          radial-gradient(circle at 50% 90%, rgba(220, 170, 110, 0.35), transparent 55%),
+          linear-gradient(135deg, #fff7e9 0%, #f7ead3 35%, #f1dcc1 70%, #fff4e6 100%)
+        `,
+      }}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,241,220,0.06),transparent_28%),radial-gradient(circle_at_80%_78%,rgba(200,130,80,0.06),transparent_28%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.6),transparent_32%),radial-gradient(circle_at_80%_78%,rgba(248,208,150,0.35),transparent_40%)]" />
 
       <div ref={introRef} className="relative z-10 mx-auto max-w-7xl">
         <div className="mb-8 max-w-4xl">
           <div>
             <div
               data-gallery-hero
-              className="inline-flex items-center gap-2 rounded-full border border-[#f0c57f]/25 bg-white/5 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f3d7a0] backdrop-blur"
+              className="inline-flex items-center gap-2 rounded-full border border-[#e2c19a]/70 bg-[#fff4e2]/70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#7a4a26] backdrop-blur"
             >
               <Sparkles size={14} /> Cinematic Gallery
             </div>
             <h2
               data-gallery-hero
-              className="mt-4 font-serif text-[clamp(34px,4.8vw,64px)] leading-[0.92] text-[#f7e2bc]"
+              className="mt-4 font-serif text-[clamp(34px,4.8vw,64px)] leading-[0.92] text-[#5b341a]"
             >
               A visual story of your dining experience.
             </h2>
             <p
               data-gallery-hero
-              className="mt-4 max-w-2xl text-[14px] leading-relaxed text-[#e5c79d]/82 sm:text-base"
+              className="mt-4 max-w-2xl text-[14px] leading-relaxed text-[#6f4a2a]/85 sm:text-base"
             >
               Discover signature moments from our kitchen and dining room in an immersive, elegant gallery.
             </p>
@@ -708,31 +705,33 @@ export const GallerySection = () => {
         </div>
 
         <div className="grid gap-5 xl:grid-cols-1">
+          {/* FIX: Added `position: relative` to the host div so the absolutely-positioned
+              canvas fills it correctly regardless of how DevTools reshapes the viewport. */}
           <div
             ref={canvasHostRef}
-            className={`relative min-h-[420px] sm:min-h-[470px] lg:min-h-[520px] overflow-hidden rounded-[30px] border border-[#f0c57f]/20 bg-[linear-gradient(180deg,rgba(255,245,223,0.07)_0%,rgba(255,245,223,0.02)_40%,rgba(0,0,0,0.22)_100%)] shadow-[0_24px_70px_rgba(0,0,0,0.4)] ${useThreeMode ? '' : 'flex items-center justify-center p-5 sm:p-6'}`}
+            className={`relative min-h-[420px] sm:min-h-[470px] lg:min-h-[520px] overflow-hidden rounded-[30px] border border-[#e2c19a]/60 bg-[linear-gradient(180deg,rgba(255,252,246,0.92)_0%,rgba(251,241,228,0.82)_45%,rgba(238,219,191,0.7)_100%)] shadow-[0_24px_70px_rgba(138,96,52,0.18)] ${useThreeMode ? '' : 'flex items-center justify-center p-5 sm:p-6'}`}
           >
             {!useThreeMode && <GalleryFallbackGrid />}
 
             {useThreeMode && !isSceneReady && (
-              <div className="absolute inset-0 flex items-center justify-center text-[#f7e2bc]/85">
-                <div className="rounded-full border border-[#f0c57f]/20 bg-black/20 px-5 py-3 text-sm tracking-[0.2em] uppercase">
+              <div className="absolute inset-0 flex items-center justify-center text-[#6f4a2a]/85">
+                <div className="rounded-full border border-[#e2c19a]/60 bg-[#fff4e2]/80 px-5 py-3 text-sm tracking-[0.2em] uppercase">
                   Loading gallery
                 </div>
               </div>
             )}
 
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-[linear-gradient(180deg,transparent_0%,rgba(18,8,6,0.1)_24%,rgba(18,8,6,0.88)_100%)] px-6 pb-6 pt-20">
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-[linear-gradient(180deg,transparent_0%,rgba(255,244,228,0.55)_35%,rgba(240,222,196,0.95)_100%)] px-6 pb-6 pt-20">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f0c57f]/70">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#8a5b33]/75">
                     Featured frame
                   </p>
-                  <h3 className="mt-2 font-serif text-[clamp(22px,3.2vw,36px)] leading-none text-[#f7e2bc]">
+                  <h3 className="mt-2 font-serif text-[clamp(22px,3.2vw,36px)] leading-none text-[#5b341a]">
                     {activeItem.title}
                   </h3>
                 </div>
-                <p className="max-w-md text-sm leading-relaxed text-[#e7cda7]/78">{activeItem.subtitle}</p>
+                <p className="max-w-md text-sm leading-relaxed text-[#6f4a2a]/85">{activeItem.subtitle}</p>
               </div>
             </div>
           </div>
@@ -810,4 +809,4 @@ export const GallerySection = () => {
       )}
     </section>
   );
-};
+};  

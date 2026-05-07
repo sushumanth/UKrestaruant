@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { HeroSection } from '@/components/customer/HeroSection';
 import { AboutJourneySection } from '@/components/customer/AboutJourneySection';
@@ -5,7 +6,7 @@ import { PremiumThemeSection } from '@/components/customer/PremiumThemeSection';
 import { RoyalExperienceSection } from '@/components/customer/RoyalExperienceSection';
 import { GallerySection } from '@/components/customer/GallerySection';
 import { AnimatedFoodDoodle } from '@/components/customer/AnimatedFoodDoodle';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, Clock3, Mail, PhoneCall, Star } from 'lucide-react';
 
 const kitchenHighlights = [
@@ -47,6 +48,23 @@ const kitchenHighlights = [
 // ];
 
 export const HomePage = () => {
+  const { hash } = useLocation();
+
+  useEffect(() => {
+    if (!hash) return;
+    const targetId = hash.replace('#', '');
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    const scrollToTarget = () => {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(scrollToTarget);
+    });
+  }, [hash]);
+
   return (
     <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #e8e4df 0%, #f5f1ed 100%)' }}>
       <div className="grain-overlay opacity-10" />
@@ -191,7 +209,7 @@ export const HomePage = () => {
 
         <AboutJourneySection />
 
-        <section className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 mt-0 -translate-y-6">
+        {/* <section className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 -mt-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -207,7 +225,7 @@ export const HomePage = () => {
               Average online booking completion: 9 seconds
             </div>
           </motion.div>
-        </section>
+        </section> */}
 
         {/* <section 
           className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 mt-16 py-16 relative overflow-hidden rounded-2xl border border-amber-200/50 shadow-lg" 
