@@ -19,7 +19,6 @@ const kitchenHighlights = [
     title: 'Family-Style Sharing',
     description: 'Menus curated for couples, families, and celebrations.',
     image: '/Family-StyleSharing.png',
-    
   },
   {
     title: 'Royal Ambiance',
