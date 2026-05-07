@@ -42,7 +42,7 @@ export const MenuPage = () => {
   }, {});
 
   return (
-    <div className="min-h-screen bg-[#f8f0e1] pt-20 text-[#2d241b]">
+    <div className="min-h-screen bg-[linear-gradient(180deg,#fdf7ef_0%,#f4e6d2_100%)] pt-20 text-[#2d241b]">
       <div className="w-full pb-16">
         <section
           ref={heroRef}
@@ -118,88 +118,99 @@ export const MenuPage = () => {
             </div>
           </section>
 
-          <section className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
+          <section className="mt-6 grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
             {filteredItems.map((item) => (
               <motion.article
                 key={item.id}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#ead7ba] bg-[#fffaf1] shadow-[0_12px_26px_rgba(83,50,17,0.07)] sm:rounded-3xl sm:shadow-[0_16px_34px_rgba(83,50,17,0.06)]"
+                className="flex h-full flex-col overflow-hidden rounded-[24px] border border-[#e6d1b6] bg-[#fff6eb] shadow-[0_14px_28px_rgba(120,82,40,0.16)]"
               >
-                <img src={item.image} alt={item.name} className="h-28 w-full object-cover sm:h-48" loading="lazy" />
-                <div className="flex flex-1 flex-col p-3 sm:p-5">
-                  <div className="flex min-h-[50px] items-start justify-between gap-3 sm:min-h-[50px]">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-start gap-2">
-                        <h3 className="font-serif text-[clamp(18px,4.2vw,26px)] leading-[0.95] text-[#2d2319] sm:text-2xl flex-1">
-                          {item.name}
-                        </h3>
-                        {item.isVeg && (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-[#e7f8e7] px-2 py-0.5 text-[10px] font-semibold text-[#2d7a2d] sm:px-2.5 sm:py-1 sm:text-xs flex-shrink-0">
-                            <Leaf size={12} /> Veg
-                          </span>
-                        )}
-                      </div>
-                      <p className="mt-1 min-h-[44px] text-[12px] leading-[1.35] text-[#6f5f4a] sm:mt-2 sm:min-h-[48px] sm:text-sm">
-                        <span className="sm:hidden">
-                          {item.description.length > 52
-                            ? `${item.description.slice(0, 52).trimEnd()}...`
-                            : item.description}
-                        </span>
-                        <span className="hidden sm:inline">{item.description}</span>
-                      </p>
-                    </div>
-                  </div>
-                  </div>
-
-                <div className="mt-3 flex min-h-[20px] items-center gap-6 text-[12px] text-[#7d6a57] sm:mt-4 sm:min-h-[22px] sm:text-sm">
-                  <span className="inline-flex items-center gap-1.5 tabular-nums">
-                    <Star size={13} className="text-[#b9832f] sm:h-[14px] sm:w-[14px]" />
-                    {formatMenuRating(item.rating)}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 tabular-nums">
-                    <Clock3 size={13} className="sm:h-[14px] sm:w-[14px]" />
-                    {item.prepTime} min
-                  </span>
-                </div>
-
-                <div className="mt-auto flex items-center justify-between pt-4">
-                  <span className="text-lg font-semibold text-[#7d2419] sm:text-xl">{formatCurrency(item.price)}</span>
-                  {itemQuantityById[item.id] ? (
-                    <div className="inline-flex items-center rounded-full border border-[#8f2a1d] bg-[#7d2419] p-1 text-[#fff3df] shadow-[0_4px_12px_rgba(60,20,10,0.2)]">
-                      <button
-                        type="button"
-                        onClick={() => updateItemQuantity(item.id, itemQuantityById[item.id] - 1)}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21]"
-                        aria-label={`Decrease quantity of ${item.name}`}
-                      >
-                        <Minus size={14} />
-                      </button>
-                      <span className="min-w-[22px] text-center text-sm font-bold leading-none">
-                        {itemQuantityById[item.id]}
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="h-32 w-full object-cover sm:h-44"
+                  loading="lazy"
+                />
+                <div className="flex flex-1 flex-col p-3 sm:p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="flex-1 font-serif text-[clamp(18px,3.8vw,24px)] leading-[1.05] text-[#2f2218]">
+                      {item.name}
+                    </h3>
+                    {item.isVeg ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[#e7f8e7] px-2 py-0.5 text-[10px] font-semibold text-[#2d7a2d]">
+                        <Leaf size={11} /> Veg
                       </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[#fde7e5] px-2 py-0.5 text-[10px] font-semibold text-[#9c2f27]">
+                        <span className="inline-block h-2 w-2 rounded-full border border-current" /> Non-Veg
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 min-h-[44px] text-[12px] leading-[1.4] text-[#6f5b45] sm:text-sm">
+                    <span className="sm:hidden">
+                      {item.description.length > 52
+                        ? `${item.description.slice(0, 52).trimEnd()}...`
+                        : item.description}
+                    </span>
+                    <span className="hidden sm:inline">{item.description}</span>
+                  </p>
+
+                  <div className="mt-3 flex items-center gap-4 text-[12px] text-[#7a674f] sm:text-sm">
+                    <span className="inline-flex items-center gap-1.5 tabular-nums">
+                      <Star size={13} className="text-[#b9832f]" />
+                      {formatMenuRating(item.rating)}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 tabular-nums">
+                      <Clock3 size={13} />
+                      {item.prepTime} min
+                    </span>
+                  </div>
+
+                  <div className="mt-auto flex items-center justify-between pt-4">
+                    <span className="text-lg font-semibold text-[#7a2b1c] sm:text-xl">
+                      {formatCurrency(item.price)}
+                    </span>
+                    {itemQuantityById[item.id] ? (
+                      <div className="inline-flex items-center gap-2 rounded-full bg-[#6b2a1e] px-2 py-1 text-[#fff3e2] shadow-[0_6px_16px_rgba(92,46,20,0.22)]">
+                        <button
+                          type="button"
+                          onClick={() => updateItemQuantity(item.id, itemQuantityById[item.id] - 1)}
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#5b2218] transition-colors hover:bg-[#742b1f]"
+                          aria-label={`Decrease quantity of ${item.name}`}
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className="min-w-[18px] text-center text-sm font-semibold">
+                          {itemQuantityById[item.id]}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#5b2218] transition-colors hover:bg-[#742b1f]"
+                          aria-label={`Increase quantity of ${item.name}`}
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    ) : (
                       <button
                         type="button"
                         onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21]"
-                        aria-label={`Increase quantity of ${item.name}`}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-[#6b2a1e] px-3 py-1.5 text-sm font-semibold text-[#fff3e2] shadow-[0_6px_16px_rgba(92,46,20,0.22)] transition-colors hover:bg-[#7b3124]"
                       >
-                        <Plus size={14} />
+                        <Plus size={14} /> Add
                       </button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-[#7d2419] px-3 py-1.5 text-sm font-semibold text-[#fff3df] transition-colors hover:bg-[#942d21] sm:gap-2 sm:px-4 sm:py-2"
-                    >
-                      <Plus size={14} /> Add
-                    </button>
-                  )}
+                    )}
+                  </div>
                 </div>
               </motion.article>
             ))}
           </section>
+
+          <p className="mt-4 text-center text-xs font-medium uppercase tracking-[0.2em] text-[#a07a4f]">
+            Scroll for more dishes
+          </p>
 
           {filteredItems.length === 0 && (
             <div className="mt-10 rounded-3xl border border-dashed border-[#dbc9aa] bg-[#fff7ea] p-8 text-center text-[#6f5f4a]">
