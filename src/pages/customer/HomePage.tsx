@@ -64,6 +64,7 @@ export const HomePage = () => {
       requestAnimationFrame(scrollToTarget);
     });
   }, [hash]);
+  
 
   return (
     <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #e8e4df 0%, #f5f1ed 100%)' }}>
