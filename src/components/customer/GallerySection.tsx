@@ -172,6 +172,7 @@ export const GallerySection = () => {
     let rafId = 0;
     let scrollRafId = 0;
     let scrollUpdateScheduled = false;
+    let lastFrameTime = 0;
 
     const runtime = {
       scrollRotation: 0,
@@ -180,6 +181,7 @@ export const GallerySection = () => {
       hoveredIndex: -1,
       activeIndex: 0,
       isDragging: false,
+      isAutoPaused: false,
       startX: 0,
       lastX: 0,
       dragDistance: 0,
@@ -416,6 +418,14 @@ export const GallerySection = () => {
       const animate = () => {
         if (disposed) return;
 
+        const now = performance.now();
+        const delta = lastFrameTime ? Math.min(0.05, (now - lastFrameTime) / 1000) : 0;
+        lastFrameTime = now;
+
+        if (!runtime.isDragging && !runtime.isAutoPaused) {
+          runtime.dragRotation -= 0.18 * delta;
+        }
+
         const totalRotation = runtime.scrollRotation + runtime.dragRotation;
         const anglePerCard = (Math.PI * 2) / galleryItems.length;
 
@@ -535,11 +545,13 @@ export const GallerySection = () => {
           runtime.hoveredIndex = nextIndex;
           updateHover(nextIndex);
           renderer.domElement.style.cursor = nextIndex >= 0 ? 'pointer' : 'grab';
+          runtime.isAutoPaused = nextIndex >= 0;
         }
       };
 
       const handlePointerDown = (event: PointerEvent) => {
         runtime.isDragging = true;
+        runtime.isAutoPaused = true;
         runtime.startX = event.clientX;
         runtime.lastX = event.clientX;
         runtime.dragDistance = 0;
@@ -549,6 +561,7 @@ export const GallerySection = () => {
       const handlePointerUp = () => {
         if (!runtime.isDragging) return;
         runtime.isDragging = false;
+        runtime.isAutoPaused = runtime.hoveredIndex >= 0;
         renderer!.domElement.style.cursor = runtime.hoveredIndex >= 0 ? 'pointer' : 'grab';
 
         if (runtime.dragDistance < 8 && runtime.hoveredIndex >= 0) {
@@ -562,6 +575,7 @@ export const GallerySection = () => {
         runtime.hoveredIndex = -1;
         updateHover(-1);
         runtime.isDragging = false;
+        runtime.isAutoPaused = false;
         renderer!.domElement.style.cursor = 'grab';
       };
 
