@@ -37,7 +37,8 @@ export default function DishFrame({ name, description, image }: DishFrameProps) 
             <img
                 src={image}
                 alt={name}
-                className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+                className="pointer-events-none select-none h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+                loading="lazy"
                 draggable={false}
               />
           </div>
@@ -55,7 +56,8 @@ export default function DishFrame({ name, description, image }: DishFrameProps) 
         <img
           src="/frame.png"
           alt=""
-          className="pointer-events-none absolute inset-0 z-20 h-full w-full"
+          className="pointer-events-none select-none absolute inset-0 z-20 h-full w-full"
+          loading="lazy"
           draggable={false}
         />
       </div>
@@ -63,18 +65,18 @@ export default function DishFrame({ name, description, image }: DishFrameProps) 
       {/* Description area */}
         <div className="relative w-full">
           <div
-            className="relative flex h-[182px] w-full flex-col items-center bg-[#fffaf0] px-3 text-center sm:h-[178px]"
+            className="relative flex w-full flex-col items-center bg-[#fffaf0] px-3 text-center"
             style={{
               clipPath: bottomStepCut,
               WebkitClipPath: bottomStepCut,
               border: "1px 1px solid #d9c79d",
             }}
           >
-            <h3 className="flex h-[42px] items-center justify-center font-serif text-[16px] leading-[1.1] text-[#2b1308] sm:min-h-[50px] sm:text-[19px] ">
+            <h3 className="pt-4 pb-2 flex items-center justify-center font-serif text-[16px] leading-[1.1] text-[#2b1308] sm:text-[19px] ">
               {name}
             </h3>
 
-             <p className="mt-1 flex min-h-[40px] max-w-[210px] items-center justify-center px-1 text-[10px] leading-[1.45] text-[#695846] sm:text-[12px]">
+             <p className="pt-2 pb-2 flex max-w-[210px] items-center justify-center px-1 text-[10px] leading-[1.45] text-[#695846] sm:text-[12px]">
               <span className="sm:hidden">
                 {description.length > 40
                   ? `${description.slice(0, 40).trimEnd()}...`
@@ -90,12 +92,12 @@ export default function DishFrame({ name, description, image }: DishFrameProps) 
 
             <Link
               to="/order"
-              className="mt-1 inline-flex items-center rounded-[10px] border border-[#d2bb8a] bg-[#f4e7ca] px-5 py-[4px] text-[9px] font-bold uppercase tracking-[0.08em] text-[#5a1e1e] transition-colors duration-300 hover:bg-[#5a1e1e] hover:text-[#fff4dd] sm:px-6 sm:py-[9px] sm:text-[10px]"
+              className="mt-2 mb-5 inline-flex items-center rounded-[10px] border border-[#d2bb8a] bg-[#f4e7ca] px-5 py-[4px] text-[9px] font-bold uppercase tracking-[0.08em] text-[#5a1e1e] transition-colors duration-300 hover:bg-[#5a1e1e] hover:text-[#fff4dd] sm:px-6 sm:py-[9px] sm:text-[10px]"
             >
               Order Now
             </Link>
 
-            <div className="pointer-events-none absolute inset-x-[18px] bottom-[10px] h-px bg-[#e6d7b4]" />
+            <div className="pointer-events-none absolute inset-x-[24px] bottom-[6px] h-px bg-[#e6d7b4]" />
           </div>
           </div>
           </div>

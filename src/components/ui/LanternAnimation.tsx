@@ -423,7 +423,8 @@ const topMaskInnerStyle =
         <img
           src="/lantern.webp"
           alt="Lantern"
-          className={`relative z-10 w-auto origin-top drop-shadow-2xl ${imgClassName}`}
+          className={`select-none pointer-events-none relative z-10 w-auto origin-top drop-shadow-2xl ${imgClassName}`}
+          loading="lazy"
           draggable={false}
         />
       </div>
