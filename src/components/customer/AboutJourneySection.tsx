@@ -122,7 +122,7 @@ export const AboutJourneySection = () => {
         {/* Moving Marker */}
         <div ref={carriageRef} className="absolute left-0 top-0 z-30">
            <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-[#c99753] bg-[#2f1b10] shadow-xl">
-              <img src="/logosolo.png" alt="marker" className="h-8 w-8 rounded-full object-cover" />
+              <img src="/logosolo.png" alt="marker" className="no-select h-8 w-8 rounded-full object-cover" />
            </div>
         </div>
 
@@ -134,7 +134,7 @@ export const AboutJourneySection = () => {
               className="journey-card invisible flex w-64 flex-col rounded-2xl border border-[#c9a46a]/40 bg-white/80 p-4 shadow-xl backdrop-blur-md"
               style={{ marginTop: i % 2 === 0 ? '160px' : '-160px' }} // Zig-zag pattern
             >
-              <img src={step.image} className="h-32 w-full rounded-lg object-cover" alt={step.title} />
+              <img src={step.image} className="no-select h-32 w-full rounded-lg object-cover" alt={step.title} />
               <h4 className="mt-4 font-serif text-xl text-[#2f1e0b]">{step.title}</h4>
               <p className="mt-2 text-sm text-[#6f5434]">{step.description}</p>
             </div>
@@ -164,7 +164,7 @@ export const AboutJourneySection = () => {
 
               {/* Card */}
               <div className="overflow-hidden rounded-2xl border border-[#cfad76]/50 bg-white shadow-lg">
-                <img src={step.image} className="h-48 w-full object-cover" alt={step.title} />
+                <img src={step.image} className="no-select h-48 w-full object-cover" alt={step.title} />
                 <div className="p-6">
                   <h4 className="font-serif text-2xl text-[#2f1d0a]">{step.title}</h4>
                   <p className="mt-2 text-[#6f5434]">{step.description}</p>

@@ -192,7 +192,7 @@ export const HomePage = () => {
                     <img
                       src={item.image}
                       alt={item.title}
-                      className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
+                      className="no-select absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
                       loading="lazy"
                     />
                     <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(51,24,12,0.18)_0%,rgba(58,27,13,0.34)_42%,rgba(42,19,9,0.76)_100%)]" />
