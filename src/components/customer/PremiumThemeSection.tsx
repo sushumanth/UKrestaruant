@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
-import { CalendarDays, ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import DishFrame from '../ui/DishFrame';
 
@@ -32,7 +31,7 @@ const signatureDishes: SignatureDish[] = [
     image: '/dining_room.jpg',
   },
    {
-    name: 'Paneer Tikka',
+    name: 'Paneer Tikka 2',
     description: 'Char-grilled paneer cubes with smoky spice marinade.',
     image: '/dining_room.jpg',
   },
@@ -40,71 +39,172 @@ const signatureDishes: SignatureDish[] = [
 
 export const PremiumThemeSection = () => {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+const currentIndexRef = useRef(signatureDishes.length);
+const autoDirectionRef = useRef<1 | -1>(-1);
+const autoStepCountRef = useRef(0);
+const isAnimatingRef = useRef(false);
 
-  useEffect(() => {
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
+const loopedDishes = [
+  ...signatureDishes,
+  ...signatureDishes,
+  ...signatureDishes,
+];
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+const isMobileLayout = () => {
+  return window.matchMedia('(max-width: 767px)').matches;
+};
+
+const getStepSize = () => {
+  const scroller = scrollerRef.current;
+  if (!scroller) return 0;
+
+  const firstCard = scroller.querySelector('[data-signature-card]') as HTMLDivElement | null;
+  if (!firstCard) return 0;
+
+  const gap = 20; // this must match gap-5
+  return isMobileLayout()
+    ? firstCard.offsetHeight + gap
+    : firstCard.offsetWidth + gap;
+};
+
+const jumpToIndex = (index: number) => {
+  const scroller = scrollerRef.current;
+  if (!scroller) return;
+
+  const step = getStepSize();
+  const target = step * index;
+
+  if (isMobileLayout()) {
+    scroller.scrollTop = target;
+  } else {
+    scroller.scrollLeft = target;
+  }
+
+  currentIndexRef.current = index;
+};
+
+const animateToIndex = (index: number) => {
+  const scroller = scrollerRef.current;
+  if (!scroller || isAnimatingRef.current) return;
+
+  isAnimatingRef.current = true;
+
+  const step = getStepSize();
+  const target = step * index;
+  const isMobile = isMobileLayout();
+
+  const start = isMobile ? scroller.scrollTop : scroller.scrollLeft;
+  const distance = target - start;
+  const duration = 750;
+  const startTime = performance.now();
+
+  const easeInOutCubic = (t: number) => {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  };
+
+  const frame = (time: number) => {
+    const progress = Math.min((time - startTime) / duration, 1);
+    const eased = easeInOutCubic(progress);
+    const nextValue = start + distance * eased;
+
+    if (isMobile) {
+      scroller.scrollTop = nextValue;
+    } else {
+      scroller.scrollLeft = nextValue;
+    }
+
+    if (progress < 1) {
+      requestAnimationFrame(frame);
       return;
     }
 
-    let isPaused = false;
+    currentIndexRef.current = index;
 
-    const pause = () => {
-      isPaused = true;
-    };
+    const total = signatureDishes.length;
 
-    const resume = () => {
-      isPaused = false;
-    };
+    // If we move into copy 3, silently reset to same item in copy 2
+    if (currentIndexRef.current >= total * 2) {
+      jumpToIndex(currentIndexRef.current - total);
+    }
 
-    scroller.addEventListener('mouseenter', pause);
-    scroller.addEventListener('mouseleave', resume);
-    scroller.addEventListener('touchstart', pause, { passive: true });
-    scroller.addEventListener('touchend', resume);
+    // If we move into copy 1, silently reset to same item in copy 2
+    if (currentIndexRef.current < total) {
+      jumpToIndex(currentIndexRef.current + total);
+    }
 
-    const timer = window.setInterval(() => {
-      if (isPaused) return;
+    isAnimatingRef.current = false;
+  };
 
-      const firstCard = scroller.querySelector('[data-signature-card]') as HTMLDivElement | null;
-      const step = firstCard ? firstCard.offsetWidth + 16 : Math.round(scroller.clientWidth * 0.85);
-      const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
+  requestAnimationFrame(frame);
+};
 
-      if (scroller.scrollLeft + step >= maxScrollLeft - 4) {
-        scroller.scrollTo({ left: 0, behavior: 'smooth' });
-        return;
-      }
+  useEffect(() => {
+  const scroller = scrollerRef.current;
+  if (!scroller) return;
 
-      scroller.scrollBy({ left: step, behavior: 'smooth' });
-    }, 3200);
+  jumpToIndex(signatureDishes.length);
 
-    return () => {
-      window.clearInterval(timer);
-      scroller.removeEventListener('mouseenter', pause);
-      scroller.removeEventListener('mouseleave', resume);
-      scroller.removeEventListener('touchstart', pause);
-      scroller.removeEventListener('touchend', resume);
-    };
-  }, []);
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return;
+  }
 
-  const scrollDishes = (direction: -1 | 1) => {
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
+  let isPaused = false;
 
-    const firstCard = scroller.querySelector('[data-signature-card]') as HTMLDivElement | null;
-    const step = firstCard ? firstCard.offsetWidth + 16 : Math.round(scroller.clientWidth * 0.85);
+  const pause = () => {
+    isPaused = true;
+  };
 
-    scroller.scrollBy({
-      left: direction * step,
-      behavior: 'smooth',
-    });
+  const resume = () => {
+    isPaused = false;
+  };
+
+  scroller.addEventListener('mouseenter', pause);
+  scroller.addEventListener('mouseleave', resume);
+  scroller.addEventListener('touchstart', pause, { passive: true });
+  scroller.addEventListener('touchend', resume);
+
+  const timer = window.setInterval(() => {
+    if (isPaused || isAnimatingRef.current) return;
+
+    const direction = autoDirectionRef.current;
+    animateToIndex(currentIndexRef.current + direction);
+
+    autoStepCountRef.current += 1;
+
+    // pattern: two one side, one back
+    if (direction === -1 && autoStepCountRef.current >= 2) {
+      autoDirectionRef.current = 1;
+      autoStepCountRef.current = 0;
+    } else if (direction === 1 && autoStepCountRef.current >= 1) {
+      autoDirectionRef.current = -1;
+      autoStepCountRef.current = 0;
+    }
+  }, 4600);
+
+  const handleResize = () => {
+    jumpToIndex(currentIndexRef.current);
+  };
+
+  window.addEventListener('resize', handleResize);
+
+  return () => {
+    window.clearInterval(timer);
+    window.removeEventListener('resize', handleResize);
+    scroller.removeEventListener('mouseenter', pause);
+    scroller.removeEventListener('mouseleave', resume);
+    scroller.removeEventListener('touchstart', pause);
+    scroller.removeEventListener('touchend', resume);
+  };
+}, []);
+
+  const scrollDishes = (direction: 1 | -1) => {
+    animateToIndex(currentIndexRef.current + direction);
   };
 
   return (
     <>
       <section
-        className="relative w-full overflow-hidden py-4 sm:py-8"
+        className="relative w-full min-h-[100svh] overflow-visible pt-8 pb-4 sm:pt-10 sm:pb-8"
         style={{
           backgroundImage: "url('/backgroundtheme.png')",
           backgroundSize: 'cover',
@@ -114,15 +214,15 @@ export const PremiumThemeSection = () => {
       >
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,248,231,0.6)_0%,rgba(255,248,231,0.68)_52%,rgba(255,248,231,0.74)_100%)]" />
 
-        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="relative z-10 mx-auto w-full px-2 sm:px-4 lg:px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.7, ease: 'easeOut' }}
-            className="mx-auto max-w-6xl"
+            className="mx-auto max-w-[85rem]"
           >
-            <p className="mb-2 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9d804d]">
+            <p className="mt-2 mb-2 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9d804d] no-select">
               Chef&apos;s Special
             </p>
             <h2 className="text-center font-serif text-[clamp(24px,5vw,40px)] font-normal leading-[0.95] tracking-[0.01em] text-[#2a1e0e]">
@@ -139,61 +239,65 @@ export const PremiumThemeSection = () => {
               <span className="block h-px w-16 bg-gradient-to-l from-transparent to-[#c4a053]" />
             </div>
 
-            <div className="relative mt-10 sm:mt-12">
+            <div className="relative mt-10 sm:mt-12 no-select">
               <button
-                type="button"
-                onClick={() => scrollDishes(-1)}
-                className="absolute left-0 top-[35%] z-20 -translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053]"
-                aria-label="Previous dishes"
-              >
-                <ChevronLeft size={18} />
-              </button>
+  type="button"
+  onClick={() => scrollDishes(-1)}
+  className="absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053] md:left-0 md:top-1/2 md:-translate-x-0 md:-translate-y-1/2"
+  aria-label="Previous dishes"
+>
+  <ChevronUp size={18} className="md:hidden" />
+  <ChevronLeft size={18} className="hidden md:block" />
+</button>
 
               <button
-                type="button"
-                onClick={() => scrollDishes(1)}
-                className="absolute right-0 top-[35%] z-20 -translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053]"
-                aria-label="Next dishes"
-              >
-                <ChevronRight size={18} />
-              </button>
+  type="button"
+  onClick={() => scrollDishes(1)}
+  className="absolute bottom-0 left-1/2 z-20 -translate-x-1/2 translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053] md:bottom-auto md:left-auto md:right-0 md:top-1/2 md:translate-x-0 md:-translate-y-1/2"
+  aria-label="Next dishes"
+>
+  <ChevronDown size={18} className="md:hidden" />
+  <ChevronRight size={18} className="hidden md:block" />
+</button>
 
-              <div
+
+              <div    
                 ref={scrollerRef}
-                className="mx-11 overflow-x-auto scroll-smooth sm:mx-12"
+                className="mx-auto max-h-[440px] px-8 py-8 scroll-smooth md:mx-11 md:max-h-none md:overflow-hidden md:px-0 md:py-0"
                 style={{ scrollbarWidth: 'none' }}
               >
-                {/* FIX APPLIED HERE: Added items-stretch and pt-4/pb-8 for shadows */}
-                <div className="flex items-stretch snap-x snap-mandatory gap-6 pt-4 pb-8">
-                  {signatureDishes.map((dish, i) => (
+                <div className="flex flex-col items-center md:flex-row md:items-stretch md:snap-x md:snap-mandatory gap-5 pt-4 pb-8 [perspective:1000px] ">
+                  {loopedDishes.map((dish, i) => {
+                    const realIndex = i % signatureDishes.length;
+                    return (
                     <motion.div
-                      key={dish.name + i}
+                      layout
+                      key={`${dish.name}-${i}`}
                       data-signature-card
-                      initial={{ opacity: 0, y: 12 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, amount: 0.2 }}
-                      transition={{ duration: 0.4, delay: i * 0.07, ease: 'easeOut' }}
-                      // FIX APPLIED HERE: Added flex and h-auto
-                      className="relative flex h-auto w-[calc((100%-0.75rem)/2)] min-w-[140px] shrink-0 snap-start sm:w-[280px] sm:min-w-0 lg:w-[300px]"
+                      initial={false}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.45, ease: 'easeOut' }}
+                      className="relative flex h-auto w-[240px] min-w-[240px] shrink-0 snap-start justify-center sm:w-[240px] sm:min-w-[240px] lg:w-[303px] lg:min-w-[303px]"
                     >
                       <DishFrame
               name={dish.name}
               image={dish.image}
               description={dish.description}
             />
-             {i !== signatureDishes.length - 1 && (
-                <div className="pointer-events-none absolute right-[-4px] top-0 hidden h-full md:block">
-                  <div className="absolute left-1/2 top-0 h-full w-[2px] -translate-x-1/2 bg-[#d8c498]" />
-                  <div className="absolute left-1/2 top-0 h-full w-[7px] -translate-x-1/2 bg-gradient-to-b from-transparent via-[#e8db62]/45 to-transparent blur-[1px]" />
+             {realIndex !== signatureDishes.length + 1 && (
+                <div className="no-select absolute right-[-10px] top-0 hidden h-full md:block">
+                  <div className="absolute left-1/2 top-16 h-[calc(75%+16px)] w-[2px] -translate-x-1/2 bg-[#c6a96d]" />
+                  <div className="absolute left-1/2 top-16 h-[calc(75%+20px)] w-[7px] -translate-x-1/2 bg-gradient-to-b from-transparent via-[#dcc18a]/55 to-transparent blur-[1px]" />
                 </div>
               )}
                     </motion.div>
-                  ))}
+                    );
+      })}
                 </div>
               </div>
             </div>
 
-            <div className="mt-10 grid gap-3 md:grid-cols-2">
+            {/* <div className="mt-10 grid gap-3 md:grid-cols-2">
              <div className="relative w-full min-h-[220px] overflow-hidden rounded-2xl border border-[#6f2f22]">
                 <img
                   src="/bookorderimg.png"
@@ -244,7 +348,7 @@ export const PremiumThemeSection = () => {
                   Book Now
                 </Link>
               </div>
-            </div>
+            </div> */}
           </motion.div>
         </div>
       </section>

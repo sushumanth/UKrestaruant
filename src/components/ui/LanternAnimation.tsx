@@ -385,7 +385,7 @@ const topMaskInnerStyle =
   return (
     <div
       ref={lanternBoxRef}
-      className={`absolute z-40 pointer-events-auto flex justify-center items-start ${className}`}
+      className={`absolute z-40 pointer-events-auto ${className}`}
       onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
@@ -423,7 +423,8 @@ const topMaskInnerStyle =
         <img
           src="/lantern.webp"
           alt="Lantern"
-          className={`relative z-10 w-auto origin-top drop-shadow-2xl ${imgClassName}`}
+          className={`select-none pointer-events-none relative z-10 w-auto origin-top drop-shadow-2xl ${imgClassName}`}
+          loading="lazy"
           draggable={false}
         />
       </div>
