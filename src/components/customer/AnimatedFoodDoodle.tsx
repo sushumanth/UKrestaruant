@@ -11,6 +11,7 @@ export const AnimatedFoodDoodle = ({ className = '' }: AnimatedFoodDoodleProps) 
     const element = cardRef.current;
     if (!element) return;
 
+    
     const bounds = element.getBoundingClientRect();
     const x = (event.clientX - bounds.left) / bounds.width;
     const y = (event.clientY - bounds.top) / bounds.height;

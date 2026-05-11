@@ -1,11 +1,13 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { HeroSection } from '@/components/customer/HeroSection';
 import { AboutJourneySection } from '@/components/customer/AboutJourneySection';
 import { PremiumThemeSection } from '@/components/customer/PremiumThemeSection';
 import { RoyalExperienceSection } from '@/components/customer/RoyalExperienceSection';
+import { GallerySection } from '@/components/customer/GallerySection';
 import { AnimatedFoodDoodle } from '@/components/customer/AnimatedFoodDoodle';
-import { Link } from 'react-router-dom';
-import { ArrowRight, Clock3, Mail, PhoneCall, Star } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { ArrowRight, Mail, PhoneCall } from 'lucide-react';
 
 const kitchenHighlights = [
   {
@@ -20,7 +22,7 @@ const kitchenHighlights = [
   },
   {
     title: 'Royal Ambiance',
-    description: 'Elegant interiors inspired by classic Punjabi heritage.',
+    description: 'Elegant interiors inspired by classic heritage and tradition.',
     image: '/RoyalAmbiance.png',
   },
   {
@@ -46,6 +48,24 @@ const kitchenHighlights = [
 // ];
 
 export const HomePage = () => {
+  const { hash } = useLocation();
+
+  useEffect(() => {
+    if (!hash) return;
+    const targetId = hash.replace('#', '');
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    const scrollToTarget = () => {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(scrollToTarget);
+    });
+  }, [hash]);
+
+
   return (
     <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #e8e4df 0%, #f5f1ed 100%)' }}>
       <div className="grain-overlay opacity-10" />
@@ -101,7 +121,7 @@ export const HomePage = () => {
                     transition={{ duration: 1.2, ease: "easeOut" }}
                     stroke="#4a2511" strokeWidth="1"
                   >
-                    Crafted Punjabi
+                    Crafted Royal
                   </motion.text>
                   <motion.text
                     x="0" y="175"
@@ -134,7 +154,7 @@ export const HomePage = () => {
                   transition={{ duration: 0.8, delay: 1 }}
                   className="mt-6 max-w-2xl text-[#6b4c3a] text-[clamp(16px,1.7vw,20px)] leading-relaxed font-medium"
                 >
-                  From slow-cooked curries to charcoal-grilled favourites, every dish is prepared with traditional methods and premium ingredients. We blend timeless Punjabi hospitality with a polished London dining experience.
+                  From slow-cooked curries to charcoal-grilled favourites, every dish is prepared with traditional methods and premium ingredients. We blend timeless hospitality with a polished London dining experience.
                 </motion.p>
 
                 <motion.div 
@@ -172,7 +192,7 @@ export const HomePage = () => {
                     <img
                       src={item.image}
                       alt={item.title}
-                      className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
+                      className="no-select absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
                       loading="lazy"
                     />
                     <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(51,24,12,0.18)_0%,rgba(58,27,13,0.34)_42%,rgba(42,19,9,0.76)_100%)]" />
@@ -190,7 +210,7 @@ export const HomePage = () => {
 
         <AboutJourneySection />
 
-        <section className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 mt-0 -translate-y-6">
+        {/* <section className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 -mt-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -206,7 +226,7 @@ export const HomePage = () => {
               Average online booking completion: 9 seconds
             </div>
           </motion.div>
-        </section>
+        </section> */}
 
         {/* <section 
           className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 mt-16 py-16 relative overflow-hidden rounded-2xl border border-amber-200/50 shadow-lg" 
@@ -309,6 +329,8 @@ export const HomePage = () => {
             ))}
           </div>
         </section> */}
+
+        <GallerySection />
 
         <section id="contact" className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 mt-20 scroll-mt-24">
           <motion.div

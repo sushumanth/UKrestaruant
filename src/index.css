@@ -410,4 +410,11 @@
   .pin-spacer {
     @apply !h-screen;
   }
+
+  .no-select,
+  .no-select * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
 }

@@ -1,7 +1,8 @@
-import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'framer-motion';
 import { ArrowRight, CalendarClock, Clock3, PhoneCall } from 'lucide-react';
-import { useEffect, useState } from 'react';
+
 import { Link } from 'react-router-dom';
+import Lantern from '../ui/LanternAnimation';
+import { useRef } from 'react';
 
 const operatingHighlights = [
   {
@@ -31,231 +32,142 @@ const operatingHighlights = [
   },
 ];
 
-const heroParticles = [
-  { top: '14%', left: '12%', size: 7, duration: 8.8, delay: 0.2, alpha: 0.32 },
-  { top: '22%', left: '28%', size: 5, duration: 10.2, delay: 1.1, alpha: 0.26 },
-  { top: '30%', left: '8%', size: 6, duration: 9.5, delay: 2.6, alpha: 0.3 },
-  { top: '38%', left: '44%', size: 8, duration: 11.4, delay: 0.7, alpha: 0.28 },
-  { top: '48%', left: '18%', size: 6, duration: 10.6, delay: 3.2, alpha: 0.25 },
-  { top: '58%', left: '36%', size: 5, duration: 9.1, delay: 1.8, alpha: 0.24 },
-  { top: '18%', left: '66%', size: 7, duration: 12.2, delay: 2.1, alpha: 0.22 },
-  { top: '26%', left: '82%', size: 6, duration: 10.8, delay: 0.4, alpha: 0.24 },
-  { top: '40%', left: '74%', size: 5, duration: 8.7, delay: 1.9, alpha: 0.22 },
-  { top: '53%', left: '90%', size: 7, duration: 9.8, delay: 2.8, alpha: 0.25 },
-  { top: '67%', left: '63%', size: 6, duration: 11.1, delay: 1.2, alpha: 0.23 },
-  { top: '72%', left: '80%', size: 5, duration: 8.9, delay: 3.4, alpha: 0.22 },
-];
-
-const floatingFoodAccents = [
-  { title: 'Proudly Non-Halal restaurant', top: '22%', left: '73%' },
-  // { title: 'Clay Oven Craft', top: '41%', left: '71%' },
-  // { title: 'Royal Plating', top: '60%', left: '67%' },
-];
-
 export const HeroSection = () => {
-  const [playIntro, setPlayIntro] = useState(false);
-  const prefersReducedMotion = useReducedMotion();
 
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const springX = useSpring(mouseX, { stiffness: 90, damping: 20, mass: 0.6 });
-  const springY = useSpring(mouseY, { stiffness: 90, damping: 20, mass: 0.6 });
-
-  const bgX = useTransform(springX, [-1, 1], [-16, 16]);
-  const bgY = useTransform(springY, [-1, 1], [-10, 10]);
-  const contentX = useTransform(springX, [-1, 1], [-8, 8]);
-  const contentY = useTransform(springY, [-1, 1], [-5, 5]);
-  const particleX = useTransform(springX, [-1, 1], [-12, 12]);
-  const particleY = useTransform(springY, [-1, 1], [-8, 8]);
-
-  useEffect(() => {
-    if (prefersReducedMotion || typeof window === 'undefined') {
-      setPlayIntro(false);
-      return;
-    }
-
-    const storageKey = 'ukr-hero-intro-played';
-    const hasPlayedIntro = window.localStorage.getItem(storageKey) === '1';
-
-    setPlayIntro(!hasPlayedIntro);
-
-    if (!hasPlayedIntro) {
-      window.localStorage.setItem(storageKey, '1');
-    }
-  }, [prefersReducedMotion]);
-
-
-
-  const handlePointerMove = (event: React.MouseEvent<HTMLElement>) => {
-    if (prefersReducedMotion) return;
-
-    const rect = event.currentTarget.getBoundingClientRect();
-    const normalizedX = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
-    const normalizedY = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
-
-    mouseX.set(normalizedX);
-    mouseY.set(normalizedY);
-  };
-
-  const resetParallax = () => {
-    mouseX.set(0);
-    mouseY.set(0);
-  };
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   return (
     <section
-      className="relative overflow-hidden bg-[#140705] pt-16 sm:pt-20 lg:min-h-screen lg:pt-28"
-      onMouseMove={handlePointerMove}
-      onMouseLeave={resetParallax}
-    >
-      <div className="absolute inset-0">
-        <motion.img
-          src="\heroimg.png"
-          alt="Authentic Punjabi dining in London"
-          className="h-full w-full object-cover object-center will-change-transform"
-          loading="eager"
-          initial={{ opacity: playIntro ? 0 : 1, scale: playIntro ? 1.12 : 1.04 }}
-          animate={{
-            opacity: 1,
-            scale: prefersReducedMotion ? 1.03 : [1.03, 1.07, 1.03],
-          }}
-          transition={{
-            opacity: { duration: playIntro ? 0.6 : 0.25, ease: 'easeOut' },
-            scale: prefersReducedMotion
-              ? { duration: 0.4, ease: 'easeOut' }
-              : { duration: 18, repeat: Infinity, ease: 'easeInOut' },
-          }}
-          style={{ x: bgX, y: bgY }}
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(95deg,rgba(21,7,4,0.9)_0%,rgba(25,10,6,0.66)_46%,rgba(21,7,4,0.35)_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_50%,rgba(0,0,0,0.22),transparent_52%)]" />
-
-        <motion.div className="pointer-events-none absolute inset-0" style={{ x: particleX, y: particleY }}>
-          {heroParticles.map((particle, index) => (
-            <motion.span
-              key={`${particle.left}-${particle.top}-${index}`}
-              className="absolute rounded-full bg-[radial-gradient(circle,rgba(250,214,136,0.95)_0%,rgba(208,138,57,0.12)_70%,transparent_100%)] will-change-transform"
-              style={{
-                top: particle.top,
-                left: particle.left,
-                width: particle.size,
-                height: particle.size,
-              }}
-              animate={
-                prefersReducedMotion
-                  ? { opacity: particle.alpha }
-                  : {
-                      opacity: [0, particle.alpha, 0],
-                      y: [0, -16, 0],
-                      x: [0, 4, 0],
-                      scale: [0.94, 1.06, 0.94],
-                    }
-              }
-              transition={
-                prefersReducedMotion
-                  ? { duration: 0.3 }
-                  : {
-                      duration: particle.duration,
-                      delay: particle.delay,
-                      ease: 'easeInOut',
-                      repeat: Infinity,
-                    }
-              }
-            />
-          ))}
-        </motion.div>
-
-       <motion.div
-  className="pointer-events-none absolute inset-0 hidden lg:block"
-  style={{ x: particleX, y: particleY }}
->
-  {floatingFoodAccents.map((accent, index) => (
-    <motion.div
-      key={accent.title}
-      className="absolute group"
-      style={{ top: accent.top, left: accent.left }}
-      animate={
-        prefersReducedMotion
-          ? { opacity: 1 }
-          : {
-              y: [0, -10, 0],
-              opacity: [0.85, 1, 0.85],
-            }
+      className="relative min-h-[100svh] overflow-hidden bg-[#140705]">
+      <div className="absolute inset-0 select-none">
+        <div className='relative h-full w-full overflow-hidden'>
+         
+<div className="absolute inset-0 z-0 overflow-hidden">
+  <video
+    ref={videoRef}
+    className="absolute inset-0 h-full w-full object-cover lg:top-10 lg:right-0 lg:scale-[0.65] lg:origin-top-right lg:object-center"
+    autoPlay
+    muted
+    loop
+    playsInline
+    preload="metadata"
+    poster='/london.webp'
+    onLoadedData={() => {
+      if (videoRef.current) {
+        videoRef.current.playbackRate = 1;
       }
-      transition={{
-        duration: 6 + index,
-        delay: index * 0.5,
-        ease: "easeInOut",
-        repeat: Infinity,
-      }}
-    >
-      {/* Outer Glow */}
-      <div className="absolute inset-0 blur-xl opacity-40 bg-gradient-to-r from-[#cfa664]/30 via-[#f2d7a1]/40 to-[#cfa664]/30 rounded-xl" />
+    }}
+  >
+    <source src="/london_vid.webm" type="video/webm" />
+    <source src="/london_vid.mp4" type="video/mp4" />
+  </video>
+</div>
 
-      {/* Badge */}
-      <div className="relative px-5 py-3 bg-gradient-to-b from-[#2b1a10] via-[#1a0f08] to-[#120904] border border-[#cfa664]/50 shadow-[0_10px_30px_rgba(0,0,0,0.6)] rounded-md overflow-hidden">
+{/* LAYER 6: Steam (Over Food) */}
+{/* <div className="absolute bottom-[15%] left-1/2 -translate-x-1/2 z-20 w-[60%] max-w-xl no-select">
+  <img
+    src="steam.webp"
+    alt="Steam"
+    className="w-full h-auto opacity-80"
+    draggable={false}
+  />
+</div> */}
+          {/* London background 
+        <div className="absolute inset-0 z-0 overflow-hidden">
+  <img
+    src="/london.webp"
+    alt="London Skyline"
+    className="absolute inset-0 w-full h-full object-cover lg:top-10 lg:right-0 lg:scale-[0.65] lg:origin-top-right lg:object-center"
+    draggable={false}
+  />
+</div>
+{/* ROOM INTERIOR */}
+<div className="absolute inset-0 z-10">
+  <img
+    src="/room-interior.webp"
+    alt="Restaurant Interior"
+    className="no-select w-full h-full object-cover lg:object-center object-[40%_center] sm:object-[60%_center]"
+    loading="lazy"
+    draggable={false}
+  />
+</div>
         
-        {/* Gold Inner Border */}
-        <div className="absolute inset-0 border border-[#f2d7a1]/20 rounded-md pointer-events-none" />
+<Lantern
+  className="lg:flex justify-center items-start w-[200px] sm:w-[210px] md:w-[230px] lg:w-[240px] left-[85%] -translate-x-1/2 sm:left-[52%] md:left-[53%] lg:right-[41%]" //lg:flex justify-center items-start top-0 left-[85%] -translate-x-1/2 w-[200px] h-[300px] sm:-top-[15%] sm:left-[52%] sm:w-[210px] sm:h-[315px] md:top-[-10%] md:left-[53%] md:w-[230px] md:h-[345px] lg:top-0 lg:left-auto lg:right-[41%] lg:translate-x-0 lg:w-[240px] lg:h-[360px] 
+  imgClassName="h-[250px] sm:h-[260px] md:h-[275px] lg:h-[300px] "
+  heavyWind={true}
+  topMask={{
+    enabled: true,
+    color: "0,0,0",
 
-        {/* Shine Effect */}
-        <motion.div
-          className="absolute top-0 left-[-100%] w-[200%] h-full bg-gradient-to-r from-transparent via-white/10 to-transparent"
-          animate={{ x: ["-100%", "100%"] }}
-          transition={{
-            duration: 4,
-            delay: index * 1.2,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
+    width: 70,
+    height: 200,
 
-        {/* Text */}
-        <span className="relative text-[11px] tracking-[0.2em] uppercase font-semibold text-[#f2d7a1]">
-          {accent.title}
-        </span>
-      </div>
-    </motion.div>
-  ))}
-</motion.div>
-      </div>
+    fromOpacity: 1,
+    midOpacity: 0.72,
+    midPoint: "50%",
+    fadeEnd: "85%",
 
-      <div className="relative z-10 mx-auto max-w-7xl px-5 pb-8 sm:px-6 sm:pb-10 lg:px-8 lg:pb-44">
-        <motion.div
-          initial={{ opacity: 0, y: playIntro ? 26 : 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: playIntro ? 0.9 : 0.5, delay: playIntro ? 0.18 : 0, ease: 'easeOut' }}
-          className="max-w-[36rem]"
-          style={{ x: contentX, y: contentY }}
-        >
-          <motion.p
-            initial={{ opacity: 0, y: playIntro ? 16 : 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: playIntro ? 0.65 : 0.35, delay: playIntro ? 0.35 : 0.08, ease: 'easeOut' }}
-            className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#d2aa64] sm:mb-3 sm:text-[11px] sm:tracking-[0.22em]"
-          >
-            Authentic Punjabi Dining Experience
-          </motion.p>
+    x: 0,
+    y: 0,
 
-          <motion.div
-            initial={{ opacity: 0, y: playIntro ? 14 : 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: playIntro ? 0.6 : 0.35, delay: playIntro ? 0.42 : 0.12, ease: 'easeOut' }}
-            className="mb-3 inline-flex rounded-full border border-[#cfa664]/45 bg-[linear-gradient(120deg,rgba(24,13,8,0.78),rgba(12,8,5,0.66))] px-3.5 py-1.5 text-[9.5px] font-semibold uppercase tracking-[0.14em] text-[#f2d7a1] shadow-[0_6px_16px_rgba(0,0,0,0.28)] sm:hidden"
-          >
-            Proudly Non-Halal Restaurant
-          </motion.div>
+    sideFadeStart: "24%",
+    sideFadeEnd: "76%",
+  }}
+  glow={{
+    enabled: true,
+    color: "255,139,10",
+    size: 90,
+    blur: 18,
+    opacity: 0.30,
+    x: 0,
+    y: 100,
+  }}
+/>
 
-          <motion.svg
-            viewBox="0 0 900 280"
-            className="w-full max-w-2xl overflow-visible"
+<Lantern
+  className="hidden lg:flex justify-center items-start top-[-15%] right-[-5%] w-[320px] h-[460px]"
+  imgClassName="h-[420px]"
+  heavyWind={false}
+  topMask={{
+    enabled: true,
+    color: "0,0,0",
+
+    width: 100,
+    height: 400,
+
+    fromOpacity: 1,
+    midOpacity: 0.72,
+    midPoint: "45%",
+    fadeEnd: "70%",
+
+    x: 0,
+    y: 15,
+
+    sideFadeStart: "24%",
+    sideFadeEnd: "76%",
+  }}
+  glow={{
+    enabled: true,
+    color: "250,167,12",
+    size: 180,
+    blur: 50,
+    opacity: 0.30,
+    x: 0,
+    y: 150,
+  }}
+/>
+</div>
+</div>
+ {/* context */}
+       <div className="relative z-20 mx-auto flex flex-col min-h-[100svh] w-full items-start justify-end px-5 pb-[140px] pt-24 md:px-6 md:pb-[160px] lg:justify-center lg:pl-8 xl:pl-16">
+         <div className="w-full max-w-[19rem] sm:max-w-[22rem] md:max-w-[34rem] lg:max-w-[48rem] xl:max-w-[56rem]">
+          <svg
+            viewBox="0 0 850 120"
+            className="block w-full overflow-visible select-none" 
             preserveAspectRatio="xMinYMid meet"
             role="img"
-            aria-label="An Indian Punjabi Restaurant - Experience in London"
-            initial={{ opacity: 0, y: playIntro ? 18 : 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: playIntro ? 0.8 : 0.5, delay: playIntro ? 0.48 : 0.16, ease: 'easeOut' }}
+            aria-label="An Indian Restaurant - Experience in London"
           >
             <defs>
               <linearGradient id="heroTitleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -274,9 +186,9 @@ export const HeroSection = () => {
             </defs>
 
             {/* Line 1: An Indian Punjabi */}
-            <motion.text
+            <text
               x="0"
-              y="70"
+              y="20"
               fill="url(#heroTitleGradient)"
               stroke="#f7d89f"
               strokeWidth="0.8"
@@ -288,60 +200,14 @@ export const HeroSection = () => {
                 fontStyle: 'italic',
                 letterSpacing: '-0.02em',
               }}
-              initial={{
-                strokeDasharray: 600,
-                strokeDashoffset: 600,
-                fill: 'rgba(246, 219, 164, 0)',
-              }}
-              animate={{
-                strokeDashoffset: 0,
-                fill: 'url(#heroTitleGradient)',
-              }}
-              transition={{
-                duration: playIntro ? 1.4 : 0.9,
-                ease: [0.25, 0.1, 0.25, 1],
-              }}
             >
-              An Indian Punjabi
-            </motion.text>
-
-            {/* Line 2: Restaurant */}
-            <motion.text
-              x="0"
-              y="135"
-              fill="url(#heroTitleGradient)"
-              stroke="#f7d89f"
-              strokeWidth="0.8"
-              filter="url(#heroTitleGlow)"
-              style={{
-                fontFamily: "'Playfair Display', 'Georgia', serif",
-                fontSize: '56px',
-                fontWeight: '700',
-                fontStyle: 'italic',
-                letterSpacing: '-0.02em',
-              }}
-              initial={{
-                strokeDasharray: 400,
-                strokeDashoffset: 400,
-                fill: 'rgba(246, 219, 164, 0)',
-              }}
-              animate={{
-                strokeDashoffset: 0,
-                fill: 'url(#heroTitleGradient)',
-              }}
-              transition={{
-                duration: playIntro ? 1.2 : 0.8,
-                delay: playIntro ? 0.1 : 0.05,
-                ease: [0.25, 0.1, 0.25, 1],
-              }}
-            >
-              Restaurant
-            </motion.text>
+              An Indian Restaurant
+            </text>
 
             {/* Line 3: Experience in London (Script) */}
-            <motion.text
+            <text
               x="0"
-              y="210"
+              y="90"
               fill="url(#heroTitleGradient)"
               stroke="#f7d89f"
               strokeWidth="0.9"
@@ -352,42 +218,22 @@ export const HeroSection = () => {
                 fontStyle: 'italic',
                 letterSpacing: '-0.01em',
               }}
-              initial={{
-                strokeDasharray: 450,
-                strokeDashoffset: 450,
-                fill: 'rgba(246, 219, 164, 0)',
-              }}
-              animate={{
-                strokeDashoffset: 0,
-                fill: 'url(#heroTitleGradient)',
-              }}
-              transition={{
-                duration: playIntro ? 1 : 0.7,
-                delay: playIntro ? 0.2 : 0.08,
-                ease: [0.25, 0.1, 0.25, 1],
-              }}
             >
               Experience in London
-            </motion.text>
-          </motion.svg>
-          <motion.p
-            initial={{ opacity: 0, y: playIntro ? 16 : 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: playIntro ? 0.75 : 0.45, delay: playIntro ? 1.1 : 0.3, ease: 'easeOut' }}
-            className="mt-6 max-w-[36rem] text-[clamp(14px,5vw,17px)] leading-relaxed text-[#e8d8bc] sm:mt-7 sm:text-[15px]"
-          >
+            </text>
+          </svg>
+          <p className="max-w-[18rem] text-[13px] leading-relaxed text-[#e8d8bc] md:max-w-[22rem] md:text-[14px] lg:max-w-[34rem] lg:text-[17px]"> {/* mt-1 max-w-[18rem] text-[13px] leading-relaxed text-[#e8d8bc] sm:max-w-[22rem] sm:text-[14px] lg:max-w-[34rem] lg:text-[17px] */}
            Traditional flavours, Royal ambiance - A true taste of Punjab in the heart of London. Experience the rich heritage and vibrant culture of India with every bite.
-          </motion.p>
+          </p>
 
-          <motion.div
-            initial={{ opacity: 0, y: playIntro ? 14 : 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: playIntro ? 0.6 : 0.35, delay: playIntro ? 1.03 : 0.28, ease: 'easeOut' }}
-            className="mt-7 flex flex-col gap-3.5 sm:mt-8 sm:flex-row sm:flex-wrap"
-          >
+          <div className="mt-3 mb-3 inline-flex rounded-full border border-[#cfa664]/45 bg-[linear-gradient(120deg,rgba(24,13,8,0.78),rgba(12,8,5,0.66))] px-3.5 py-1.5 text-[9.5px] font-semibold uppercase tracking-[0.14em] text-[#f2d7a1] shadow-[0_6px_16px_rgba(0,0,0,0.28)] md:hidden">
+            Proudly Non-Halal Restaurant
+          </div>
+
+          <div className="mt-1 flex flex-col items-start gap-3 md:flex-row px-1 md:px-1 md:mt-0 lg:mt-5 select-none"> 
             <Link
-              to="/menu"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#7a3e19] bg-[linear-gradient(90deg,#67130f,#7d1712)] px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#7b1913,#94221a)] sm:w-auto"
+              to="/order"
+              className="gap-2 rounded-xl border border-[#7a3e19] bg-[linear-gradient(90deg,#67130f,#7d1712)] px-4 py-2.5 md:px-4 md:py-3 lg:px-6 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#7b1913,#94221a)] md:w-auto"
             >
               Order Online
             </Link>
@@ -397,40 +243,49 @@ export const HeroSection = () => {
             >
               Book Your Table <ArrowRight size={16} />
             </Link>
-          </motion.div>
-        </motion.div>
+          </div>
+
+<div className="mt-8 hidden lg:inline-flex rounded-full select-none border border-[#f2d7a1]/25 bg-[linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.05))] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#f2d7a1] shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
+            Proudly Non-Halal Restaurant
+          </div>
+        </div>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: playIntro ? 18 : 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: playIntro ? 0.65 : 0.45, delay: playIntro ? 1.12 : 0.12, ease: 'easeOut' }}
-        className="relative z-20 w-full border-y border-[#c7a86f] bg-[linear-gradient(90deg,#faefd7_0%,#f4e4bf_48%,#f9edd4_100%)] shadow-[0_-10px_20px_rgba(12,8,4,0.22)] lg:absolute lg:inset-x-0 lg:bottom-0"
-      >
-        {/* CHANGED: Defaulted to grid-cols-2 for mobile, adjusted gap and padding */}
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-2 gap-y-4 px-4 py-5 sm:grid-cols-3 sm:px-6 lg:grid-cols-5 lg:gap-1 lg:px-8 lg:py-4">
-          {operatingHighlights.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div
-                key={`${item.title}-${item.subtitle}`}
-                // CHANGED: Removed the excessive horizontal/vertical padding on mobile
-                className="flex items-center gap-2.5 border-[#d7be90] lg:border-r lg:px-2 lg:py-2 last:lg:border-r-0"
-              >
-                {/* CHANGED: Added `shrink-0` to prevent the circle from squishing, slightly reduced mobile circle size */}
-                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#9f7e44] bg-[#f9edd6] text-[#6a4e20] sm:h-9 sm:w-9">
-                  <Icon size={16} className="sm:h-[17px] sm:w-[17px]" />
-                </span>
-                <div>
-                  {/* CHANGED: Reduced font size strictly for mobile to fit side-by-side nicely */}
-                  <p className="text-[13px] font-semibold leading-tight text-[#2f2415] sm:text-base">{item.title}</p>
-                  <p className="text-[10px] font-semibold uppercase leading-tight tracking-[0.05em] text-[#654d27] sm:text-[11px] sm:tracking-[0.08em]">{item.subtitle}</p>
+      <div className="no-select absolute inset-x-2 bottom-[1px] z-30 sm:inset-x-3 lg:inset-x-6 mb-0 sm:mb-1 md:mb-2 lg:mb-3">
+        <div className="mx-auto max-w-7xl rounded-[22px] border border-[#f2d7a1]/15 bg-[linear-gradient(135deg,rgba(18,10,7,0.58),rgba(60,39,22,0.24))] shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+          <div className="grid grid-cols-3 gap-x-1 gap-y-1 px-1 py-1 sm:grid-cols-3 sm:px-1 sm:py-1 lg:grid-cols-5 lg:gap-2 lg:px-5 lg:py-4">
+            {operatingHighlights.map((item, index) => {
+              const Icon = item.icon;
+
+              return (
+                <div
+                  key={`${item.title}-${item.subtitle}`}
+                  className={`
+                    flex items-center gap-2.5 rounded-xl px-1 py-1.5
+                    ${index === 4 ? 'col-span-2 sm:col-span-1' : ''}
+                    ${index !== 4 ? 'lg:border-r lg:border-[#f2d7a1]/10' : ''}
+                    lg:px-3
+                  `}
+                  draggable={false}
+                >
+                  <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#f2d7a1]/20 bg-white/10 text-[#f2d7a1] backdrop-blur-md sm:h-9 sm:w-9">
+                    <Icon size={15} />
+                  </span>
+
+                  <div>
+                    <p className="text-[11px] font-semibold leading-tight text-white/90 sm:text-[12px] lg:text-[15px]">
+                      {item.title}
+                    </p>
+                    <p className="mt-0.5 text-[9px] font-medium uppercase leading-tight tracking-[0.08em] text-[#f2d7a1]/80 sm:text-[10px] lg:text-[11px]">
+                      {item.subtitle}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 };

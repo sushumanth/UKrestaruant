@@ -20,6 +20,7 @@ import { EmployeeLayout } from '@/layouts/EmployeeLayout';
 // Pages
 import { HomePage } from '@/pages/customer/HomePage';
 import { MenuPage } from '@/pages/customer/MenuPage';
+import { OrderPage } from '@/pages/customer/OrderPage';
 import { CartPage } from '@/pages/customer/CartPage';
 import { OrderOnlinePage } from '@/pages/customer/order_online';
 import { BookingPage } from '@/pages/customer/BookingPage';
@@ -75,7 +76,7 @@ const CustomerProtectedRoute = ({ children }: { children: React.ReactNode }) => 
 };
 
 const ScrollToTop = () => {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
 
   useEffect(() => {
     if ('scrollRestoration' in window.history) {
@@ -84,8 +85,27 @@ const ScrollToTop = () => {
   }, []);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    if (!hash) {
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    const targetId = hash.replace('#', '');
+
+    const scrollToTarget = () => {
+      const targetElement = document.getElementById(targetId);
+
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+
+    const frameId = window.requestAnimationFrame(() => {
+      scrollToTarget();
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [hash, pathname]);
 
   return null;
 };
