@@ -192,86 +192,78 @@ export const MenuPage = () => {
                   data-menu-card="true"
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#ead7ba] bg-[#fffaf1] shadow-[0_12px_26px_rgba(83,50,17,0.07)] sm:rounded-3xl sm:shadow-[0_16px_34px_rgba(83,50,17,0.06)] lg:scale-[0.96] lg:origin-top"
+                  className="flex h-full flex-col overflow-hidden rounded-xl border border-transparent bg-white shadow-sm hover:shadow-lg transition-shadow duration-200 min-h-[380px]"
                 >
-                  <img src={item.image} alt={item.name} className="h-28 w-full object-cover sm:h-48 lg:h-40" loading="lazy" />
-                  <div className="flex flex-1 flex-col p-3 sm:p-5 lg:p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <h3 className="font-serif text-[clamp(18px,4.2vw,26px)] leading-[0.95] text-[#2d2319] sm:text-2xl lg:text-[20px]">
-                          {item.name}
-                        </h3>
-                        <p className="mt-1 min-h-[44px] text-[12px] leading-[1.35] text-[#6f5f4a] sm:mt-2 sm:min-h-[48px] sm:text-sm lg:min-h-[40px] lg:text-[12px]">
-                          <span className="sm:hidden">
-                            {item.description.length > 52
-                              ? `${item.description.slice(0, 52).trimEnd()}...`
-                              : item.description}
-                          </span>
-                          <span className="hidden sm:inline">{item.description}</span>
-                        </p>
-                      </div>
-                      {item.isVeg && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-[#e7f8e7] px-2 py-0.5 text-[10px] font-semibold text-[#2d7a2d] sm:px-2.5 sm:py-1 sm:text-xs">
-                          <Leaf size={12} /> Veg
-                        </span>
-                      )}
-                    </div>
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold sm:px-2.5 sm:py-1 sm:text-xs lg:text-[10px] ${
-                        item.isVeg ? 'bg-[#e7f8e7] text-[#2d7a2d]' : 'bg-[#ffe8e8] text-[#c41e1e]'
-                      }`}
-                    >
-                      <Leaf size={12} />
-                      {item.isVeg ? 'Veg' : 'Non-Veg'}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 flex min-h-[20px] items-center gap-6 text-[12px] text-[#7d6a57] sm:mt-4 sm:min-h-[22px] sm:text-sm lg:mt-2 lg:gap-4 lg:text-[12px]">
-                    <span className="inline-flex items-center gap-1.5 tabular-nums">
-                      <Star size={13} className="text-[#b9832f] sm:h-[14px] sm:w-[14px]" />
-                      {formatMenuRating(item.rating)}
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 tabular-nums">
-                      <Clock3 size={13} className="sm:h-[14px] sm:w-[14px]" />
-                      {item.prepTime} min
-                    </span>
-                  </div>
-
-                  <div className="mt-auto flex items-center justify-between pt-4 lg:pt-3">
-                    <span className="text-lg font-semibold text-[#7d2419] sm:text-xl lg:text-lg">
-                      {formatCurrency(item.price)}
-                    </span>
-                    {itemQuantityById[item.id] ? (
-                      <div className="inline-flex items-center rounded-full border border-[#8f2a1d] bg-[#7d2419] p-1 text-[#fff3df] shadow-[0_4px_12px_rgba(60,20,10,0.2)] lg:scale-95">
-                        <button
-                          type="button"
-                          onClick={() => updateItemQuantity(item.id, itemQuantityById[item.id] - 1)}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21] lg:h-6 lg:w-6"
-                          aria-label={`Decrease quantity of ${item.name}`}
-                        >
-                          <Minus size={14} />
-                        </button>
-                        <span className="min-w-[22px] text-center text-sm font-bold leading-none lg:min-w-[18px] lg:text-xs">
-                          {itemQuantityById[item.id]}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-[#942d21] lg:h-6 lg:w-6"
-                          aria-label={`Increase quantity of ${item.name}`}
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-[#7d2419] px-3 py-1.5 text-sm font-semibold text-[#fff3df] transition-colors hover:bg-[#942d21] sm:gap-2 sm:px-4 sm:py-2 lg:px-3 lg:py-1"
-                      >
-                        <Plus size={14} /> Add
-                      </button>
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-44 object-cover rounded-t-xl"
+                      loading="lazy"
+                    />
+                    {item.isVeg && (
+                      <span className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-xs font-semibold text-emerald-700 shadow">
+                        <Leaf size={12} />
+                        Veg
+                      </span>
                     )}
+                  </div>
+
+                  <div className="flex flex-1 flex-col p-4 sm:p-5">
+                    <div className="min-w-0">
+                      <h3 className="font-serif text-xl font-semibold text-[#1f1a16] leading-tight truncate">
+                        {item.name}
+                      </h3>
+                      <p className="mt-2 text-sm text-[#6f5f4a] line-clamp-2 min-h-[44px]">
+                        {item.description}
+                      </p>
+                      <div className="mt-3 flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#fff6ec] px-2 py-1 text-xs text-[#7d6a57]">
+                          <Star size={14} className="text-[#b9832f]" />
+                          <span className="font-medium">{formatMenuRating(item.rating)}</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#fff6ec] px-2 py-1 text-xs text-[#7d6a57]">
+                          <Clock3 size={14} />
+                          <span>{item.prepTime} min</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-auto flex items-center justify-between text-sm">
+                      <span className="text-lg font-bold text-[#7d2419]">{formatCurrency(item.price)}</span>
+
+                      <div className="flex items-center gap-3 min-w-[120px] justify-end">
+                        {itemQuantityById[item.id] ? (
+                          <div className="inline-flex items-center rounded-lg bg-[#7d2419] text-white shadow-sm overflow-hidden">
+                            <button
+                              type="button"
+                              onClick={() => updateItemQuantity(item.id, itemQuantityById[item.id] - 1)}
+                              className="px-3 py-2 hover:bg-[#942d21]"
+                              aria-label={`Decrease quantity of ${item.name}`}
+                            >
+                              <Minus size={14} />
+                            </button>
+                            <span className="px-3 text-sm font-bold">{itemQuantityById[item.id]}</span>
+                            <button
+                              type="button"
+                              onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
+                              className="px-3 py-2 hover:bg-[#942d21]"
+                              aria-label={`Increase quantity of ${item.name}`}
+                            >
+                              <Plus size={14} />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => addItem({ id: item.id, name: item.name, image: item.image, price: item.price })}
+                            className="inline-flex items-center gap-2 rounded-md bg-[#7d2419] px-3 py-2 text-sm font-semibold text-white hover:bg-[#942d21]"
+                          >
+                            <Plus size={14} /> Add
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </motion.article>
               ))}
@@ -297,11 +289,9 @@ export const MenuPage = () => {
               className="flex flex-col overflow-hidden"
             >
               {/* Header */}
-              <div className="border-b-2 border-[#e7d4b2] bg-gradient-to-r from-[#fffaf1] to-[#faf5ed] px-5 py-5 shadow-sm">
-                <h2 className="font-serif text-xl font-bold text-[#2d2319] leading-tight">Order Preview</h2>
-                <p className="mt-2.5 text-sm font-medium text-[#8a6d49]">
-                  {cartCount} {cartCount === 1 ? 'item' : 'items'} selected
-                </p>
+              <div className="border-b border-[#e7d4b2] bg-gradient-to-r from-[#fffaf1] to-[#faf5ed] px-5 py-4">
+                <h2 className="font-serif text-lg font-bold text-[#1f1a16]">Order Preview</h2>
+                <p className="mt-1 text-sm text-[#8a6d49]">{cartCount} {cartCount === 1 ? 'item' : 'items'} selected</p>
               </div>
 
               {cartCount > 0 ? (
@@ -330,14 +320,14 @@ export const MenuPage = () => {
                   </div>
 
                   {/* Footer (fixed inside card) */}
-                  <div className="border-t-2 border-[#e7d4b2] bg-gradient-to-r from-[#fffaf1] to-[#faf5ed] px-5 py-5 space-y-4 shadow-sm">
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-base font-semibold text-[#8a6d49]">Subtotal</span>
-                      <span className="text-2xl font-bold text-[#7d2419]">{formatCurrency(cartTotal)}</span>
+                  <div className="border-t border-[#e7d4b2] bg-gradient-to-r from-[#fffaf1] to-[#faf5ed] px-5 py-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-[#8a6d49]">Subtotal</span>
+                      <span className="text-xl font-bold text-[#7d2419]">{formatCurrency(cartTotal)}</span>
                     </div>
                     <Link
                       to="/cart"
-                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#7d2419] to-[#942d21] px-4 py-3.5 text-base font-semibold text-[#fff3df] transition-all duration-300 hover:shadow-lg hover:from-[#942d21] hover:to-[#a83525] active:scale-95"
+                      className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md bg-gradient-to-r from-[#7d2419] to-[#942d21] px-4 py-3 text-sm font-semibold text-white transition-shadow hover:shadow-lg active:scale-95"
                     >
                       <ShoppingBag size={18} /> Proceed to Order
                     </Link>
