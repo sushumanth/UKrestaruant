@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import DishFrame from '../ui/DishFrame';
 
 type SignatureDish = {
@@ -50,11 +50,11 @@ const loopedDishes = [
   ...signatureDishes,
 ];
 
-const isMobileLayout = () => {
+const isMobileLayout = useCallback(() => {
   return window.matchMedia('(max-width: 767px)').matches;
-};
+}, []);
 
-const getStepSize = () => {
+const getStepSize = useCallback(() => {
   const scroller = scrollerRef.current;
   if (!scroller) return 0;
 
@@ -65,9 +65,9 @@ const getStepSize = () => {
   return isMobileLayout()
     ? firstCard.offsetHeight + gap
     : firstCard.offsetWidth + gap;
-};
+}, [isMobileLayout]);
 
-const jumpToIndex = (index: number) => {
+const jumpToIndex = useCallback((index: number) => {
   const scroller = scrollerRef.current;
   if (!scroller) return;
 
@@ -81,9 +81,9 @@ const jumpToIndex = (index: number) => {
   }
 
   currentIndexRef.current = index;
-};
+}, [getStepSize, isMobileLayout]);
 
-const animateToIndex = (index: number) => {
+const animateToIndex = useCallback((index: number) => {
   const scroller = scrollerRef.current;
   if (!scroller || isAnimatingRef.current) return;
 
@@ -136,7 +136,7 @@ const animateToIndex = (index: number) => {
   };
 
   requestAnimationFrame(frame);
-};
+}, [getStepSize, isMobileLayout, jumpToIndex]);
 
   useEffect(() => {
   const scroller = scrollerRef.current;
@@ -195,7 +195,7 @@ const animateToIndex = (index: number) => {
     scroller.removeEventListener('touchstart', pause);
     scroller.removeEventListener('touchend', resume);
   };
-}, []);
+}, [animateToIndex, jumpToIndex]);
 
   const scrollDishes = (direction: 1 | -1) => {
     animateToIndex(currentIndexRef.current + direction);

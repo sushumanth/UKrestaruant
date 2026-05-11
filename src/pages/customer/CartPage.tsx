@@ -8,6 +8,7 @@ import { useMenuCartStore } from '@/store';
 export const CartPage = () => {
   const navigate = useNavigate();
   const { items, updateItemQuantity, removeItem, clearCart } = useMenuCartStore();
+  const isCustomerAuthenticated = useCustomerAuthStore((s) => s.isCustomerAuthenticated);
 
   const subtotal = useMemo(
     () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
@@ -46,8 +47,6 @@ export const CartPage = () => {
       </div>
     );
   }
-
-  const isCustomerAuthenticated = useCustomerAuthStore((s) => s.isCustomerAuthenticated);
 
   return (
     <div className="min-h-screen bg-[#f8f0e1] pt-24 text-[#2d241b]">

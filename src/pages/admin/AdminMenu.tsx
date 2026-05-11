@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Edit, Plus, Search, Trash2, UtensilsCrossed } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,6 +60,7 @@ const buildFormState = (item: MenuItem): MenuFormState => ({
 
 export const AdminMenu = () => {
   const { menuItems, upsertMenuItem, removeMenuItem } = useMenuStore();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory | 'all'>('all');
   const [isSaving, setIsSaving] = useState(false);
@@ -145,6 +146,10 @@ export const AdminMenu = () => {
     setSelectedImagePreview(URL.createObjectURL(file));
   };
 
+  const openFilePicker = () => {
+    fileInputRef.current?.click();
+  };
+
   const currentImageUrl = formState.image ?? '';
 
   const persistItem = async () => {
@@ -176,6 +181,7 @@ export const AdminMenu = () => {
       return;
     }
 
+    const isNewItem = !formState.id;
     const existing = menuItems.find((item) => item.id === formState.id);
     const now = new Date().toISOString();
     const nextItem: MenuItem = {
@@ -196,7 +202,7 @@ export const AdminMenu = () => {
     };
 
     try {
-      const saved = await upsertMenuItemOnBackend(nextItem);
+      const saved = await upsertMenuItemOnBackend(nextItem, isNewItem);
       upsertMenuItem(saved);
 
       setMessage('Menu item saved successfully.');
@@ -298,7 +304,17 @@ export const AdminMenu = () => {
                 <tr key={item.id} className="border-b border-amber-100 hover:bg-amber-50/30 transition-colors">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
-                      <img src={item.image} alt={item.name} className="h-12 w-12 rounded-lg object-cover" />
+                      <div className="h-12 w-12 rounded-lg bg-amber-100 overflow-hidden flex items-center justify-center">
+                        <img 
+                          src={item.image} 
+                          alt={item.name} 
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                            (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="h-full w-full flex items-center justify-center bg-amber-200 text-xs text-amber-700">No image</div>';
+                          }}
+                        />
+                      </div>
                       <div>
                         <p className="font-medium text-amber-900">{item.name}</p>
                         <p className="text-amber-700/60 text-sm">{item.isVeg ? 'Veg' : 'Non-veg'} · {formatMenuRating(item.rating)} rating</p>
@@ -373,7 +389,23 @@ export const AdminMenu = () => {
               <div className="md:col-span-2 space-y-3 rounded-2xl border border-dashed border-amber-200 bg-amber-50/30 p-4">
                 <div>
                   <label className="mb-2 block text-sm text-amber-700/60">Upload Image From Device</label>
-                  <Input type="file" accept="image/*" onChange={(event) => handleImageFileChange(event.target.files?.[0] ?? null)} className="border border-amber-200 bg-white text-amber-900 rounded-lg file:mr-4 file:border-0 file:bg-amber-700 file:px-4 file:py-2 file:text-white hover:file:bg-amber-800" />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={(event) => handleImageFileChange(event.target.files?.[0] ?? null)}
+                  />
+                  <button
+                    type="button"
+                    onClick={openFilePicker}
+                    className="inline-flex items-center rounded-lg bg-amber-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-800"
+                  >
+                    Choose file
+                  </button>
+                  <span className="ml-3 text-sm text-amber-700/60">
+                    {selectedImageFile ? selectedImageFile.name : 'No file chosen'}
+                  </span>
                 </div>
 
                 <div>

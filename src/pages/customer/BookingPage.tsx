@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Calendar,
@@ -167,6 +167,7 @@ export const BookingPage = () => {
   });
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const hasInitializedSelectionRef = useRef(false);
 
   useEffect(() => {
     if (!customer) {
@@ -182,26 +183,38 @@ export const BookingPage = () => {
     }));
   }, [customer]);
 
-  // Reset selection state on mount unless coming from cart with skipSelection flag
   useEffect(() => {
+    hasInitializedSelectionRef.current = false;
+  }, [location.search]);
+
+  // Initialize selection once per query-state change to avoid resetting after user continues.
+  useEffect(() => {
+    if (hasInitializedSelectionRef.current) {
+      return;
+    }
+
     const params = new URLSearchParams(location.search);
     const skip = params.get('skipSelection');
 
-    // If NOT coming from cart redirect, always clear selection so user sees selection UI first
+    // If NOT coming from cart redirect, clear selection once so user sees selection UI first.
     if (!skip) {
       setSelectedDate('');
       setSelectedTime('');
       setSelectedGuests(0);
+      hasInitializedSelectionRef.current = true;
       return;
     }
 
-    // If coming from cart with skipSelection=1, pre-fill sensible date/time
-    if (selectedDate && selectedTime) return;
+    // If coming from cart with skipSelection=1 and already selected, keep existing selection.
+    if (selectedDate && selectedTime) {
+      hasInitializedSelectionRef.current = true;
+      return;
+    }
 
     const now = new Date();
     const today = format(now, 'yyyy-MM-dd');
 
-    // choose the first upcoming slot from baseSlotTimes, otherwise fallback to first slot
+    // Choose the first upcoming slot from baseSlotTimes, otherwise fallback to first slot.
     const [hoursNow, minutesNow] = [now.getHours(), now.getMinutes()];
     const upcoming = baseSlotTimes.find((t) => {
       const [h, m] = t.split(':').map(Number);
@@ -212,9 +225,10 @@ export const BookingPage = () => {
 
     setSelectedDate(today);
     setSelectedTime(upcoming);
-    const _cartCount = cartItems ? cartItems.reduce((t, i) => t + (i.quantity ?? 0), 0) : 0;
-    setSelectedGuests(_cartCount > 0 ? Math.min(10, Math.max(1, _cartCount)) : 2);
-  }, [location.search, setSelectedDate, setSelectedTime, setSelectedGuests]);
+    const cartCount = cartItems ? cartItems.reduce((total, item) => total + (item.quantity ?? 0), 0) : 0;
+    setSelectedGuests(cartCount > 0 ? Math.min(10, Math.max(1, cartCount)) : 2);
+    hasInitializedSelectionRef.current = true;
+  }, [cartItems, location.search, selectedDate, selectedTime, setSelectedDate, setSelectedTime, setSelectedGuests]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({

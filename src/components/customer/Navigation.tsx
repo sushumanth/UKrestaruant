@@ -1,25 +1,25 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ShoppingBag, User } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, ShoppingBag, User, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useCustomerAuthStore, useMenuCartStore } from '@/store';
 import { signOutCustomer } from '@/customerApi';
 
 export const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const userDropdownRef = useRef<HTMLDivElement>(null);
+  const lastScrollYRef = useRef(0);
   const location = useLocation();
   const { customer, isCustomerAuthenticated, logoutCustomer } = useCustomerAuthStore();
   const cartItems = useMenuCartStore((state) => state.items);
   const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   const isHomePage = location.pathname === '/';
-  const aboutHref = isHomePage ? '#about-us' : '/#about-us';
   const galleryHref = isHomePage ? '#gallery' : '/#gallery';
   const contactHref = isHomePage ? '#contact' : '/#contact';
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
@@ -33,102 +33,105 @@ export const Navigation = () => {
     }
   }, [isUserDropdownOpen]);
 
-  const handleCustomerSignOut = async () => {
-    await signOutCustomer();
-    logoutCustomer();
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY < 80) {
+        setIsHeaderVisible(true);
+        lastScrollYRef.current = currentScrollY;
+        return;
+      }
+
+      setIsHeaderVisible(currentScrollY < lastScrollYRef.current);
+      lastScrollYRef.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
     setIsUserDropdownOpen(false);
   };
 
+  const handleHomeClick = () => {
+    closeMobileMenu();
+    setIsHeaderVisible(true);
+  };
+
+  const handleCustomerSignOut = async () => {
+    await signOutCustomer();
+    logoutCustomer();
+    closeMobileMenu();
+  };
+
   return (
-    <motion.nav 
+    <motion.nav
       initial={{ y: -110 }}
       animate={{ y: isHeaderVisible || isMobileMenuOpen ? 0 : -110 }}
-      transition={{ duration: 0.32, ease: 'easeInOut'}}
-      className="fixed select-none top-0 left-0 right-0 z-50 duration-300 border-b bg-[linear-gradient(90deg,rgba(74,9,7,0.96),rgba(52,8,6,0.96))] border-[#8d5a25]/45 shadow-[0_10px_30px_rgba(0,0,0,0.35)] py-2">
-      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 transition-all duration-300">
-          {/* Logo */}
-          <Link to="/" onClick={handleHomeClick} className="group inline-flex items-center">
-            <div className="relative flex items-center">
-              <img
-                src="/logo1.png"
-                alt="Singh's Dining lion logo"
-                className="absolute -left-8 top-1/2 h-16 w-16 -translate-y-1/2 object-contain drop-shadow-[0_6px_18px_rgba(0,0,0,0.45)]"
-                loading="eager"
-                draggable={false}
-              />
-              <div className="relative z-10 pl-7 leading-none">
-                <div className="flex items-end gap-2">
-                  <span className="font-serif text-[22px] tracking-wide text-[#F4F6FA]">Singh&apos;s</span>
-                  <span className="inline-block h-4 w-px bg-[#D4A23A]/70" />
-                  <span className="pb-1 text-[11px] font-semibold uppercase tracking-[0.32em] text-[#D4A23A]">Dining</span>
-                </div>
-                <span className="pt-2 block text-[10px] uppercase tracking-[0.28em] text-[#AFB8C8]">
-                  By Rangrez
-                </span>
-              </div>
+      transition={{ duration: 0.32, ease: 'easeInOut' }}
+      className="fixed left-0 right-0 top-0 z-50 select-none border-b border-[#8d5a25]/35 bg-[linear-gradient(90deg,rgba(60,8,7,0.96),rgba(44,8,6,0.96))] py-2 shadow-[0_10px_30px_rgba(0,0,0,0.3)]"
+    >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between gap-4">
+          <Link to="/" onClick={handleHomeClick} className="group inline-flex items-center gap-3">
+            <img
+              src="/logo1.png"
+              alt="Singh's Dining logo"
+              className="h-12 w-12 shrink-0 object-contain drop-shadow-[0_6px_18px_rgba(0,0,0,0.45)] sm:h-14 sm:w-14"
+              loading="eager"
+              draggable={false}
+            />
+            <div className="leading-none">
+              <span className="block font-serif text-[18px] tracking-wide text-[#F4F6FA] sm:text-[21px]">
+                Singh&apos;s Dining
+              </span>
+              <span className="mt-1 block text-[10px] uppercase tracking-[0.32em] text-[#D4A23A]/85">
+                LuxeReserve
+              </span>
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden xl:flex items-center gap-7">
+          <nav className="hidden items-center gap-8 xl:flex">
             <Link
               to="/"
               onClick={handleHomeClick}
-              className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
+              className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#f4dfb6] transition-colors hover:text-[#ffe9bf]"
             >
               Home
             </Link>
-            <Link
-              to="/menu"
-              className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-            >
-              Menu
-            </Link>
-            <Link
-              to="/menu"
-              className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-            >
-              Order Online
-            </Link>
-            <Link
-              to="/booking"
-              className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-            >
-              Book Table
-            </Link>
             <a
-              href={aboutHref}
-              className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
+              href={isHomePage ? '#about-us' : '/#about-us'}
+              className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#f4dfb6] transition-colors hover:text-[#ffe9bf]"
             >
               About Us
             </a>
+            <Link
+              to="/menu"
+              className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#f4dfb6] transition-colors hover:text-[#ffe9bf]"
+            >
+              Menu
+            </Link>
             <a
               href={galleryHref}
-              className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
+              className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#f4dfb6] transition-colors hover:text-[#ffe9bf]"
             >
               Gallery
             </a>
             <a
               href={contactHref}
-              className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
+              className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#f4dfb6] transition-colors hover:text-[#ffe9bf]"
             >
               Contact
             </a>
-            <Link
-              to="/menu"
-              className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-            >
-              Menu
-            </Link> 
-          </div>
+          </nav>
 
-          {/* Desktop actions */}
-          <div className="hidden xl:flex items-center gap-3">
+          <div className="hidden items-center gap-3 xl:flex">
             <Link
               to="/cart"
-              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf] hover:bg-white/5"
+              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold uppercase tracking-[0.05em] text-[#f4dfb6] transition-colors hover:bg-white/5 hover:text-[#ffe9bf]"
             >
               <ShoppingBag size={20} />
               Cart
@@ -138,16 +141,17 @@ export const Navigation = () => {
                 </span>
               )}
             </Link>
+
             {isCustomerAuthenticated ? (
               <div className="relative" ref={userDropdownRef}>
                 <button
                   type="button"
                   onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                  className="p-2 rounded-lg transition-colors text-[#f4dfb6] hover:text-[#ffe9bf] hover:bg-[#8d5a25]/20"
+                  className="rounded-lg p-2 text-[#f4dfb6] transition-colors hover:bg-[#8d5a25]/20 hover:text-[#ffe9bf]"
                 >
                   <User size={20} strokeWidth={1.5} />
                 </button>
-                
+
                 <AnimatePresence>
                   {isUserDropdownOpen && (
                     <motion.div
@@ -155,11 +159,11 @@ export const Navigation = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 mt-2 w-48 rounded-lg bg-[linear-gradient(135deg,rgba(66,10,7,0.98),rgba(41,8,6,0.98))] border border-[#8d5a25]/45 shadow-2xl overflow-hidden z-50"
+                      className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-lg border border-[#8d5a25]/45 bg-[linear-gradient(135deg,rgba(66,10,7,0.98),rgba(41,8,6,0.98))] shadow-2xl"
                     >
                       <Link
                         to="/customer/dashboard"
-                        className="block w-full px-4 py-3 text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf] hover:bg-[#8d5a25]/30 text-left border-b border-[#8d5a25]/30"
+                        className="block w-full border-b border-[#8d5a25]/30 px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.05em] text-[#f4dfb6] transition-colors hover:bg-[#8d5a25]/30 hover:text-[#ffe9bf]"
                         onClick={() => setIsUserDropdownOpen(false)}
                       >
                         Dashboard
@@ -167,7 +171,7 @@ export const Navigation = () => {
                       <button
                         type="button"
                         onClick={handleCustomerSignOut}
-                        className="block w-full px-4 py-3 text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf] hover:bg-[#8d5a25]/30 text-left"
+                        className="block w-full px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.05em] text-[#f4dfb6] transition-colors hover:bg-[#8d5a25]/30 hover:text-[#ffe9bf]"
                       >
                         Logout
                       </button>
@@ -175,61 +179,33 @@ export const Navigation = () => {
                   )}
                 </AnimatePresence>
               </div>
-            ) : (
-              <Link
-                to={cartItemCount > 0 ? `/customer/auth?redirect=${encodeURIComponent('/online-order')}` : '/customer/auth?redirect=/booking'}
-                className="text-sm font-semibold uppercase tracking-[0.05em] transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-              >
-                Sign In
-              </Link>
-            )}
+            ) : null}
           </div>
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            {isCustomerAuthenticated ? (
-              <Link
-                to="/booking"
-                className="relative overflow-hidden inline-flex items-center justify-center rounded-lg px-5 py-2 text-[13px] font-semibold uppercase tracking-[0.06em] transition-all duration-300 bg-[#d7a44f] text-[#2f180b] hover:bg-[#e2b160]"
-              >
-                Book A Table
-              </Link>
-            ) : (
-              <Link
-                to={cartItemCount > 0 ? `/customer/auth?redirect=${encodeURIComponent('/online-order')}` : '/customer/auth?redirect=/booking'}
-                className="relative overflow-hidden inline-flex items-center justify-center rounded-lg px-5 py-2 text-[13px] font-semibold uppercase tracking-[0.06em] transition-all duration-300 bg-[#d7a44f] text-[#2f180b] hover:bg-[#e2b160]"
-              >
-                Sign In to Book
-              </Link>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
           <button
-            type='button'
-            className="md:hidden p-2 transition-colors text-[#f5deb4]"
+            type="button"
+            className="p-2 text-[#f5deb4] transition-colors md:hidden"
             onClick={() => {
-              setIsHeaderVisible(true); 
+              setIsHeaderVisible(true);
               setIsMobileMenuOpen((prev) => !prev);
             }}
-            aria-label='Toggle mobile menu'
+            aria-label="Toggle mobile menu"
           >
             {isMobileMenuOpen ? <X size={26} strokeWidth={1.5} /> : <Menu size={26} strokeWidth={1.5} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="xl:hidden overflow-hidden border-t bg-[linear-gradient(160deg,rgba(66,10,7,0.98),rgba(41,8,6,0.98))] border-[#8d5a25]/45"
+            className="overflow-hidden border-t border-[#8d5a25]/45 bg-[linear-gradient(160deg,rgba(66,10,7,0.98),rgba(41,8,6,0.98))] xl:hidden"
           >
-            <div className="px-6 py-8 flex flex-col space-y-5 shadow-2xl">
+            <div className="flex flex-col space-y-5 px-6 py-8 shadow-2xl">
               <Link
                 to="/"
                 className="text-lg font-semibold text-[#f4dfb6] transition-colors hover:text-[#ffe9bf]"
@@ -237,58 +213,37 @@ export const Navigation = () => {
               >
                 Home
               </Link>
-              <Link
-                to="/menu"
-                className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Menu
-              </Link>
-              <Link
-                to="/menu"
-                className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Order Online
-              </Link>
-              <Link
-                to="/booking"
-                className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Book Table
-              </Link>
               <a
-                href={aboutHref}
-                className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
+                href={isHomePage ? '#about-us' : '/#about-us'}
+                className="text-lg font-semibold text-[#f4dfb6] transition-colors hover:text-[#ffe9bf]"
                 onClick={closeMobileMenu}
               >
                 About Us
               </a>
+              <Link
+                to="/menu"
+                className="text-lg font-semibold text-[#f4dfb6] transition-colors hover:text-[#ffe9bf]"
+                onClick={closeMobileMenu}
+              >
+                Menu
+              </Link>
               <a
                 href={galleryHref}
-                className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
+                className="text-lg font-semibold text-[#f4dfb6] transition-colors hover:text-[#ffe9bf]"
                 onClick={closeMobileMenu}
               >
                 Gallery
               </a>
               <a
                 href={contactHref}
-                className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
+                className="text-lg font-semibold text-[#f4dfb6] transition-colors hover:text-[#ffe9bf]"
                 onClick={closeMobileMenu}
               >
                 Contact
               </a>
               <Link
-                to="/menu"
-                className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-                onClick={closeMobileMenu}
-              >
-                Menu
-              </Link>
-              <Link
                 to="/cart"
-                className="inline-flex items-center gap-2 text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
+                className="inline-flex items-center gap-2 text-lg font-semibold text-[#f4dfb6] transition-colors hover:text-[#ffe9bf]"
                 onClick={closeMobileMenu}
               >
                 <ShoppingBag size={18} />
@@ -303,35 +258,20 @@ export const Navigation = () => {
                 <>
                   <Link
                     to="/customer/dashboard"
-                    className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-lg font-semibold text-[#f4dfb6] transition-colors hover:text-[#ffe9bf]"
+                    onClick={closeMobileMenu}
                   >
                     {customer ? `${customer.firstName} Dashboard` : 'My Bookings'}
                   </Link>
                   <button
                     type="button"
-                    className="text-left text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
+                    className="text-left text-lg font-semibold text-[#f4dfb6] transition-colors hover:text-[#ffe9bf]"
                     onClick={handleCustomerSignOut}
                   >
                     Logout
                   </button>
                 </>
-              ) : (
-                <Link
-                  to={cartItemCount > 0 ? `/customer/auth?redirect=${encodeURIComponent('/online-order')}` : '/customer/auth?redirect=/booking'}
-                  className="text-lg font-semibold transition-colors text-[#f4dfb6] hover:text-[#ffe9bf]"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Sign In
-                </Link>
-              )}
-              <Link
-                to={isCustomerAuthenticated ? '/booking' : (cartItemCount > 0 ? `/customer/auth?redirect=${encodeURIComponent('/online-order')}` : '/customer/auth?redirect=/booking')}
-                className="mt-6 flex justify-center items-center py-3.5 text-lg font-semibold rounded-xl transition-all bg-[#d7a44f] text-[#2f180b] hover:bg-[#e2b160]"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {isCustomerAuthenticated ? 'Book A Table' : 'Sign In to Book'}
-              </Link>
+              ) : null}
             </div>
           </motion.div>
         )}

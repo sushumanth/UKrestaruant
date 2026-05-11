@@ -20,7 +20,6 @@ import { EmployeeLayout } from '@/layouts/EmployeeLayout';
 // Pages
 import { HomePage } from '@/pages/customer/HomePage';
 import { MenuPage } from '@/pages/customer/MenuPage';
-import { OrderPage } from '@/pages/customer/OrderPage';
 import { CartPage } from '@/pages/customer/CartPage';
 import { OrderOnlinePage } from '@/pages/customer/order_online';
 import { BookingPage } from '@/pages/customer/BookingPage';

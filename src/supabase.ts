@@ -2,15 +2,20 @@ import { clearStoredAuthSession, getStoredAuthSession, setStoredAuthSession } fr
 
 type ChannelLike = {
   on: (
-    _eventName: string,
-    _filter: Record<string, unknown>,
-    _callback: (payload: { eventType: string }) => void
+    eventName: string,
+    filter: Record<string, unknown>,
+    callback: (payload: { eventType: string }) => void
   ) => ChannelLike;
   subscribe: () => ChannelLike;
 };
 
 const createChannel = (): ChannelLike => ({
-  on: (_eventName, _filter, _callback) => createChannel(),
+  on: (eventName, filter, callback) => {
+    void eventName;
+    void filter;
+    void callback;
+    return createChannel();
+  },
   subscribe: () => createChannel(),
 });
 
@@ -40,8 +45,14 @@ export const backendClient = {
       error: new Error('Use backend helpers for authentication.'),
     }),
   },
-  channel: (_name?: string) => createChannel(),
-  removeChannel: async (_channel?: ChannelLike) => undefined,
+  channel: (name?: string) => {
+    void name;
+    return createChannel();
+  },
+  removeChannel: async (channel?: ChannelLike) => {
+    void channel;
+    return undefined;
+  },
 };
 
 export const setBackendAuthSession = setStoredAuthSession;

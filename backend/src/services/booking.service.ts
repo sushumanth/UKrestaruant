@@ -57,7 +57,7 @@ export const createBooking = async (input: {
   }
 
   const bookingDate = new Date(`${input.bookingDate}T00:00:00.000Z`);
-  const booking = await prisma.$transaction(async (transaction: any) => {
+  const booking = await prisma.$transaction(async (transaction: Prisma.TransactionClient) => {
     const created = await transaction.booking.create({
       data: {
         id: input.id ?? undefined,
@@ -129,7 +129,7 @@ export const getBookingById = async (id: string) => {
 };
 
 export const updateBookingStatus = async (bookingId: string, status: BookingStatus) => {
-  const updated = await prisma.$transaction(async (transaction: any) => {
+  const updated = await prisma.$transaction(async (transaction: Prisma.TransactionClient) => {
     const booking = await transaction.booking.update({
       where: { id: bookingId },
       data: { status },

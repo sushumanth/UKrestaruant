@@ -220,14 +220,26 @@ export const fetchPublicOperationalData = async (): Promise<{
   menuItems: MenuItem[];
 }> => {
   const [settingsResponse, tablesResponse, menuItemsResponse] = await Promise.all([
-    backendRequest<PublicOperationalDataResponse['settings']>('/restaurants/settings', { auth: false }),
-    backendRequest<PublicOperationalDataResponse['tables']>('/restaurants/tables', { auth: false }),
+    backendRequest<{ settings: PublicOperationalDataResponse['settings'] } | PublicOperationalDataResponse['settings']>('/restaurants/settings', { auth: false }),
+    backendRequest<{ tables: PublicOperationalDataResponse['tables'] } | PublicOperationalDataResponse['tables']>('/restaurants/tables', { auth: false }),
     backendRequest<{ items: PublicOperationalDataResponse['menuItems'] }>('/menu?limit=1000&page=1&isActive=true', { auth: false }),
   ]);
 
+  const settings = Array.isArray(settingsResponse)
+    ? null
+    : settingsResponse && typeof settingsResponse === 'object' && 'settings' in settingsResponse
+      ? settingsResponse.settings
+      : settingsResponse;
+
+  const tables = Array.isArray(tablesResponse)
+    ? tablesResponse
+    : tablesResponse && typeof tablesResponse === 'object' && 'tables' in tablesResponse
+      ? tablesResponse.tables
+      : [];
+
   return {
-    tables: tablesResponse.map(mapBackendTable),
-    settings: settingsResponse ? mapBackendSettings(settingsResponse) : null,
+    tables: tables.map(mapBackendTable),
+    settings: settings ? mapBackendSettings(settings) : null,
     menuItems: menuItemsResponse.items.map(mapBackendMenuItem),
   };
 };
@@ -237,9 +249,9 @@ export const fetchMenuItems = async (): Promise<MenuItem[]> => {
   return response.items.map(mapBackendMenuItem);
 };
 
-export const upsertMenuItem = async (menuItem: MenuItem): Promise<MenuItem> => {
-  const response = menuItem.id
-    ? await backendRequest<PublicOperationalDataResponse['menuItems'][number]>(`/menu/${menuItem.id}`, {
+export const upsertMenuItem = async (menuItem: MenuItem, isNew: boolean = false): Promise<MenuItem> => {
+  const response = !isNew && menuItem.id
+    ? await backendRequest<{ item: PublicOperationalDataResponse['menuItems'][number] } | PublicOperationalDataResponse['menuItems'][number]>(`/menu/${menuItem.id}`, {
         method: 'PUT',
         body: {
           name: menuItem.name,
@@ -255,7 +267,7 @@ export const upsertMenuItem = async (menuItem: MenuItem): Promise<MenuItem> => {
           sortOrder: menuItem.sortOrder,
         },
       })
-    : await backendRequest<PublicOperationalDataResponse['menuItems'][number]>('/menu', {
+    : await backendRequest<{ item: PublicOperationalDataResponse['menuItems'][number] } | PublicOperationalDataResponse['menuItems'][number]>('/menu', {
         method: 'POST',
         body: {
           id: menuItem.id,
@@ -273,7 +285,11 @@ export const upsertMenuItem = async (menuItem: MenuItem): Promise<MenuItem> => {
         },
       });
 
-  return mapBackendMenuItem(response);
+  const normalized = response && typeof response === 'object' && 'item' in response
+    ? response.item
+    : response;
+
+  return mapBackendMenuItem(normalized);
 };
 
 export const deleteMenuItem = async (menuItemId: string): Promise<void> => {
@@ -298,11 +314,16 @@ export const fetchStaffOperationalData = async (): Promise<{
 }> => {
   const [bookingsResponse, tablesResponse] = await Promise.all([
     backendRequest<BookingsResponse>('/bookings?limit=1000&page=1'),
-    backendRequest<PublicOperationalDataResponse['tables']>('/restaurants/tables', { auth: false }),
+    backendRequest<{ tables: PublicOperationalDataResponse['tables'] } | PublicOperationalDataResponse['tables']>('/restaurants/tables', { auth: false }),
   ]);
 
   const bookings = bookingsResponse.items.map(mapBackendBooking);
-  const tables = tablesResponse.map(mapBackendTable);
+  const normalizedTables = Array.isArray(tablesResponse)
+    ? tablesResponse
+    : tablesResponse && typeof tablesResponse === 'object' && 'tables' in tablesResponse
+      ? tablesResponse.tables
+      : [];
+  const tables = normalizedTables.map(mapBackendTable);
 
   return {
     bookings,
