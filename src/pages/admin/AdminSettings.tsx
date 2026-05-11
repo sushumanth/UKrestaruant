@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { isSupabaseConfigured } from '@/lib/supabase';
-import { updateRestaurantSettingsInSupabase } from '@/lib/supabaseAdminApi';
+import { updateRestaurantSettings } from '@/adminApi';
 
 export const AdminSettings = () => {
   const { settings, setSettings } = useSettingsStore();
@@ -65,13 +64,12 @@ export const AdminSettings = () => {
     setSaveMessage('');
 
     try {
-      if (!settings?.id || !isSupabaseConfigured) {
-        await new Promise(resolve => setTimeout(resolve, 600));
-        setSaveMessage('Settings saved in local mode.');
+      if (!settings?.id) {
+        setSaveMessage('Settings are not loaded yet.');
         return;
       }
 
-      const updated = await updateRestaurantSettingsInSupabase({
+      const updated = await updateRestaurantSettings({
         id: settings.id,
         name: formData.restaurantName,
         address: formData.address,
@@ -86,7 +84,7 @@ export const AdminSettings = () => {
       });
 
       setSettings(updated);
-      setSaveMessage('Settings saved to Supabase successfully.');
+      setSaveMessage('Settings saved to backend successfully.');
     } catch (error) {
       console.warn('Failed to save settings:', error);
       setSaveMessage('Unable to save settings. Please check role access and try again.');

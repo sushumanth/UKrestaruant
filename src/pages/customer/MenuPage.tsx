@@ -2,8 +2,8 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { Clock3, Leaf, Minus, Plus, Search, ShoppingBag, Star } from 'lucide-react';
 import { useRef, useState, useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { formatCurrency } from '@/lib/mockData';
-import { formatMenuRating, getVisibleMenuItems } from '@/lib/menuUtils';
+import { formatCurrency } from '@/mockData';
+import { formatMenuRating, getVisibleMenuItems } from '@/menuUtils';
 import { useMenuCartStore, useMenuStore } from '@/store';
 import type { MenuCategory } from '@/types';
 

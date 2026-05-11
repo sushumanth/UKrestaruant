@@ -18,10 +18,10 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useBookingStore } from '@/store';
 import { useTableStore } from '@/store';
-import { formatTime, generateTimeSlots } from '@/lib/mockData';
+import { formatTime, generateTimeSlots } from '@/mockData';
 import { Skeleton } from '@/components/ui/skeleton';
-import { isSupabaseConfigured, supabase } from '@/lib/supabase';
-import { getAvailableSlotsFromSupabase, getOccupiedTableIdsFromSupabase } from '@/lib/supabaseBookingApi';
+import { backendClient } from '@/supabase';
+import { getAvailableSlots, getOccupiedTableIds } from '@/backendBookingApi';
 import type { BookingCardProps } from '@/types';
 
 const guestOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -124,15 +124,15 @@ export const BookingCard = ({ compact = false }: BookingCardProps) => {
             activeStatuses.includes(booking.status)
         );
 
-        const isTableOccupiedInSupabase = occupiedSet.has(table.id);
+        const isTableOccupiedInBackend = occupiedSet.has(table.id);
 
         const isBlocked = ['blocked', 'booked', 'reserved', 'seated'].includes(table.status);
         const canFitParty = table.capacity >= guests;
-        const isUnavailable = isBlocked || isTableOccupiedInSupabase || hasActiveBooking || !canFitParty;
+        const isUnavailable = isBlocked || isTableOccupiedInBackend || hasActiveBooking || !canFitParty;
 
         return {
           ...table,
-          isTableOccupiedInSupabase,
+          isTableOccupiedInBackend,
           hasActiveBooking,
           canFitParty,
           isUnavailable,
@@ -165,20 +165,15 @@ export const BookingCard = ({ compact = false }: BookingCardProps) => {
     let isMounted = true;
 
     const loadOccupiedTables = async () => {
-      if (!isSupabaseConfigured) {
-        setOccupiedTableIds([]);
-        return;
-      }
-
       const dateString = format(date, 'yyyy-MM-dd');
-      const occupiedResult = await getOccupiedTableIdsFromSupabase(dateString, time);
+      const occupiedResult = await getOccupiedTableIds(dateString, time);
 
       if (!isMounted) {
         return;
       }
 
       if (!occupiedResult.ok) {
-        console.warn('Failed to fetch occupied tables from Supabase:', occupiedResult.error);
+        console.warn('Failed to fetch occupied tables from backend:', occupiedResult.error);
         setOccupiedTableIds([]);
         return;
       }
@@ -194,7 +189,7 @@ export const BookingCard = ({ compact = false }: BookingCardProps) => {
   }, [date, occupancyRefreshTick, time]);
 
   useEffect(() => {
-    const client = supabase;
+    const client = backendClient;
 
     if (!client) {
       return;
@@ -232,14 +227,12 @@ export const BookingCard = ({ compact = false }: BookingCardProps) => {
       const dateString = format(date, 'yyyy-MM-dd');
       let rawSlots = generateTimeSlots(dateString);
 
-      if (isSupabaseConfigured) {
-        const slotResult = await getAvailableSlotsFromSupabase(dateString, guests);
+      const slotResult = await getAvailableSlots(dateString, guests);
 
-        if (slotResult.ok && slotResult.slots.length > 0) {
-          rawSlots = slotResult.slots;
-        } else if (!slotResult.ok) {
-          console.warn('Failed to fetch available slots from Supabase:', slotResult.error);
-        }
+      if (slotResult.ok && slotResult.slots.length > 0) {
+        rawSlots = slotResult.slots;
+      } else if (!slotResult.ok) {
+        console.warn('Failed to fetch available slots from backend:', slotResult.error);
       }
 
       const now = new Date();

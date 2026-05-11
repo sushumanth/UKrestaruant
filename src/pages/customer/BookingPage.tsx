@@ -18,9 +18,9 @@ import { Label } from '@/components/ui/label';
 import { Calendar as DateCalendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useBookingStore, useCustomerAuthStore, useMenuCartStore, useTableStore } from '@/store';
-import { formatDate, formatTime, generateBookingId, findOptimalTable, formatCurrency } from '@/lib/mockData';
-import { saveBookingToSupabase } from '@/lib/supabaseBookingApi';
-import { sendBookingConfirmationEmail } from '@/lib/bookingEmailApi';
+import { formatDate, formatTime, generateBookingId, findOptimalTable, formatCurrency } from '@/mockData';
+import { saveBooking } from '@/backendBookingApi';
+import { sendBookingConfirmationEmail } from '@/bookingEmailApi';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
@@ -731,11 +731,11 @@ export const BookingPage = () => {
       updatedAt: new Date().toISOString(),
     };
 
-    const saveResult = await saveBookingToSupabase(newBooking);
+    const saveResult = await saveBooking(newBooking);
     if (!saveResult.ok) {
       const errorMessage = saveResult.error ?? 'Unable to save your booking to database.';
       setSaveError(errorMessage);
-      console.warn('Supabase booking save failed:', errorMessage);
+      console.warn('Backend booking save failed:', errorMessage);
       return { ok: false, error: errorMessage };
     }
 

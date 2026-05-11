@@ -2,7 +2,7 @@ import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useMemo } from 'react';
 import { useCustomerAuthStore } from '@/store';
-import { formatCurrency } from '@/lib/mockData';
+import { formatCurrency } from '@/mockData';
 import { useMenuCartStore } from '@/store';
 
 export const CartPage = () => {

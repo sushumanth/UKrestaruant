@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { Calendar, Clock3, CreditCard, Hash, MapPin, Users, ShoppingBag, Package } from 'lucide-react';
-import { formatCurrency, formatDate, formatTime } from '@/lib/mockData';
-import { getCustomerBookingsFromSupabase, getCustomerOrdersFromSupabase } from '@/lib/supabaseBookingApi';
-import { isSupabaseConfigured } from '@/lib/supabase';
-import { useBookingStore, useCustomerAuthStore } from '@/store';
+import { Calendar, Clock3, CreditCard, Hash, MapPin, Users } from 'lucide-react';
+import { formatCurrency, formatDate, formatTime } from '@/mockData';
+import { getCustomerBookings, getCustomerOrders } from '@/backendBookingApi';
+import { useCustomerAuthStore } from '@/store';
 import type { Booking } from '@/types';
 
 const statusLabel: Record<Booking['status'], string> = {
@@ -29,34 +28,20 @@ const statusClass: Record<Booking['status'], string> = {
 
 export const CustomerDashboardPage = () => {
   const { customer, isCustomerAuthenticated } = useCustomerAuthStore();
-  const localBookings = useBookingStore((state) => state.bookings);
 
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'bookings' | 'orders'>('bookings');
-
   useEffect(() => {
     if (!customer || !isCustomerAuthenticated) {
       setIsLoading(false);
       return;
     }
 
-    if (!isSupabaseConfigured) {
-      const localMatches = localBookings.filter(
-        (booking) => booking.customerEmail.toLowerCase() === customer.email.toLowerCase()
-      );
-      setBookings(localMatches);
-      setOrders([]);
-      setIsLoading(false);
-      return;
-    }
-
     void (async () => {
       try {
-        const bookingsResult = await getCustomerBookingsFromSupabase(customer.email);
-        const ordersResult = await getCustomerOrdersFromSupabase(customer.email);
+        const bookingsResult = await getCustomerBookings(customer.email);
+        const ordersResult = await getCustomerOrders(customer.email);
 
         if (!bookingsResult.ok) {
           setError(bookingsResult.error ?? 'Unable to load your bookings right now.');
@@ -66,18 +51,17 @@ export const CustomerDashboardPage = () => {
         }
 
         if (ordersResult.ok) {
-          setOrders(ordersResult.orders);
+          void ordersResult.orders;
         }
 
         setIsLoading(false);
       } catch (err) {
         setError('An unexpected error occurred. Please try again.');
         setBookings([]);
-        setOrders([]);
         setIsLoading(false);
       }
     })();
-  }, [customer, isCustomerAuthenticated, localBookings]);
+  }, [customer, isCustomerAuthenticated]);
 
   const upcomingBookings = useMemo(() => {
     const now = new Date();
@@ -87,10 +71,6 @@ export const CustomerDashboardPage = () => {
       return bookingDateTime >= now && booking.status !== 'cancelled' && booking.status !== 'no_show';
     });
   }, [bookings]);
-
-  const upcomingOrders = useMemo(() => {
-    return orders.filter((order) => order.status !== 'cancelled');
-  }, [orders]);
 
   if (!isCustomerAuthenticated || !customer) {
     return <Navigate to="/customer/auth?redirect=/customer/dashboard" replace />;

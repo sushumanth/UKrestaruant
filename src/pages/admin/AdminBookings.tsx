@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Search, Calendar, Clock, Users, MoreHorizontal, Edit, X } from 'lucide-react';
 import { useBookingStore } from '@/store';
-import { formatDate, statusColors, statusLabels } from '@/lib/mockData';
+import { formatDate, statusColors, statusLabels } from '@/mockData';
 
 import { Input } from '@/components/ui/input';
 import {

@@ -4,9 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useMenuStore } from '@/store';
-import { isSupabaseConfigured } from '@/lib/supabase';
-import { formatMenuPrice, formatMenuRating } from '@/lib/menuUtils';
-import { deleteMenuItemInSupabase, upsertMenuItemInSupabase, uploadMenuImageToSupabase } from '@/lib/supabaseAdminApi';
+import { formatMenuPrice, formatMenuRating } from '@/menuUtils';
+import { deleteMenuItem as deleteMenuItemOnBackend, upsertMenuItem as upsertMenuItemOnBackend, uploadMenuImage as uploadMenuImageOnBackend } from '@/adminApi';
 import type { MenuCategory, MenuItem } from '@/types';
 
 const categoryOptions: Array<{ value: MenuCategory; label: string }> = [
@@ -58,23 +57,6 @@ const buildFormState = (item: MenuItem): MenuFormState => ({
   isVeg: item.isVeg,
   isActive: item.isActive,
 });
-
-const readFileAsDataUrl = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        resolve(reader.result);
-        return;
-      }
-
-      reject(new Error('Failed to read image file.'));
-    };
-
-    reader.onerror = () => reject(new Error('Failed to read image file.'));
-    reader.readAsDataURL(file);
-  });
 
 export const AdminMenu = () => {
   const { menuItems, upsertMenuItem, removeMenuItem } = useMenuStore();
@@ -180,7 +162,7 @@ export const AdminMenu = () => {
 
     try {
       if (selectedImageFile) {
-        resolvedImage = isSupabaseConfigured ? await uploadMenuImageToSupabase(selectedImageFile) : await readFileAsDataUrl(selectedImageFile);
+        resolvedImage = await uploadMenuImageOnBackend(selectedImageFile);
       }
 
       if (!resolvedImage) {
@@ -214,12 +196,8 @@ export const AdminMenu = () => {
     };
 
     try {
-      if (isSupabaseConfigured) {
-        const saved = await upsertMenuItemInSupabase(nextItem);
-        upsertMenuItem(saved);
-      } else {
-        upsertMenuItem(nextItem);
-      }
+      const saved = await upsertMenuItemOnBackend(nextItem);
+      upsertMenuItem(saved);
 
       setMessage('Menu item saved successfully.');
       setIsFormOpen(false);
@@ -244,9 +222,7 @@ export const AdminMenu = () => {
     setMessage('');
 
     try {
-      if (isSupabaseConfigured) {
-        await deleteMenuItemInSupabase(item.id);
-      }
+      await deleteMenuItemOnBackend(item.id);
 
       removeMenuItem(item.id);
       setMessage('Menu item deleted.');
@@ -423,7 +399,7 @@ export const AdminMenu = () => {
                     )}
                   </div>
                   <p className="text-sm text-amber-700/60">
-                    Upload an image from your device for Supabase Storage or keep a direct public URL as fallback.
+                    Upload an image from your device for backend storage or keep a direct public URL as fallback.
                   </p>
                 </div>
               </div>

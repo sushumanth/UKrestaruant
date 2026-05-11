@@ -3,16 +3,14 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useAuthStore, useCustomerAuthStore } from '@/store';
-import { generateTables, generateBookings, mockUsers, mockSettings, generateReports } from '@/lib/mockData';
-import { mockMenuItems } from '@/lib/mockData';
 import { useTableStore, useBookingStore, useSettingsStore, useAnalyticsStore, useMenuStore } from '@/store';
-import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { backendClient } from '@/supabase';
 import {
   fetchPublicOperationalData,
   fetchStaffOperationalData,
   resolveCurrentStaffUser,
-} from '@/lib/supabaseAdminApi';
-import { resolveCurrentCustomer } from '@/lib/supabaseCustomerApi';
+} from '@/adminApi';
+import { resolveCurrentCustomer } from '@/customerApi';
 
 // Layouts
 import { CustomerLayout } from '@/layouts/CustomerLayout';
@@ -33,6 +31,7 @@ import { AdminBookings } from '@/pages/admin/AdminBookings';
 import { AdminMenu } from '@/pages/admin/AdminMenu';
 import { AdminFloorPlan } from '@/pages/admin/AdminFloorPlan';
 import { AdminAnalytics } from '@/pages/admin/AdminAnalytics';
+import { AdminStaff } from '@/pages/admin/AdminStaff';
 import { AdminSettings } from '@/pages/admin/AdminSettings';
 import { EmployeeDashboard } from '@/pages/employee/EmployeeDashboard';
 import { EmployeeBookings } from '@/pages/employee/EmployeeBookings';
@@ -105,19 +104,6 @@ function App() {
     let isMounted = true;
 
     void (async () => {
-      if (!isSupabaseConfigured) {
-        if (isMounted && !isInitialized) {
-          setTables(generateTables());
-          setBookings(generateBookings());
-          setSettings(mockSettings);
-          setReports(generateReports());
-          setMenuItems(mockMenuItems);
-          login(mockUsers[0]);
-          setIsInitialized(true);
-        }
-        return;
-      }
-
       try {
         const publicData = await fetchPublicOperationalData();
 
@@ -154,7 +140,14 @@ function App() {
           setReports([]);
         }
       } catch (error) {
-        console.warn('Failed to initialize from Supabase:', error);
+        console.warn('Failed to initialize from backend:', error);
+        if (isMounted) {
+          setTables([]);
+          setBookings([]);
+          setReports([]);
+          setMenuItems([]);
+          logout();
+        }
       } finally {
         if (isMounted) {
           setIsInitialized(true);
@@ -177,11 +170,11 @@ function App() {
   ]);
 
   useEffect(() => {
-    if (!isSupabaseConfigured || !supabase || !isAuthenticated || !user || !['admin', 'employee'].includes(user.role)) {
+    if (!backendClient || !isAuthenticated || !user || !['admin', 'employee'].includes(user.role)) {
       return;
     }
 
-    const client = supabase;
+    const client = backendClient;
 
     const refreshAll = async () => {
       try {
@@ -201,7 +194,7 @@ function App() {
       }
     };
 
-    const channel = supabase
+    const channel = backendClient
       .channel('ops-realtime-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
         void refreshAll();
@@ -223,10 +216,6 @@ function App() {
   }, [isAuthenticated, setBookings, setMenuItems, setReports, setSettings, setTables, user]);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) {
-      return;
-    }
-
     let isMounted = true;
 
     void (async () => {
@@ -284,6 +273,7 @@ function App() {
           <Route path="menu" element={<AdminMenu />} />
           <Route path="floor-plan" element={<AdminFloorPlan />} />
           <Route path="analytics" element={<AdminAnalytics />} />
+          <Route path="staff" element={<AdminStaff />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>
 

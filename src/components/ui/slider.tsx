@@ -1,9 +1,9 @@
-"use client"
+﻿"use client"
 
 import * as React from "react"
 import * as SliderPrimitive from "@radix-ui/react-slider"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 
 function Slider({
   className,
@@ -61,3 +61,4 @@ function Slider({
 }
 
 export { Slider }
+

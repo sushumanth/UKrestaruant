@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Download, Calendar, Users, PoundSterling, Clock } from 'lucide-react';
 import { useAnalyticsStore } from '@/store';
-import { formatCurrency } from '@/lib/mockData';
+import { formatCurrency } from '@/mockData';
 import { Button } from '@/components/ui/button';
 import {
   LineChart,

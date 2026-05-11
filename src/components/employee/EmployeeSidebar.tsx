@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store';
-import { signOutStaffPortal } from '@/lib/supabaseAdminApi';
+import { signOutStaffPortal } from '@/adminApi';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/employee' },

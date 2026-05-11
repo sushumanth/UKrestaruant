@@ -4,7 +4,7 @@ import { Eye, EyeOff, Lock, Mail, Phone, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCustomerAuthStore } from '@/store';
-import { signInCustomer, signUpCustomer } from '@/lib/supabaseCustomerApi';
+import { signInCustomer, signUpCustomer } from '@/customerApi';
 
 type AuthMode = 'sign-in' | 'sign-up';
 

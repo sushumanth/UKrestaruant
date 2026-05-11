@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useBookingStore, useCustomerAuthStore, useMenuCartStore } from '@/store';
-import { formatCurrency, generateBookingId } from '@/lib/mockData';
-import { saveBookingToSupabase, saveOnlineOrderToSupabase, saveOrderItemsToSupabase } from '@/lib/supabaseBookingApi';
-import { sendBookingConfirmationEmail } from '@/lib/bookingEmailApi';
+import { formatCurrency, generateBookingId } from '@/mockData';
+import { saveBooking, saveOnlineOrder, saveOrderItems } from '@/backendBookingApi';
+import { sendBookingConfirmationEmail } from '@/bookingEmailApi';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { format } from 'date-fns';
@@ -207,11 +207,11 @@ export const OrderOnlinePage = () => {
       updatedAt: new Date().toISOString(),
     };
 
-    const saveOrderResult = await saveOnlineOrderToSupabase(newOrder);
+    const saveOrderResult = await saveOnlineOrder(newOrder);
     if (!saveOrderResult.ok) {
       const errorMessage = saveOrderResult.error ?? 'Unable to save your order to database.';
       setSaveError(errorMessage);
-      console.warn('Supabase order save failed:', errorMessage);
+      console.warn('Backend order save failed:', errorMessage);
       return { ok: false, error: errorMessage };
     }
 
@@ -223,11 +223,11 @@ export const OrderOnlinePage = () => {
       unitPrice: item.price,
     }));
 
-    const saveItemsResult = await saveOrderItemsToSupabase(orderId, orderItems);
+    const saveItemsResult = await saveOrderItems(orderId, orderItems);
     if (!saveItemsResult.ok) {
       const errorMessage = saveItemsResult.error ?? 'Unable to save order items to database.';
       setSaveError(errorMessage);
-      console.warn('Supabase order items save failed:', errorMessage);
+      console.warn('Backend order items save failed:', errorMessage);
       return { ok: false, error: errorMessage };
     }
 
@@ -251,9 +251,9 @@ export const OrderOnlinePage = () => {
       updatedAt: new Date().toISOString(),
     };
 
-    const saveBookingResult = await saveBookingToSupabase(newBooking);
+    const saveBookingResult = await saveBooking(newBooking);
     if (!saveBookingResult.ok) {
-      console.warn('Supabase booking save failed:', saveBookingResult.error);
+      console.warn('Backend booking save failed:', saveBookingResult.error);
       // Don't fail the order if booking fails - it's optional
     }
 
