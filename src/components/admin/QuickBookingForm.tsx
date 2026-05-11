@@ -11,8 +11,8 @@ import {
 } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { CalendarIcon, Check } from 'lucide-react';
-import { generateBookingId, findOptimalTable } from '@/lib/mockData';
-import { saveBookingToSupabase } from '@/lib/supabaseBookingApi';
+import { generateBookingId, findOptimalTable } from '@/mockData';
+import { saveBooking } from '@/backendBookingApi';
 
 const timeSlots = [
   '17:00', '17:30', '18:00', '18:30', 
@@ -79,9 +79,9 @@ export const QuickBookingForm = ({ onSuccess }: { onSuccess?: () => void }) => {
       const timeSlot = new Date(`${dateStr}T${time}:00`).toISOString();
       updateTableStatus(optimalTable.id, 'booked', timeSlot);
     }
-    void saveBookingToSupabase(newBooking).then((result) => {
+    void saveBooking(newBooking).then((result) => {
       if (!result.ok) {
-        console.warn('Quick booking save to Supabase skipped:', result.error);
+        console.warn('Quick booking save to backend skipped:', result.error);
       }
     });
 

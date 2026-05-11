@@ -10,7 +10,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useBookingStore, useTableStore, useAnalyticsStore } from '@/store';
-import { formatCurrency, formatDate, statusColors, statusLabels } from '@/lib/mockData';
+import { formatCurrency, formatDate, statusColors, statusLabels } from '@/mockData';
 import { Button } from '@/components/ui/button';
 
 import {

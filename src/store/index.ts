@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { isSupabaseConfigured } from '@/lib/supabase';
-import { updateBookingStatusInSupabase, updateTableStatusInSupabase } from '@/lib/supabaseAdminApi';
+import { updateBookingStatus, updateTableStatus } from '@/adminApi';
 import type { 
   User, 
+  CustomerAccount,
   RestaurantTable, 
   Booking, 
   BookingStatus, 
@@ -88,11 +88,9 @@ export const useBookingStore = create<BookingState>()((set) => ({
       ),
     }));
 
-    if (isSupabaseConfigured) {
-      void updateBookingStatusInSupabase(bookingId, status).catch((error: unknown) => {
-        console.warn('Failed to sync booking status to Supabase:', error);
-      });
-    }
+    void updateBookingStatus(bookingId, status).catch((error: unknown) => {
+      console.warn('Failed to sync booking status to backend:', error);
+    });
   },
   setIsLoading: (loading) => set({ isLoading: loading }),
 }));
@@ -118,11 +116,9 @@ export const useTableStore = create<TableState>()((set) => ({
       ),
     }));
 
-    if (isSupabaseConfigured) {
-      void updateTableStatusInSupabase(tableId, status, timeSlot).catch((error: unknown) => {
-        console.warn('Failed to sync table status to Supabase:', error);
-      });
-    }
+    void updateTableStatus(tableId, status, timeSlot).catch((error: unknown) => {
+      console.warn('Failed to sync table status to backend:', error);
+    });
   },
   updateTablePosition: (tableId, x, y) => set((state) => ({
     tables: state.tables.map((t) =>
@@ -288,6 +284,26 @@ interface MockDataState {
 }
 
 export const useMockDataStore = create<MockDataState>()((set) => ({
-  isMockMode: !isSupabaseConfigured,
+  isMockMode: false,
   toggleMockMode: () => set((state) => ({ isMockMode: !state.isMockMode })),
 }));
+
+// Customer Auth Store
+interface CustomerAuthState {
+  customer: CustomerAccount | null;
+  isCustomerAuthenticated: boolean;
+  loginCustomer: (customer: CustomerAccount) => void;
+  logoutCustomer: () => void;
+}
+
+export const useCustomerAuthStore = create<CustomerAuthState>()(
+  persist(
+    (set) => ({
+      customer: null,
+      isCustomerAuthenticated: false,
+      loginCustomer: (customer) => set({ customer, isCustomerAuthenticated: true }),
+      logoutCustomer: () => set({ customer: null, isCustomerAuthenticated: false }),
+    }),
+    { name: 'customer-auth-storage' }
+  )
+);

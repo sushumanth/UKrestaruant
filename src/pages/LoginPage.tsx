@@ -4,9 +4,7 @@ import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/store';
-import { mockUsers } from '@/lib/mockData';
-import { isSupabaseConfigured } from '@/lib/supabase';
-import { signInStaffPortal } from '@/lib/supabaseAdminApi';
+import { signInStaffPortal } from '@/adminApi';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -18,7 +16,6 @@ export const LoginPage = () => {
     email: '',
     password: '',
   });
-  const isFallbackMode = !isSupabaseConfigured;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -32,46 +29,22 @@ export const LoginPage = () => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    const result = await signInStaffPortal(formData.email.trim(), formData.password);
 
-    if (isSupabaseConfigured) {
-      const result = await signInStaffPortal(formData.email.trim(), formData.password);
-
-      if (!result.user) {
-        setError(result.error ?? 'Invalid email or password');
-        setIsLoading(false);
-        return;
-      }
-
-      login(result.user);
-
-      if (result.user.role === 'admin') {
-        navigate('/admin');
-      } else if (result.user.role === 'employee') {
-        navigate('/employee');
-      } else {
-        navigate('/');
-      }
-
+    if (!result.user) {
+      setError(result.error ?? 'Invalid email or password');
       setIsLoading(false);
       return;
     }
 
-    // Local fallback mode when Supabase env vars are not provided.
-    await new Promise(resolve => setTimeout(resolve, 600));
-    const user = mockUsers.find(u => u.email === formData.email);
+    login(result.user);
 
-    if (user && formData.password === 'password') {
-      login(user);
-
-      if (user.role === 'admin') {
-        navigate('/admin');
-      } else if (user.role === 'employee') {
-        navigate('/employee');
-      } else {
-        navigate('/');
-      }
+    if (result.user.role === 'admin') {
+      navigate('/admin');
+    } else if (result.user.role === 'employee') {
+      navigate('/employee');
     } else {
-      setError('Invalid email or password');
+      navigate('/');
     }
 
     setIsLoading(false);
@@ -143,13 +116,6 @@ export const LoginPage = () => {
 
         {/* Login Form */}
         <div className="bg-white rounded-2xl border border-amber-200/50 p-8 shadow-lg">
-          {isFallbackMode && (
-            <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
-              <p className="text-amber-700 text-xs leading-relaxed">
-                Supabase auth is not active. Add VITE_SUPABASE_URL plus VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_KEY, then restart the dev server.
-              </p>
-            </div>
-          )}
           <h1 className="font-serif text-2xl text-amber-900 mb-2">Welcome back</h1>
           <p className="text-amber-700/60 text-sm mb-6">
             Sign in to access the management portal
@@ -230,20 +196,16 @@ export const LoginPage = () => {
           {/* Demo Credentials */}
           <div className="mt-6 pt-6 border-t border-amber-200/30">
             <p className="text-amber-700/60 text-xs text-center mb-3">
-              {isSupabaseConfigured ? 'Use your Supabase staff/admin credentials' : 'Demo Credentials'}
+              Use your backend staff/admin credentials
             </p>
             <div className="space-y-2 text-xs">
               <div className="flex justify-between p-2 bg-amber-50 rounded border border-amber-200/50">
                 <span className="text-amber-700/60">Admin:</span>
-                <span className="text-amber-900 font-mono">
-                  {isSupabaseConfigured ? 'Role must be admin in user_roles' : 'admin@luxereserve.co / password'}
-                </span>
+                <span className="text-amber-900 font-mono">Role must be admin on the backend</span>
               </div>
               <div className="flex justify-between p-2 bg-amber-50 rounded border border-amber-200/50">
                 <span className="text-amber-700/60">Staff:</span>
-                <span className="text-amber-900 font-mono">
-                  {isSupabaseConfigured ? 'Role must be staff in user_roles' : 'staff@luxereserve.co / password'}
-                </span>
+                <span className="text-amber-900 font-mono">Role must be employee on the backend</span>
               </div>
             </div>
           </div>

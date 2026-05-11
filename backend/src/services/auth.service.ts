@@ -1,0 +1,103 @@
+import { prisma } from '../config/prisma';
+import { hashPassword, comparePassword } from '../utils/password';
+import { signToken } from '../utils/jwt';
+import { AppError } from '../utils/errors';
+import { serializeUser } from '../utils/serializers';
+import type { AppUserRole } from '../types/app';
+
+const buildTokenResponse = (user: { id: string; email: string; role: AppUserRole; firstName: string; lastName: string }) => ({
+  token: signToken({
+    sub: user.id,
+    email: user.email,
+    role: user.role,
+    firstName: user.firstName,
+    lastName: user.lastName,
+  }),
+  user: {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    firstName: user.firstName,
+    lastName: user.lastName,
+  },
+});
+
+export const registerUser = async (input: {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+}) => {
+  const existing = await prisma.user.findUnique({ where: { email: input.email } });
+
+  if (existing) {
+    throw new AppError(409, 'Email already registered');
+  }
+
+  const user = await prisma.user.create({
+    data: {
+      email: input.email.toLowerCase().trim(),
+      passwordHash: await hashPassword(input.password),
+      role: 'customer',
+      firstName: input.firstName.trim(),
+      lastName: input.lastName.trim(),
+      phone: input.phone?.trim(),
+    },
+  });
+
+  return buildTokenResponse(user);
+};
+
+export const loginUser = async (input: { email: string; password: string }) => {
+  const user = await prisma.user.findUnique({ where: { email: input.email.toLowerCase().trim() } });
+
+  if (!user) {
+    throw new AppError(401, 'Invalid email or password');
+  }
+
+  const passwordMatches = await comparePassword(input.password, user.passwordHash);
+
+  if (!passwordMatches) {
+    throw new AppError(401, 'Invalid email or password');
+  }
+
+  return buildTokenResponse(user);
+};
+
+export const getCurrentUser = async (userId: string) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+
+  if (!user) {
+    throw new AppError(404, 'User not found');
+  }
+
+  return serializeUser(user);
+};
+
+export const createStaffMember = async (input: {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+}) => {
+  const existing = await prisma.user.findUnique({ where: { email: input.email } });
+
+  if (existing) {
+    throw new AppError(409, 'Email already registered');
+  }
+
+  const user = await prisma.user.create({
+    data: {
+      email: input.email.toLowerCase().trim(),
+      passwordHash: await hashPassword(input.password),
+      role: 'employee',
+      firstName: input.firstName.trim(),
+      lastName: input.lastName.trim(),
+      phone: input.phone?.trim(),
+    },
+  });
+
+  return buildTokenResponse(user);
+};

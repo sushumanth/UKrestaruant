@@ -97,24 +97,28 @@ export const Footer = () => {
 
           {/* ===== QUICK LINKS ===== */}
           <div>
-            <h4 className="font-serif text-base sm:text-lg text-[#F4F6FA] mb-3 sm:mb-4">Quick Links</h4>
-            <ul className="space-y-2 sm:space-y-2.5">
-              {[
-                { label: 'Book a Table', to: '/book' },
-                { label: 'View Menu', to: '/menu' },
-                { label: 'Private Dining', to: '/#popular-tables' },
-                { label: 'Staff Login', to: '/login' },
-              ].map((link) => (
-                <li key={link.to}>
-                  <Link 
-                    to={link.to} 
-                    className="text-[#AFB8C8] text-sm hover:text-[#D4A23A] transition-colors inline-flex items-center gap-1.5 group"
-                  >
-                    <span className="w-1 h-1 rounded-full bg-[#D4A23A]/0 group-hover:bg-[#D4A23A] transition-colors" />
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+            <h4 className="font-serif text-lg text-[#F4F6FA] mb-6">Quick Links</h4>
+            <ul className="space-y-3">
+              <li>
+                <Link to="/booking" className="text-[#AFB8C8] text-sm hover:text-[#D4A23A] transition-colors">
+                  Book a Table
+                </Link>
+              </li>
+              <li>
+                <Link to="/menu" className="text-[#AFB8C8] text-sm hover:text-[#D4A23A] transition-colors">
+                  View Menu
+                </Link>
+              </li>
+              <li>
+                <Link to="/#popular-tables" className="text-[#AFB8C8] text-sm hover:text-[#D4A23A] transition-colors">
+                  Private Dining
+                </Link>
+              </li>
+              <li>
+                <Link to="/login" className="text-[#AFB8C8] text-sm hover:text-[#D4A23A] transition-colors">
+                  Staff Login
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

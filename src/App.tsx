@@ -2,16 +2,15 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useAuthStore } from '@/store';
-import { generateTables, generateBookings, mockUsers, mockSettings, generateReports } from '@/lib/mockData';
-import { mockMenuItems } from '@/lib/mockData';
+import { useAuthStore, useCustomerAuthStore } from '@/store';
 import { useTableStore, useBookingStore, useSettingsStore, useAnalyticsStore, useMenuStore } from '@/store';
-import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { backendClient } from '@/supabase';
 import {
   fetchPublicOperationalData,
   fetchStaffOperationalData,
   resolveCurrentStaffUser,
-} from '@/lib/supabaseAdminApi';
+} from '@/adminApi';
+import { resolveCurrentCustomer } from '@/customerApi';
 
 // Layouts
 import { CustomerLayout } from '@/layouts/CustomerLayout';
@@ -23,13 +22,17 @@ import { HomePage } from '@/pages/customer/HomePage';
 import { MenuPage } from '@/pages/customer/MenuPage';
 import { OrderPage } from '@/pages/customer/OrderPage';
 import { CartPage } from '@/pages/customer/CartPage';
+import { OrderOnlinePage } from '@/pages/customer/order_online';
 import { BookingPage } from '@/pages/customer/BookingPage';
 import { BookingConfirmationPage } from '@/pages/customer/BookingConfirmationPage';
+import { CustomerAuthPage } from '@/pages/customer/CustomerAuthPage';
+import { CustomerDashboardPage } from '@/pages/customer/CustomerDashboardPage';
 import { AdminDashboard } from '@/pages/admin/AdminDashboard';
 import { AdminBookings } from '@/pages/admin/AdminBookings';
 import { AdminMenu } from '@/pages/admin/AdminMenu';
 import { AdminFloorPlan } from '@/pages/admin/AdminFloorPlan';
 import { AdminAnalytics } from '@/pages/admin/AdminAnalytics';
+import { AdminStaff } from '@/pages/admin/AdminStaff';
 import { AdminSettings } from '@/pages/admin/AdminSettings';
 import { EmployeeDashboard } from '@/pages/employee/EmployeeDashboard';
 import { EmployeeBookings } from '@/pages/employee/EmployeeBookings';
@@ -57,6 +60,18 @@ const ProtectedRoute = ({
     return <Navigate to="/" replace />;
   }
   
+  return <>{children}</>;
+};
+
+const CustomerProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isCustomerAuthenticated } = useCustomerAuthStore();
+  const location = useLocation();
+
+  if (!isCustomerAuthenticated) {
+    const redirectTarget = `${location.pathname}${location.search}`;
+    return <Navigate to={`/customer/auth?redirect=${encodeURIComponent(redirectTarget)}`} replace />;
+  }
+
   return <>{children}</>;
 };
 
@@ -98,6 +113,7 @@ const ScrollToTop = () => {
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
   const { user, isAuthenticated, login, logout } = useAuthStore();
+  const { loginCustomer, logoutCustomer } = useCustomerAuthStore();
   const { setTables } = useTableStore();
   const { setBookings } = useBookingStore();
   const { setSettings } = useSettingsStore();
@@ -108,19 +124,6 @@ function App() {
     let isMounted = true;
 
     void (async () => {
-      if (!isSupabaseConfigured) {
-        if (isMounted && !isInitialized) {
-          setTables(generateTables());
-          setBookings(generateBookings());
-          setSettings(mockSettings);
-          setReports(generateReports());
-          setMenuItems(mockMenuItems);
-          login(mockUsers[0]);
-          setIsInitialized(true);
-        }
-        return;
-      }
-
       try {
         const publicData = await fetchPublicOperationalData();
 
@@ -157,7 +160,14 @@ function App() {
           setReports([]);
         }
       } catch (error) {
-        console.warn('Failed to initialize from Supabase:', error);
+        console.warn('Failed to initialize from backend:', error);
+        if (isMounted) {
+          setTables([]);
+          setBookings([]);
+          setReports([]);
+          setMenuItems([]);
+          logout();
+        }
       } finally {
         if (isMounted) {
           setIsInitialized(true);
@@ -180,11 +190,11 @@ function App() {
   ]);
 
   useEffect(() => {
-    if (!isSupabaseConfigured || !supabase || !isAuthenticated || !user || !['admin', 'employee'].includes(user.role)) {
+    if (!backendClient || !isAuthenticated || !user || !['admin', 'employee'].includes(user.role)) {
       return;
     }
 
-    const client = supabase;
+    const client = backendClient;
 
     const refreshAll = async () => {
       try {
@@ -204,7 +214,7 @@ function App() {
       }
     };
 
-    const channel = supabase
+    const channel = backendClient
       .channel('ops-realtime-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
         void refreshAll();
@@ -226,6 +236,28 @@ function App() {
   }, [isAuthenticated, setBookings, setMenuItems, setReports, setSettings, setTables, user]);
 
   useEffect(() => {
+    let isMounted = true;
+
+    void (async () => {
+      const currentCustomer = await resolveCurrentCustomer();
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (currentCustomer) {
+        loginCustomer(currentCustomer);
+      } else {
+        logoutCustomer();
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [loginCustomer, logoutCustomer]);
+
+  useEffect(() => {
     ScrollTrigger.refresh();
   }, []);
 
@@ -240,13 +272,13 @@ function App() {
         <Route path="/" element={<CustomerLayout />}>
           <Route index element={<HomePage />} />
           <Route path="menu" element={<MenuPage />} />
-          <Route path="order" element={<OrderPage />} />
+          <Route path="online-order" element={<OrderOnlinePage />} />
           <Route path="cart" element={<CartPage />} />
-          <Route path="book" element={<BookingPage />} />
           <Route path="confirmation" element={<BookingConfirmationPage />} />
         </Route>
 
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/customer/auth" element={<CustomerAuthPage />} />
 
         <Route
           path="/admin"
@@ -261,6 +293,7 @@ function App() {
           <Route path="menu" element={<AdminMenu />} />
           <Route path="floor-plan" element={<AdminFloorPlan />} />
           <Route path="analytics" element={<AdminAnalytics />} />
+          <Route path="staff" element={<AdminStaff />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>
 
@@ -276,6 +309,30 @@ function App() {
           <Route path="bookings" element={<EmployeeBookings />} />
           <Route path="menu" element={<EmployeeMenu />} />
           <Route path="floor-plan" element={<AdminFloorPlan />} />
+        </Route>
+
+        <Route path="/book" element={<Navigate to="/booking" replace />} />
+
+        <Route
+          path="/booking"
+          element={
+            <CustomerProtectedRoute>
+              <CustomerLayout />
+            </CustomerProtectedRoute>
+          }
+        >
+          <Route index element={<BookingPage />} />
+        </Route>
+
+        <Route
+          path="/customer/dashboard"
+          element={
+            <CustomerProtectedRoute>
+              <CustomerLayout />
+            </CustomerProtectedRoute>
+          }
+        >
+          <Route index element={<CustomerDashboardPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

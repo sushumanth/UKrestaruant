@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Calendar,
   Clock,
@@ -17,10 +17,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar as DateCalendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
-import { useBookingStore, useMenuCartStore, useTableStore } from '@/store';
-import { formatDate, formatTime, generateBookingId, findOptimalTable, formatCurrency } from '@/lib/mockData';
-import { saveBookingToSupabase } from '@/lib/supabaseBookingApi';
-import { sendBookingConfirmationEmail } from '@/lib/bookingEmailApi';
+import { useBookingStore, useCustomerAuthStore, useMenuCartStore, useTableStore } from '@/store';
+import { formatDate, formatTime, generateBookingId, findOptimalTable, formatCurrency } from '@/mockData';
+import { saveBooking } from '@/backendBookingApi';
+import { sendBookingConfirmationEmail } from '@/bookingEmailApi';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
@@ -138,6 +138,8 @@ const PaymentForm = ({
 
 export const BookingPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { customer } = useCustomerAuthStore();
   const { 
     bookings,
     selectedDate, 
@@ -151,6 +153,9 @@ export const BookingPage = () => {
   const { tables, selectedTable, setSelectedTable, updateTableStatus } = useTableStore();
   const { items: cartItems, clearCart } = useMenuCartStore();
 
+  const params = new URLSearchParams(location.search);
+  const skipSelectionFlag = Boolean(params.get('skipSelection'));
+
   // Form state - MUST be before early return
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -162,6 +167,54 @@ export const BookingPage = () => {
   });
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [saveError, setSaveError] = useState('');
+
+  useEffect(() => {
+    if (!customer) {
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      firstName: customer.firstName,
+      lastName: customer.lastName,
+      email: customer.email,
+      phone: prev.phone || customer.phone,
+    }));
+  }, [customer]);
+
+  // Reset selection state on mount unless coming from cart with skipSelection flag
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const skip = params.get('skipSelection');
+
+    // If NOT coming from cart redirect, always clear selection so user sees selection UI first
+    if (!skip) {
+      setSelectedDate('');
+      setSelectedTime('');
+      setSelectedGuests(0);
+      return;
+    }
+
+    // If coming from cart with skipSelection=1, pre-fill sensible date/time
+    if (selectedDate && selectedTime) return;
+
+    const now = new Date();
+    const today = format(now, 'yyyy-MM-dd');
+
+    // choose the first upcoming slot from baseSlotTimes, otherwise fallback to first slot
+    const [hoursNow, minutesNow] = [now.getHours(), now.getMinutes()];
+    const upcoming = baseSlotTimes.find((t) => {
+      const [h, m] = t.split(':').map(Number);
+      if (h > hoursNow) return true;
+      if (h === hoursNow && m > minutesNow + 25) return true;
+      return false;
+    }) || baseSlotTimes[0];
+
+    setSelectedDate(today);
+    setSelectedTime(upcoming);
+    const _cartCount = cartItems ? cartItems.reduce((t, i) => t + (i.quantity ?? 0), 0) : 0;
+    setSelectedGuests(_cartCount > 0 ? Math.min(10, Math.max(1, _cartCount)) : 2);
+  }, [location.search, setSelectedDate, setSelectedTime, setSelectedGuests]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
@@ -333,9 +386,105 @@ export const BookingPage = () => {
             </div>
             </div>
 
-            {/* RIGHT PANEL - Premium Dark Booking Card 
-                FIX: Removed max-h and overflow-y-auto to prevent cutting off the calendar dropdown */}
-            <div className="rounded-2xl overflow-hidden shadow-2xl sticky top-6 h-fit pb-2">
+            {/* RIGHT PANEL - Premium Dark Booking Card or Order Items when skipping selection */}
+            {skipSelectionFlag && cartItems.length > 0 ? (
+              <div className="rounded-2xl overflow-hidden shadow-2xl sticky top-6 h-fit pb-2">
+                <div className="bg-gradient-to-b from-amber-900/95 to-amber-950 px-8 py-6 text-center border-b border-amber-800/40">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-amber-700/40 border border-amber-600/50 mb-3">
+                    <span className="text-xl font-serif text-amber-200">🧾</span>
+                  </div>
+                  <h3 className="text-white font-serif text-xl tracking-wide">YOUR PRE-ORDER</h3>
+                  <p className="text-amber-200/70 text-xs mt-1 tracking-widest uppercase">Review and edit your order before checkout</p>
+                </div>
+
+                <div className="bg-white/95 px-6 py-4 border-b border-black/8">
+                  <div className="space-y-3">
+                    {cartItems.map((item) => (
+                      <div key={item.id} className="flex items-center gap-3 rounded-lg border p-3">
+                        <img src={item.image} alt={item.name} className="w-14 h-14 rounded-md object-cover" />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-semibold text-amber-900">{item.name}</p>
+                              <p className="text-xs text-amber-700">{formatCurrency(item.price)} each</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => useMenuCartStore.getState().updateItemQuantity(item.id, Math.max(0, item.quantity - 1))}
+                                className="rounded-full border border-[#dbc7a2] bg-[#fff7ea] p-1 text-[#7d531f]"
+                              >
+                                -
+                              </button>
+                              <span className="w-8 text-center">{item.quantity}</span>
+                              <button
+                                type="button"
+                                onClick={() => useMenuCartStore.getState().updateItemQuantity(item.id, item.quantity + 1)}
+                                className="rounded-full border border-[#dbc7a2] bg-[#fff7ea] p-1 text-[#7d531f]"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="px-6 py-6 bg-amber-50/60 border-t border-black/8">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span>Subtotal</span>
+                      <span className="font-semibold">{formatCurrency(cartSubtotal)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span>Deposit</span>
+                      <span className="font-semibold">{formatCurrency(baseDepositAmount)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-base font-semibold">
+                      <span>Total Charge Now</span>
+                      <span>{formatCurrency(totalChargeNow)}</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 mt-4">
+                      <button
+                        onClick={() => {
+                          // set sensible date/time and proceed to details/payment
+                          const now = new Date();
+                          const today = format(now, 'yyyy-MM-dd');
+                          const [hoursNow, minutesNow] = [now.getHours(), now.getMinutes()];
+                          const upcoming = baseSlotTimes.find((t) => {
+                            const [h, m] = t.split(':').map(Number);
+                            if (h > hoursNow) return true;
+                            if (h === hoursNow && m > minutesNow + 25) return true;
+                            return false;
+                          }) || baseSlotTimes[0];
+
+                          setSelectedDate(today);
+                          setSelectedTime(upcoming);
+                          const _cartCount = cartItems ? cartItems.reduce((t, i) => t + (i.quantity ?? 0), 0) : 0;
+                          setSelectedGuests(_cartCount > 0 ? Math.min(10, Math.max(1, _cartCount)) : 2);
+                        }}
+                        className="w-full inline-flex items-center justify-center rounded-lg bg-amber-700 px-4 py-3 text-white font-semibold"
+                      >
+                        Proceed to Details
+                      </button>
+                      <button
+                        onClick={() => {
+                          // go back to cart for large edits
+                          window.location.href = '/cart';
+                        }}
+                        className="w-full inline-flex items-center justify-center rounded-lg border border-amber-200 bg-white px-4 py-3 text-amber-700 font-semibold"
+                      >
+                        Edit Cart
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-2xl overflow-hidden shadow-2xl sticky top-6 h-fit pb-2">
               {/* Header */}
               <div className="bg-gradient-to-b from-amber-900/95 to-amber-950 px-8 py-6 text-center border-b border-amber-800/40">
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-amber-700/40 border border-amber-600/50 mb-3">
@@ -541,6 +690,7 @@ export const BookingPage = () => {
                 </>
               )}
             </div>
+            )}
           </div>
         </div>
       </div>
@@ -565,8 +715,8 @@ export const BookingPage = () => {
     const newBooking = {
       id: `booking-${Date.now()}`,
       bookingId: generateBookingId(),
-      customerName: `${formData.firstName} ${formData.lastName}`,
-      customerEmail: formData.email,
+      customerName: `${customer?.firstName ?? formData.firstName} ${customer?.lastName ?? formData.lastName}`.trim(),
+      customerEmail: customer?.email ?? formData.email,
       customerPhone: formData.phone,
       date: selectedDate,
       time: selectedTime,
@@ -581,11 +731,11 @@ export const BookingPage = () => {
       updatedAt: new Date().toISOString(),
     };
 
-    const saveResult = await saveBookingToSupabase(newBooking);
+    const saveResult = await saveBooking(newBooking);
     if (!saveResult.ok) {
       const errorMessage = saveResult.error ?? 'Unable to save your booking to database.';
       setSaveError(errorMessage);
-      console.warn('Supabase booking save failed:', errorMessage);
+      console.warn('Backend booking save failed:', errorMessage);
       return { ok: false, error: errorMessage };
     }
 
@@ -624,7 +774,7 @@ export const BookingPage = () => {
     return { ok: true };
   };
 
-  const isDetailsValid = Boolean(formData.firstName && formData.lastName && formData.email && formData.phone);
+  const isDetailsValid = Boolean(customer?.firstName && customer?.lastName && customer?.email && formData.phone);
 
   return (
     <div className="min-h-screen pt-20 pb-16 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #e8e4df 0%, #f5f1ed 100%)' }}>
@@ -712,6 +862,12 @@ export const BookingPage = () => {
                     setSelectedDate('');
                     setSelectedTime('');
                     setSelectedGuests(0);
+                    setSelectedSlotTime('');
+                    setSelectedTable(null);
+                    setDraftGuests(2);
+                    setDraftDate(new Date());
+                    setDraftTimeFilter('All Times');
+                    setActiveSearchSection('guests');
                     setStep(1);
                   }}
                   className="w-full mt-8 px-4 py-2.5 rounded-lg border border-amber-700 text-amber-700 hover:bg-amber-50 font-medium transition-all text-sm"
@@ -780,7 +936,7 @@ export const BookingPage = () => {
             {step === 1 && (
               <div className="px-8 py-8">
                 <h3 className="font-serif text-[1.8rem] text-amber-950 mb-2 leading-none">Your Information</h3>
-                <p className="text-sm text-amber-900/70 mb-6">Add your contact details to confirm your reservation.</p>
+                <p className="text-sm text-amber-900/70 mb-6">Your account details are used for this booking.</p>
                 
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -791,7 +947,7 @@ export const BookingPage = () => {
                         name="firstName"
                         autoComplete="given-name"
                         value={formData.firstName}
-                        onChange={handleInputChange}
+                        readOnly
                         className="h-11 rounded-xl bg-white border border-amber-200/80 text-amber-950 placeholder:text-amber-700/45 focus-visible:ring-amber-300"
                         placeholder="John"
                       />
@@ -803,7 +959,7 @@ export const BookingPage = () => {
                         name="lastName"
                         autoComplete="family-name"
                         value={formData.lastName}
-                        onChange={handleInputChange}
+                        readOnly
                         className="h-11 rounded-xl bg-white border border-amber-200/80 text-amber-950 placeholder:text-amber-700/45 focus-visible:ring-amber-300"
                         placeholder="Doe"
                       />
@@ -818,7 +974,7 @@ export const BookingPage = () => {
                       type="email"
                       autoComplete="email"
                       value={formData.email}
-                      onChange={handleInputChange}
+                      readOnly
                       className="h-11 rounded-xl bg-white border border-amber-200/80 text-amber-950 placeholder:text-amber-700/45 focus-visible:ring-amber-300"
                       placeholder="john@example.com"
                     />
@@ -841,6 +997,7 @@ export const BookingPage = () => {
                         placeholder="7123 456789"
                       />
                     </div>
+                    <p className="mt-2 text-xs text-amber-800/70">Need to change your name or email? Update your account and sign in again.</p>
                   </div>
 
                   <div>

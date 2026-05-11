@@ -1,7 +1,8 @@
 import { Minus, Plus, ShoppingBag, Trash2, ChevronLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
-import { formatCurrency } from '@/lib/mockData';
+import { useCustomerAuthStore } from '@/store';
+import { formatCurrency } from '@/mockData';
 import { useMenuCartStore } from '@/store';
 
 export const CartPage = () => {
@@ -45,6 +46,8 @@ export const CartPage = () => {
       </div>
     );
   }
+
+  const isCustomerAuthenticated = useCustomerAuthStore((s) => s.isCustomerAuthenticated);
 
   return (
     <div className="min-h-screen bg-[#f8f0e1] pt-24 text-[#2d241b]">
@@ -130,16 +133,16 @@ export const CartPage = () => {
               </div>
 
               <Link
-                to="/book"
+                to={isCustomerAuthenticated ? '/online-order' : `/customer/auth?redirect=${encodeURIComponent('/online-order')}`}
                 className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-[#7d2419] px-5 py-3 text-sm font-semibold text-[#fff3df] shadow-[0_12px_24px_rgba(125,36,25,0.22)]"
               >
                 Continue to booking
               </Link>
               <Link
-                to="/menu"
-                className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-[#d3bc92] bg-white px-5 py-3 text-sm font-semibold text-[#70583a]"
+                to={isCustomerAuthenticated ? '/menu' : `/customer/auth?redirect=${encodeURIComponent('/menu')}`}
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#7d2419] px-5 py-3 text-sm font-semibold text-[#fff3df] shadow-[0_12px_24px_rgba(125,36,25,0.2)] transition-colors hover:bg-[#962c20]"
               >
-                Add more dishes
+                Browse menu
               </Link>
             </section>
           </aside>

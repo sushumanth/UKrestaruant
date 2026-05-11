@@ -1,0 +1,193 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  employee
+  customer
+}
+
+enum TableStatus {
+  available
+  booked
+  reserved
+  seated
+  blocked
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  arrived
+  seated
+  completed
+  cancelled
+  no_show
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  refunded
+}
+
+enum OrderStatus {
+  pending
+  paid
+  cancelled
+}
+
+enum MenuCategory {
+  starters
+  mains
+  biryani
+  bread
+  dessert
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  role         UserRole    @default(customer)
+  firstName    String
+  lastName     String
+  phone        String?
+  bookings     Booking[]
+  orders       Order[]
+  assets       Asset[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([role])
+}
+
+model RestaurantSettings {
+  id                        String   @id @default(cuid())
+  name                      String
+  address                   String
+  phone                     String
+  email                     String
+  openingTime               String
+  closingTime               String
+  timeSlotInterval          Int
+  defaultDepositAmount      Decimal  @db.Decimal(10, 2)
+  cancellationDeadlineHours Int
+  autoReleaseMinutes        Int
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+}
+
+model RestaurantTable {
+  id          String       @id @default(cuid())
+  tableNumber Int          @unique
+  capacity    Int
+  status      TableStatus  @default(available)
+  timeSlot    String?
+  bookings    Booking[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([status])
+}
+
+model MenuItem {
+  id          String        @id @default(cuid())
+  name        String
+  description String
+  price       Decimal       @db.Decimal(10, 2)
+  category    MenuCategory
+  imageUrl    String
+  rating      Float         @default(0)
+  prepTime    Int           @default(0)
+  isVeg       Boolean       @default(false)
+  tags        String[]      @default([])
+  isActive    Boolean       @default(true)
+  sortOrder   Int           @default(0)
+  orderItems  OrderItem[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([category, isActive])
+  @@index([sortOrder, name])
+}
+
+model Booking {
+  id                    String          @id @default(cuid())
+  bookingCode           String          @unique
+  customerName          String
+  customerEmail         String
+  customerPhone         String
+  bookingDate           DateTime        @db.Date
+  bookingTime           String
+  guests                Int
+  tableId               String?
+  tableNumber           Int?
+  status                BookingStatus   @default(pending)
+  specialRequests       String?
+  depositAmount         Decimal         @db.Decimal(10, 2) @default(0)
+  paymentStatus         PaymentStatus   @default(pending)
+  stripePaymentIntentId String?
+  customerId            String?
+  customer              User?           @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  table                 RestaurantTable? @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  @@index([customerEmail, bookingDate])
+  @@index([bookingDate, bookingTime])
+  @@index([status])
+}
+
+model Order {
+  id                    String       @id @default(cuid())
+  orderNumber           String       @unique
+  customerName          String?
+  customerEmail         String
+  customerPhone         String?
+  totalAmount           Decimal      @db.Decimal(10, 2)
+  status                OrderStatus  @default(pending)
+  stripePaymentIntentId String?
+  customerId            String?
+  customer              User?        @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  items                 OrderItem[]
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  @@index([customerEmail, createdAt])
+  @@index([status])
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  menuItemId  String
+  quantity    Int
+  unitPrice   Decimal  @db.Decimal(10, 2)
+  totalPrice  Decimal  @db.Decimal(10, 2)
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem    MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([menuItemId])
+}
+
+model Asset {
+  id           String   @id @default(cuid())
+  url          String
+  key          String
+  originalName String
+  mimeType     String
+  size         Int
+  uploadedById String?
+  uploadedBy   User?    @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+
+  @@index([uploadedById])
+}

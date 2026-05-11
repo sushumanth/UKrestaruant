@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Check, Calendar, Clock, Users, MapPin, Mail, Download, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { formatDate, formatTime, formatCurrency } from '@/lib/mockData';
+import { formatDate, formatTime, formatCurrency } from '@/mockData';
 import { jsPDF } from 'jspdf';
 import type { Booking } from '@/types';
 

@@ -341,7 +341,7 @@ const animateToIndex = (index: number) => {
                   Reserve your table and enjoy a complete royal dining experience.
                 </p>
                 <Link
-                  to="/book"
+                  to="/booking"
                   className="mt-4 inline-flex items-center gap-2 rounded-lg border border-[#b89b61] bg-[rgba(8,33,29,0.55)] px-5 py-2 text-[10px] font-bold uppercase tracking-[0.1em] text-[#f8e3b8] transition-colors hover:bg-[rgba(12,50,43,0.62)]"
                 >
                   <CalendarDays size={14} />

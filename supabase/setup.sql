@@ -494,6 +494,7 @@ with check (public.is_admin());
 -- bookings
 
 drop policy if exists "Public create booking requests" on public.bookings;
+drop policy if exists "Customer read own bookings" on public.bookings;
 drop policy if exists "Staff admin read bookings" on public.bookings;
 drop policy if exists "Staff admin update bookings" on public.bookings;
 drop policy if exists "Admin delete bookings" on public.bookings;
@@ -501,12 +502,19 @@ drop policy if exists "Admin delete bookings" on public.bookings;
 create policy "Public create booking requests"
 on public.bookings
 for insert
-to anon, authenticated
+to authenticated
 with check (
-  guests > 0
+  customer_email = lower(coalesce(auth.jwt() ->> 'email', ''))
+  and guests > 0
   and status in ('pending', 'confirmed')
   and payment_status in ('pending', 'paid', 'refunded')
 );
+
+create policy "Customer read own bookings"
+on public.bookings
+for select
+to authenticated
+using (customer_email = lower(coalesce(auth.jwt() ->> 'email', '')));
 
 create policy "Staff admin read bookings"
 on public.bookings

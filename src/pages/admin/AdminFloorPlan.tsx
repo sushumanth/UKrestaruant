@@ -1,14 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Clock3, List, Map as MapIcon, MapPin, RotateCcw, Search, Sparkles, Users } from 'lucide-react';
 import { useTableStore, useBookingStore } from '@/store';
-import { statusColors, statusLabels } from '@/lib/mockData';
+import { statusColors, statusLabels } from '@/mockData';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { isSupabaseConfigured } from '@/lib/supabase';
-import { createRestaurantTableInSupabase } from '@/lib/supabaseAdminApi';
-import { fetchStaffOperationalData } from '@/lib/supabaseAdminApi';
-import { getOccupiedTableIdsFromSupabase } from '@/lib/supabaseBookingApi';
+import { createRestaurantTable, fetchStaffOperationalData } from '@/adminApi';
+import { getOccupiedTableIds } from '@/backendBookingApi';
 import { DateTimeFilter } from '@/components/admin/DateTimeFilter';
 import { TableGrid } from '@/components/admin/TableGrid';
 import type { RestaurantTable, TableStatus } from '@/types';
@@ -123,6 +121,26 @@ export const AdminFloorPlan = () => {
     return slotDate < now;
   };
 
+  const openAddTableDialog = () => {
+    const nextNumber = (tables.at(-1)?.tableNumber ?? 0) + 1;
+    setNewTableNumber(String(nextNumber));
+    setNewTableCapacity('2');
+    setTableMessage('');
+    setIsAddTableOpen(true);
+  };
+
+  const handleSaveTableStatus = () => {
+    if (!selectedTableForStatus) {
+      return;
+    }
+
+    const shouldSaveSlot = Boolean(pendingReservationDate && pendingReservationTime);
+    const timeSlot = shouldSaveSlot ? new Date(`${pendingReservationDate}T${pendingReservationTime}:00`).toISOString() : null;
+
+    updateTableStatus(selectedTableForStatus.id, pendingStatus, timeSlot);
+    setSelectedTableForStatus(null);
+  };
+
   const handleCheckAvailability = async () => {
     setValidationMessage('');
     setNoBookingsFound(false);
@@ -135,97 +153,76 @@ export const AdminFloorPlan = () => {
     setIsChecking(true);
 
     try {
-      // Prefer a lightweight RPC if available; fallback to fetching all bookings and filtering
-      if (isSupabaseConfigured) {
-        // try RPC for occupied table ids first
-        const occupied = await getOccupiedTableIdsFromSupabase(selectedDate, selectedTime);
-        let matchedBookings: (typeof bookings)[number][] = [];
+      const occupied = await getOccupiedTableIds(selectedDate, selectedTime);
+      let matchedBookings: (typeof bookings)[number][] = [];
 
-        if (occupied.ok && occupied.tableIds.length > 0) {
-          // get full bookings and map those matching
-          const all = await fetchStaffOperationalData();
-          matchedBookings = all.bookings.filter((b) => b.date === selectedDate && b.time.slice(0, 5) === selectedTime.slice(0,5) && occupied.tableIds.includes(b.tableId ?? ''));
-        } else {
-          const all = await fetchStaffOperationalData();
-          matchedBookings = all.bookings.filter((b) => b.date === selectedDate && b.time.slice(0, 5) === selectedTime.slice(0,5));
+      if (occupied.ok && occupied.tableIds.length > 0) {
+        const all = await fetchStaffOperationalData();
+        matchedBookings = all.bookings.filter((booking) => booking.date === selectedDate && booking.time.slice(0, 5) === selectedTime.slice(0, 5) && occupied.tableIds.includes(booking.tableId ?? ''));
+      } else {
+        const all = await fetchStaffOperationalData();
+        matchedBookings = all.bookings.filter((booking) => booking.date === selectedDate && booking.time.slice(0, 5) === selectedTime.slice(0, 5));
+      }
+
+      const map = new Map<string, (typeof bookings)[number]>();
+
+      const rank: Record<string, number> = {
+        seated: 5,
+        arrived: 4,
+        confirmed: 3,
+        pending: 2,
+        reserved: 1,
+        completed: 0,
+        cancelled: 0,
+        no_show: 0,
+      };
+
+      for (const booking of matchedBookings) {
+        const tableId = booking.tableId ?? tables.find((table) => table.tableNumber === booking.tableNumber)?.id;
+        if (!tableId) {
+          continue;
         }
 
-        // Build booking map by table id (prefer explicit tableId, fallback to table number)
-        const map = new Map<string, (typeof bookings)[number]>();
+        const existing = map.get(tableId);
+        if (!existing || (rank[booking.status] ?? 0) > (rank[existing.status] ?? 0)) {
+          map.set(tableId, booking);
+        }
+      }
 
-        const rank: Record<string, number> = {
-          seated: 5,
-          arrived: 4,
-          confirmed: 3,
-          pending: 2,
-          reserved: 1,
-          completed: 0,
-          cancelled: 0,
-          no_show: 0,
+      setSlotBookingMap(map);
+
+      const nextDisplay = tables.map((table) => {
+        if (table.status === 'blocked') {
+          return table;
+        }
+
+        const booking = map.get(table.id);
+        if (!booking) {
+          return { ...table, status: 'available' as TableStatus };
+        }
+
+        const statusMap: Record<string, TableStatus> = {
+          pending: 'booked',
+          confirmed: 'booked',
+          arrived: 'seated',
+          seated: 'seated',
+          reserved: 'reserved',
+          completed: 'available',
+          cancelled: 'available',
+          no_show: 'available',
         };
 
-        for (const b of matchedBookings) {
-          const tableId = b.tableId ?? tables.find((t) => t.tableNumber === b.tableNumber)?.id;
-          if (!tableId) continue;
+        return { ...table, status: statusMap[booking.status] ?? 'booked' };
+      });
 
-          const existing = map.get(tableId);
-          if (!existing || (rank[b.status] ?? 0) > (rank[existing.status] ?? 0)) {
-            map.set(tableId, b);
-          }
-        }
-
-        setSlotBookingMap(map);
-
-        const newDisplay = tables.map((t) => {
-          if (t.status === 'blocked') return t;
-          const b = map.get(t.id);
-          if (!b) return { ...t, status: 'available' as TableStatus };
-
-          const statusMap: Record<string, TableStatus> = {
-            pending: 'booked',
-            confirmed: 'booked',
-            arrived: 'seated',
-            seated: 'seated',
-            reserved: 'reserved',
-            completed: 'available',
-            cancelled: 'available',
-            no_show: 'available',
-          };
-
-          return { ...t, status: statusMap[b.status] ?? 'booked' };
-        });
-
-        setDisplayedTables(newDisplay);
-        setNoBookingsFound(map.size === 0);
-      }
+      setDisplayedTables(nextDisplay);
+      setNoBookingsFound(map.size === 0);
     } catch (error) {
       console.warn('Failed to fetch bookings for slot:', error);
       setValidationMessage('Unable to fetch availability. Try again.');
     } finally {
       setIsChecking(false);
     }
-  };
-
-  const handleSaveTableStatus = () => {
-    if (!selectedTableForStatus) {
-      return;
-    }
-
-    const shouldSaveSlot = Boolean(pendingReservationDate && pendingReservationTime);
-    const timeSlot = shouldSaveSlot
-      ? new Date(`${pendingReservationDate}T${pendingReservationTime}:00`).toISOString()
-      : null;
-
-    updateTableStatus(selectedTableForStatus.id, pendingStatus, timeSlot);
-    setSelectedTableForStatus(null);
-  };
-
-  const openAddTableDialog = () => {
-    const nextNumber = (tables.at(-1)?.tableNumber ?? 0) + 1;
-    setNewTableNumber(String(nextNumber));
-    setNewTableCapacity('2');
-    setTableMessage('');
-    setIsAddTableOpen(true);
   };
 
   const handleAddTable = async () => {
@@ -258,7 +255,7 @@ export const AdminFloorPlan = () => {
     setTableMessage('');
 
     try {
-      const savedTable = isSupabaseConfigured ? await createRestaurantTableInSupabase(nextTable) : nextTable;
+      const savedTable = await createRestaurantTable(nextTable);
       const nextTables = [...tables, savedTable].sort((left, right) => left.tableNumber - right.tableNumber);
       setTables(nextTables);
       setIsAddTableOpen(false);

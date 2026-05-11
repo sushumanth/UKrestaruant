@@ -6,13 +6,14 @@ import {
   BarChart3, 
   Settings, 
   UtensilsCrossed,
+  Users,
   LogOut,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store';
-import { signOutStaffPortal } from '@/lib/supabaseAdminApi';
+import { signOutStaffPortal } from '@/adminApi';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin' },
@@ -20,6 +21,7 @@ const navItems = [
   { icon: UtensilsCrossed, label: 'Menu', href: '/admin/menu' },
   { icon: Map, label: 'Floor Plan', href: '/admin/floor-plan' },
   { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
+  { icon: Users, label: 'Staff', href: '/admin/staff' },
   { icon: Settings, label: 'Settings', href: '/admin/settings' },
 ];
 

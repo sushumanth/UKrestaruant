@@ -238,8 +238,8 @@ export const HeroSection = () => {
               Order Online
             </Link>
             <Link
-              to="/book"
-              className="inline-flex items-center gap-2 rounded-xl border border-[#1e6a4f] bg-[linear-gradient(90deg,#0f3328,#124437)] px-4 py-2.5 md:px-4 md:py-3 lg:px-6 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#134132,#1a5a47)] md:w-auto"
+              to="/booking"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#1e6a4f] bg-[linear-gradient(90deg,#0f3328,#124437)] px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#134132,#1a5a47)] sm:w-auto"
             >
               Book Your Table <ArrowRight size={16} />
             </Link>

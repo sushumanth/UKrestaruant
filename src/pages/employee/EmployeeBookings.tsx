@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Search, Calendar, Clock, Users, CheckCircle2, XCircle, UserCheck, Utensils, Sparkles } from 'lucide-react';
 import { useBookingStore } from '@/store';
-import { formatDate, formatTime, statusLabels } from '@/lib/mockData';
+import { formatDate, formatTime, statusLabels } from '@/mockData';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Booking, BookingStatus } from '@/types';
