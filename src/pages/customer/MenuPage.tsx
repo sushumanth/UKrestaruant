@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Clock3, Leaf, Minus, Plus, Search, ShoppingBag, Star } from 'lucide-react';
-import { useMemo, useRef, useState, useLayoutEffect } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '@/mockData';
 import { formatMenuRating, getVisibleMenuItems } from '@/menuUtils';
@@ -13,10 +13,6 @@ export const MenuPage = () => {
   const [activeCategory, setActiveCategory] = useState<string | 'all'>('all');
   const heroRef = useRef<HTMLElement | null>(null);
   const menuGridRef = useRef<HTMLElement | null>(null);
-  const previewCardRef = useRef<HTMLDivElement | null>(null);
-  const [previewPanelHeight, setPreviewPanelHeight] = useState(0);
-  const previewTopOffset = 100;
-  const previewBottomGap = 24;
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -36,57 +32,13 @@ export const MenuPage = () => {
   const filteredItems = getVisibleMenuItems(menuItems, searchQuery, activeCategory);
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const cartTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  
   const itemQuantityById = items.reduce<Record<string, number>>((acc, item) => {
     acc[item.id] = item.quantity;
     return acc;
   }, {});
 
-  useLayoutEffect(() => {
-    const element = menuGridRef.current;
-    const previewElement = previewCardRef.current;
-
-    const syncPreviewHeight = () => {
-      if (!element) {
-        setPreviewPanelHeight(0);
-        return;
-      }
-
-      const firstCard = element.querySelector('[data-menu-card="true"]') as HTMLElement | null;
-
-      if (!firstCard) {
-        setPreviewPanelHeight(0);
-        return;
-      }
-
-      const baseHeight = Math.round(firstCard.getBoundingClientRect().height);
-      const naturalPreviewHeight = previewElement ? Math.round(previewElement.scrollHeight) : baseHeight;
-      const maxAvailableHeight = Math.max(window.innerHeight - previewTopOffset - previewBottomGap, 0);
-
-      if (cartCount <= 1) {
-        setPreviewPanelHeight(baseHeight);
-        return;
-      }
-
-      setPreviewPanelHeight(Math.max(baseHeight, Math.min(naturalPreviewHeight, maxAvailableHeight)));
-    };
-
-    syncPreviewHeight();
-
-    const resizeObserver = typeof ResizeObserver !== 'undefined' && element
-      ? new ResizeObserver(syncPreviewHeight)
-      : null;
-
-    if (resizeObserver && element) {
-      resizeObserver.observe(element);
-    }
-
-    window.addEventListener('resize', syncPreviewHeight);
-
-    return () => {
-      resizeObserver?.disconnect();
-      window.removeEventListener('resize', syncPreviewHeight);
-    };
-  }, [filteredItems, searchQuery, activeCategory, cartCount, items]);
+  
 
   return (
     <div className="min-h-screen bg-[#f8f0e1] pt-20 text-[#2d241b]">
@@ -180,7 +132,7 @@ export const MenuPage = () => {
 
           {/* ===== LEFT: MENU GRID ===== */}
           <div className="flex-1 pb-16">
-            <section ref={menuGridRef} className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-2 xl:grid-cols-4">
+            <section ref={menuGridRef} className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-2 xl:grid-cols-5">
               {filteredItems.map((item) => (
                 <motion.article
                   key={item.id}
@@ -271,79 +223,26 @@ export const MenuPage = () => {
             )}
           </div>
 
-          {/* ===== RIGHT: PREVIEW (aligned with grid start) ===== */}
-          <div className="hidden lg:flex w-80 flex-shrink-0 border-l-2 border-[#e7d4b2] bg-gradient-to-b from-[#fffaf1] to-[#faf5ed] shadow-[-10px_0_30px_rgba(83,50,17,0.15)] transition-all duration-300 z-30 overflow-hidden">
-            <div
-              ref={previewCardRef}
-              // Matches menu section height when content is short and scrolls internally when long.
-              style={{
-                position: 'sticky',
-                  top: previewTopOffset,
-                  height: previewPanelHeight > 0 ? `${previewPanelHeight}px` : 'auto',
-              }}
-              className="flex flex-col overflow-hidden"
-            >
-              {/* Header */}
-              <div className="border-b border-[#e7d4b2] bg-gradient-to-r from-[#fffaf1] to-[#faf5ed] px-5 py-4">
-                <h2 className="font-serif text-lg font-bold text-[#1f1a16]">Order Preview</h2>
-                <p className="mt-1 text-sm text-[#8a6d49]">{cartCount} {cartCount === 1 ? 'item' : 'items'} selected</p>
+          {/* Right preview removed per request (order preview not needed on menu page) */}
+        </div>
+
+        {/* ===== Bottom cart bar for small/medium screens ===== */}
+        {cartCount > 0 && (
+          <div className="fixed left-5 right-6 bottom-6 z-50 flex justify-center px-4 lg:px-10">
+            <div className="w-full max-w-[500px] rounded-xl bg-[#7d2419] px-5 py-4 text-white shadow-lg flex items-center justify-between gap-4">
+              <div>
+                <div className="text-xs font-medium uppercase opacity-90">Cart</div>
+                <div className="mt-1 text-sm font-semibold">
+                  {cartCount} item{cartCount === 1 ? '' : 's'} · {formatCurrency(cartTotal)}
+                </div>
               </div>
 
-              {cartCount > 0 ? (
-                <>
-                  {/* Scrollable items */}
-                  <div className="min-h-0 flex flex-col flex-1 overflow-y-auto px-5 py-5">
-                    <div className="space-y-4">
-                      {items.map((item) => (
-                        <motion.div
-                          key={item.id}
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="rounded-xl border border-[#e7d4b2] bg-white px-4 py-3 shadow-sm"
-                        >
-                          <div className="flex items-center justify-between gap-3">
-                            <p className="min-w-0 truncate font-serif text-base font-semibold text-[#2d2319]">
-                              {item.name} x{item.quantity}
-                            </p>
-                            <p className="shrink-0 text-base font-bold text-[#7d2419]">
-                              {formatCurrency(item.price * item.quantity)}
-                            </p>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Footer (fixed inside card) */}
-                  <div className="border-t border-[#e7d4b2] bg-gradient-to-r from-[#fffaf1] to-[#faf5ed] px-5 py-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-[#8a6d49]">Subtotal</span>
-                      <span className="text-xl font-bold text-[#7d2419]">{formatCurrency(cartTotal)}</span>
-                    </div>
-                    <Link
-                      to="/cart"
-                      className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md bg-gradient-to-r from-[#7d2419] to-[#942d21] px-4 py-3 text-sm font-semibold text-white transition-shadow hover:shadow-lg active:scale-95"
-                    >
-                      <ShoppingBag size={18} /> Proceed to Order
-                    </Link>
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-1 items-center justify-center px-5 py-8">
-                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-4">
-                    <div className="mx-auto w-16 h-16 rounded-full bg-[#f5ead7] flex items-center justify-center shadow-md">
-                      <ShoppingBag size={32} className="text-[#d4a574]" />
-                    </div>
-                    <div>
-                      <p className="text-base font-semibold text-[#2d2319]">Your cart is empty</p>
-                      <p className="text-sm text-[#8a6d49] mt-1.5 leading-relaxed">Select items to add to your order</p>
-                    </div>
-                  </motion.div>
-                </div>
-              )}
+              <Link to="/cart" className="inline-flex items-center gap-2 rounded-full bg-[#fff3df] px-4 py-2 text-sm font-semibold text-[#7d2419]">
+                <ShoppingBag size={16} /> View Cart
+              </Link>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

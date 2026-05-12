@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Edit, Plus, Search, Trash2, UtensilsCrossed } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,6 +67,7 @@ export const AdminMenu = () => {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [selectedImagePreview, setSelectedImagePreview] = useState('');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(
     () => () => {
@@ -452,10 +453,15 @@ export const AdminMenu = () => {
                   <label className="mb-2 block text-sm text-amber-700/60">Upload Image From Device</label>
                   <input
                     id="menu-image-upload"
+                    ref={fileInputRef}
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={(event) => handleImageFileChange(event.target.files?.[0] ?? null)}
+                    onChange={(event) => {
+                      const file = event.target.files?.[0] ?? null;
+                      handleImageFileChange(file);
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
                   />
                   <label
                     htmlFor="menu-image-upload"
