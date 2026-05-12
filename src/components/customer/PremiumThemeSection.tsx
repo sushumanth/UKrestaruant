@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
 import DishFrame from '../ui/DishFrame';
 
@@ -63,7 +63,7 @@ const getStepSize = useCallback(() => {
 
   const gap = 20; // this must match gap-5
   return isMobileLayout()
-    ? firstCard.offsetHeight + gap
+    ? firstCard.offsetWidth + gap
     : firstCard.offsetWidth + gap;
 }, [isMobileLayout]);
 
@@ -75,7 +75,7 @@ const jumpToIndex = useCallback((index: number) => {
   const target = step * index;
 
   if (isMobileLayout()) {
-    scroller.scrollTop = target;
+    scroller.scrollLeft = target;
   } else {
     scroller.scrollLeft = target;
   }
@@ -91,9 +91,8 @@ const animateToIndex = useCallback((index: number) => {
 
   const step = getStepSize();
   const target = step * index;
-  const isMobile = isMobileLayout();
 
-  const start = isMobile ? scroller.scrollTop : scroller.scrollLeft;
+  const start = scroller.scrollLeft;
   const distance = target - start;
   const duration = 750;
   const startTime = performance.now();
@@ -107,11 +106,7 @@ const animateToIndex = useCallback((index: number) => {
     const eased = easeInOutCubic(progress);
     const nextValue = start + distance * eased;
 
-    if (isMobile) {
-      scroller.scrollTop = nextValue;
-    } else {
-      scroller.scrollLeft = nextValue;
-    }
+    scroller.scrollLeft = nextValue;
 
     if (progress < 1) {
       requestAnimationFrame(frame);
@@ -148,22 +143,50 @@ const animateToIndex = useCallback((index: number) => {
     return;
   }
 
+  const isMobile = isMobileLayout();
   let isPaused = false;
+  let animationFrameId = 0;
+  let resumeTimeoutId = 0;
 
-  const pause = () => {
+  const pauseForInteraction = () => {
     isPaused = true;
+    if (resumeTimeoutId) clearTimeout(resumeTimeoutId);
+    resumeTimeoutId = window.setTimeout(() => {
+      isPaused = false;
+    }, 3000);
   };
 
-  const resume = () => {
-    isPaused = false;
+  const handleTouchEnd = () => {
+    if (resumeTimeoutId) clearTimeout(resumeTimeoutId);
+    resumeTimeoutId = window.setTimeout(() => {
+      isPaused = false;
+    }, 2000);
   };
 
-  scroller.addEventListener('mouseenter', pause);
-  scroller.addEventListener('mouseleave', resume);
-  scroller.addEventListener('touchstart', pause, { passive: true });
-  scroller.addEventListener('touchend', resume);
+  scroller.addEventListener('touchstart', pauseForInteraction, { passive: true });
+  scroller.addEventListener('touchend', handleTouchEnd);
 
-  const timer = window.setInterval(() => {
+  const mobileLoop = () => {
+    if (!scrollerRef.current) return;
+
+    if (!isPaused && !isAnimatingRef.current) {
+      const step = getStepSize();
+      const total = signatureDishes.length;
+      const loopDistance = step * total;
+
+      scroller.scrollLeft += 0.85;
+
+      if (scroller.scrollLeft >= loopDistance * 2) {
+        scroller.scrollLeft -= loopDistance;
+      }
+
+      currentIndexRef.current = Math.round(scroller.scrollLeft / step);
+    }
+
+    animationFrameId = window.requestAnimationFrame(mobileLoop);
+  };
+
+  const timer = isMobile ? 0 : window.setInterval(() => {
     if (isPaused || isAnimatingRef.current) return;
 
     const direction = autoDirectionRef.current;
@@ -181,6 +204,10 @@ const animateToIndex = useCallback((index: number) => {
     }
   }, 4600);
 
+  if (isMobile) {
+    animationFrameId = window.requestAnimationFrame(mobileLoop);
+  }
+
   const handleResize = () => {
     jumpToIndex(currentIndexRef.current);
   };
@@ -188,12 +215,12 @@ const animateToIndex = useCallback((index: number) => {
   window.addEventListener('resize', handleResize);
 
   return () => {
-    window.clearInterval(timer);
+    if (timer) window.clearInterval(timer);
+    window.cancelAnimationFrame(animationFrameId);
+    if (resumeTimeoutId) clearTimeout(resumeTimeoutId);
     window.removeEventListener('resize', handleResize);
-    scroller.removeEventListener('mouseenter', pause);
-    scroller.removeEventListener('mouseleave', resume);
-    scroller.removeEventListener('touchstart', pause);
-    scroller.removeEventListener('touchend', resume);
+    scroller.removeEventListener('touchstart', pauseForInteraction);
+    scroller.removeEventListener('touchend', handleTouchEnd);
   };
 }, [animateToIndex, jumpToIndex]);
 
@@ -204,7 +231,7 @@ const animateToIndex = useCallback((index: number) => {
   return (
     <>
       <section
-        className="relative w-full min-h-[100svh] overflow-visible pt-8 pb-4 sm:pt-10 sm:pb-8"
+        className="relative w-full min-h-auto md:min-h-[100svh] overflow-hidden pt-6 pb-2 sm:pt-8 sm:pb-4 md:pt-10 md:pb-8 md:overflow-visible"
         style={{
           backgroundImage: "url('/backgroundtheme.png')",
           backgroundSize: 'cover',
@@ -243,30 +270,28 @@ const animateToIndex = useCallback((index: number) => {
               <button
   type="button"
   onClick={() => scrollDishes(-1)}
-  className="absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053] md:left-0 md:top-1/2 md:-translate-x-0 md:-translate-y-1/2"
+  className="absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053] md:left-0 md:top-1/2 md:-translate-x-0 md:-translate-y-1/2"
   aria-label="Previous dishes"
 >
-  <ChevronUp size={18} className="md:hidden" />
-  <ChevronLeft size={18} className="hidden md:block" />
+  <ChevronLeft size={18} />
 </button>
 
               <button
   type="button"
   onClick={() => scrollDishes(1)}
-  className="absolute bottom-0 left-1/2 z-20 -translate-x-1/2 translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053] md:bottom-auto md:left-auto md:right-0 md:top-1/2 md:translate-x-0 md:-translate-y-1/2"
+  className="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053] md:bottom-auto md:left-auto md:right-0 md:top-1/2 md:translate-x-0 md:-translate-y-1/2"
   aria-label="Next dishes"
 >
-  <ChevronDown size={18} className="md:hidden" />
-  <ChevronRight size={18} className="hidden md:block" />
+  <ChevronRight size={18} />
 </button>
 
 
               <div    
                 ref={scrollerRef}
-                className="mx-auto max-h-[440px] px-8 py-8 scroll-smooth md:mx-11 md:max-h-none md:overflow-hidden md:px-0 md:py-0"
+                className="mx-auto max-h-[440px] overflow-x-auto overflow-y-hidden overscroll-x-contain overscroll-y-none px-3 py-6 sm:px-6 sm:py-8 scroll-smooth md:mx-11 md:max-h-none md:overflow-hidden md:px-0 md:py-0"
                 style={{ scrollbarWidth: 'none' }}
               >
-                <div className="flex flex-col items-center md:flex-row md:items-stretch md:snap-x md:snap-mandatory gap-5 pt-4 pb-8 [perspective:1000px] ">
+                <div className="flex flex-row items-stretch md:snap-x md:snap-mandatory gap-5 pt-4 pb-8 [perspective:1000px] w-max md:w-auto md:items-stretch">
                   {loopedDishes.map((dish, i) => {
                     const realIndex = i % signatureDishes.length;
                     return (
@@ -277,7 +302,7 @@ const animateToIndex = useCallback((index: number) => {
                       initial={false}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.45, ease: 'easeOut' }}
-                      className="relative flex h-auto w-[240px] min-w-[240px] shrink-0 snap-start justify-center sm:w-[240px] sm:min-w-[240px] lg:w-[303px] lg:min-w-[303px]"
+                      className="relative flex h-auto w-[calc(100vw-2rem)] min-w-[calc(100vw-2rem)] shrink-0 snap-start justify-center sm:w-[280px] sm:min-w-[280px] md:w-[240px] md:min-w-[240px] lg:w-[303px] lg:min-w-[303px]"
                     >
                       <DishFrame
               name={dish.name}

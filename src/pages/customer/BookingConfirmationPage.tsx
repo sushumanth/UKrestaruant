@@ -18,6 +18,8 @@ export const BookingConfirmationPage = () => {
   const navigate = useNavigate();
   const booking = location.state?.booking as Booking | undefined;
   const charges = location.state?.charges as BookingCharges | undefined;
+  const saveOk = location.state?.saveOk as boolean | undefined;
+  const saveError = location.state?.saveError as string | undefined;
   const [actionMessage, setActionMessage] = useState<string>('');
 
   const getShareText = (activeBooking: Booking, paidAmount: number) => [
@@ -172,6 +174,14 @@ export const BookingConfirmationPage = () => {
     <div className="min-h-screen pt-24 pb-16" style={{ background: 'linear-gradient(135deg, #e8e4df 0%, #f5f1ed 100%)' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="rounded-2xl overflow-hidden shadow-lg bg-white p-5 sm:p-8 sm:py-10 lg:p-10">
+        {/* Backend save warning */}
+        {!saveOk && saveError && (
+          <div className="mb-4 rounded-md border border-amber-300/70 bg-amber-50/80 p-3 text-amber-900">
+            <strong className="block font-semibold">Booking saved locally but failed to persist</strong>
+            <p className="text-sm mt-1">{saveError}. The confirmation is available here and a retry will be attempted in the background.</p>
+          </div>
+        )}
+
         {/* Success Header */}
         <div className="text-center mb-12">
           <div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
