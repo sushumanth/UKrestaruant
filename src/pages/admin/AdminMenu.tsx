@@ -1,26 +1,24 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Edit, Plus, Search, Trash2, UtensilsCrossed } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useMenuStore } from '@/store';
 import { formatMenuPrice, formatMenuRating } from '@/menuUtils';
-import { deleteMenuItem as deleteMenuItemOnBackend, upsertMenuItem as upsertMenuItemOnBackend, uploadMenuImage as uploadMenuImageOnBackend } from '@/adminApi';
-import type { MenuCategory, MenuItem } from '@/types';
-
-const categoryOptions: Array<{ value: MenuCategory; label: string }> = [
-  { value: 'starters', label: 'Starters' },
-  { value: 'mains', label: 'Mains' },
-  { value: 'biryani', label: 'Biryani' },
-  { value: 'bread', label: 'Bread' },
-  { value: 'dessert', label: 'Dessert' },
-];
+import {
+  createMenuCategory as createMenuCategoryOnBackend,
+  deleteMenuItem as deleteMenuItemOnBackend,
+  fetchMenuCategories as fetchMenuCategoriesOnBackend,
+  upsertMenuItem as upsertMenuItemOnBackend,
+  uploadMenuImage as uploadMenuImageOnBackend,
+} from '@/adminApi';
+import type { MenuItem } from '@/types';
 
 type MenuFormState = {
   id: string;
   name: string;
   description: string;
-  category: MenuCategory;
+  category: string;
   price: string;
   image: string;
   prepTime: string;
@@ -34,7 +32,7 @@ const createEmptyForm = (): MenuFormState => ({
   id: '',
   name: '',
   description: '',
-  category: 'starters',
+  category: '',
   price: '',
   image: '',
   prepTime: '15',
@@ -59,14 +57,14 @@ const buildFormState = (item: MenuItem): MenuFormState => ({
 });
 
 export const AdminMenu = () => {
-  const { menuItems, upsertMenuItem, removeMenuItem } = useMenuStore();
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { menuItems, menuCategories, setMenuCategories, addMenuCategory, upsertMenuItem, removeMenuItem } = useMenuStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<MenuCategory | 'all'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string | 'all'>('all');
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formState, setFormState] = useState<MenuFormState>(createEmptyForm());
+  const [newCategoryName, setNewCategoryName] = useState('');
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [selectedImagePreview, setSelectedImagePreview] = useState('');
 
@@ -92,10 +90,56 @@ export const AdminMenu = () => {
     };
   }, [isFormOpen]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCategories = async () => {
+      try {
+        const categories = await fetchMenuCategoriesOnBackend();
+
+        if (isMounted) {
+          setMenuCategories(categories);
+        }
+      } catch (error) {
+        console.warn('Failed to load menu categories:', error);
+      }
+    };
+
+    void loadCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [setMenuCategories]);
+
   const sortedMenuItems = useMemo(
     () => [...menuItems].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name)),
     [menuItems]
   );
+
+  const categoryOptions = useMemo(
+    () => Array.from(new Set([...menuCategories, ...menuItems.map((item) => item.category.trim()).filter(Boolean)])).sort((a, b) => a.localeCompare(b)),
+    [menuCategories, menuItems]
+  );
+
+  const handleAddCategory = async () => {
+    const normalizedCategory = newCategoryName.trim();
+
+    if (!normalizedCategory) {
+      setMessage('Enter a category name first.');
+      return;
+    }
+
+    try {
+      const savedCategory = await createMenuCategoryOnBackend(normalizedCategory);
+      addMenuCategory(savedCategory);
+      setNewCategoryName('');
+      setMessage(`Category added: ${savedCategory}`);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      setMessage(`Unable to add category: ${errorMsg}`);
+    }
+  };
 
   const filteredItems = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -146,17 +190,13 @@ export const AdminMenu = () => {
     setSelectedImagePreview(URL.createObjectURL(file));
   };
 
-  const openFilePicker = () => {
-    fileInputRef.current?.click();
-  };
-
   const currentImageUrl = formState.image ?? '';
 
   const persistItem = async () => {
     const imageUrl = currentImageUrl.trim();
 
-    if (!formState.name.trim() || !formState.description.trim() || (!imageUrl && !selectedImageFile)) {
-      setMessage('Name, description, and an image are required.');
+    if (!formState.name.trim() || !formState.description.trim() || !formState.category.trim() || (!imageUrl && !selectedImageFile)) {
+      setMessage('Name, category, description, and an image are required.');
       return;
     }
 
@@ -188,7 +228,7 @@ export const AdminMenu = () => {
       id: formState.id || crypto.randomUUID(),
       name: formState.name.trim(),
       description: formState.description.trim(),
-      category: formState.category,
+      category: formState.category.trim(),
       price: Number(formState.price),
       image: resolvedImage,
       rating: 4.5,
@@ -253,6 +293,24 @@ export const AdminMenu = () => {
         </Button>
       </div>
 
+      <div className="grid gap-3 rounded-2xl border border-amber-200/60 bg-white p-4 shadow-sm md:grid-cols-[1fr_auto] md:items-center">
+        <div>
+          <p className="text-sm font-medium text-amber-900 mb-1">Add Category</p>
+          <p className="text-xs text-amber-700/60">Create a category once, then choose it from the menu form dropdown.</p>
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Input
+            value={newCategoryName}
+            onChange={(event) => setNewCategoryName(event.target.value)}
+            placeholder="Enter new category"
+            className="border border-amber-200 bg-white text-amber-900 rounded-lg sm:w-72"
+          />
+          <Button className="bg-amber-700 hover:bg-amber-800 text-white" onClick={() => void handleAddCategory()} type="button">
+            Add Category
+          </Button>
+        </div>
+      </div>
+
       <div className="grid gap-4 lg:grid-cols-[1fr_auto_auto] lg:items-center">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-700/60" size={18} />
@@ -266,13 +324,13 @@ export const AdminMenu = () => {
 
         <select
           value={selectedCategory}
-          onChange={(event) => setSelectedCategory(event.target.value as MenuCategory | 'all')}
+          onChange={(event) => setSelectedCategory(event.target.value as string | 'all')}
           className="border border-amber-200 bg-white text-amber-900 px-4 py-2 rounded-lg font-medium hover:bg-amber-50 transition-colors"
         >
           <option value="all">All Categories</option>
           {categoryOptions.map((category) => (
-            <option key={category.value} value={category.value}>
-              {category.label}
+            <option key={category} value={category}>
+              {category}
             </option>
           ))}
         </select>
@@ -376,9 +434,12 @@ export const AdminMenu = () => {
               </div>
               <div>
                 <label className="mb-2 block text-sm text-amber-700/60">Category</label>
-                <select value={formState.category} onChange={(event) => handleFormChange('category', event.target.value as MenuCategory)} className="border border-amber-200 bg-white text-amber-900 px-4 py-2 rounded-lg w-full">
+                <select value={formState.category} onChange={(event) => handleFormChange('category', event.target.value)} className="w-full rounded-lg border border-amber-200 bg-white px-4 py-2 text-amber-900">
+                  <option value="">Select category</option>
                   {categoryOptions.map((category) => (
-                    <option key={category.value} value={category.value}>{category.label}</option>
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -390,19 +451,18 @@ export const AdminMenu = () => {
                 <div>
                   <label className="mb-2 block text-sm text-amber-700/60">Upload Image From Device</label>
                   <input
-                    ref={fileInputRef}
+                    id="menu-image-upload"
                     type="file"
                     accept="image/*"
-                    className="sr-only"
+                    className="hidden"
                     onChange={(event) => handleImageFileChange(event.target.files?.[0] ?? null)}
                   />
-                  <button
-                    type="button"
-                    onClick={openFilePicker}
+                  <label
+                    htmlFor="menu-image-upload"
                     className="inline-flex items-center rounded-lg bg-amber-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-800"
                   >
                     Choose file
-                  </button>
+                  </label>
                   <span className="ml-3 text-sm text-amber-700/60">
                     {selectedImageFile ? selectedImageFile.name : 'No file chosen'}
                   </span>

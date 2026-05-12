@@ -23,7 +23,7 @@ export const listMenuItems = async (filters: {
   }
 
   if (filters.category) {
-    where.category = filters.category as Prisma.EnumMenuCategoryFilter['equals'];
+    where.category = filters.category;
   }
 
   if (filters.isActive === 'true') {
@@ -68,7 +68,7 @@ export const createMenuItem = async (payload: {
   name: string;
   description: string;
   price: number;
-  category: Prisma.MenuItemCreateInput['category'];
+  category: string;
   imageUrl: string;
   rating: number;
   prepTime: number;

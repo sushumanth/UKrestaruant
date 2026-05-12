@@ -1,25 +1,16 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Leaf, Minus, Plus, Search, ShoppingBag } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '@/lib/mockData';
 import { getVisibleMenuItems } from '@/lib/menuUtils';
 import { useMenuCartStore, useMenuStore } from '@/store';
-import type { MenuCategory } from '@/types';
-
-const categories: Array<{ id: MenuCategory; label: string }> = [
-  { id: 'starters', label: 'Starters' },
-  { id: 'mains', label: 'Mains' },
-  { id: 'biryani', label: 'Biryani' },
-  { id: 'bread', label: 'Bread' },
-  { id: 'dessert', label: 'Dessert' },
-];
 
 export const OrderPage = () => {
   const { items, addItem, updateItemQuantity } = useMenuCartStore();
-  const { menuItems } = useMenuStore();
+  const { menuItems, menuCategories } = useMenuStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<MenuCategory | 'all'>('all');
+  const [activeCategory, setActiveCategory] = useState<string | 'all'>('all');
   const heroRef = useRef<HTMLElement | null>(null);
 
   const { scrollYProgress } = useScroll({
@@ -31,6 +22,10 @@ export const OrderPage = () => {
   const heroImageScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
   const heroTextY = useTransform(scrollYProgress, [0, 1], [0, -26]);
   const heroTextOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.72]);
+  const categories = useMemo(
+    () => Array.from(new Set([...menuCategories, ...menuItems.map((item) => item.category.trim()).filter(Boolean)])).sort((a, b) => a.localeCompare(b)),
+    [menuCategories, menuItems]
+  );
 
   const filteredItems = getVisibleMenuItems(menuItems, searchQuery, activeCategory);
 
@@ -106,12 +101,12 @@ export const OrderPage = () => {
                 </button>
                 {categories.map((category) => (
                   <button
-                    key={category.id}
+                    key={category}
                     type="button"
-                    onClick={() => setActiveCategory(category.id)}
-                    className={`rounded-full px-4 py-2 text-sm font-medium ${activeCategory === category.id ? 'bg-[#7d2419] text-[#fff3df]' : 'bg-[#f5ead7] text-[#6c583f]'}`}
+                    onClick={() => setActiveCategory(category)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium ${activeCategory === category ? 'bg-[#7d2419] text-[#fff3df]' : 'bg-[#f5ead7] text-[#6c583f]'}`}
                   >
-                    {category.label}
+                    {category}
                   </button>
                 ))}
               </div>

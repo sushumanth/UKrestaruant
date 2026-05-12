@@ -2,7 +2,7 @@
 
 export type UserRole = 'admin' | 'employee' | 'customer';
 
-export type MenuCategory = 'starters' | 'mains' | 'biryani' | 'bread' | 'dessert';
+export type MenuCategory = string;
 
 export interface User {
   id: string;

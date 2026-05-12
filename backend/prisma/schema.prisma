@@ -43,14 +43,6 @@ enum OrderStatus {
   cancelled
 }
 
-enum MenuCategory {
-  starters
-  mains
-  biryani
-  bread
-  dessert
-}
-
 model User {
   id           String      @id @default(cuid())
   email        String      @unique
@@ -66,6 +58,11 @@ model User {
   updatedAt    DateTime    @updatedAt
 
   @@index([role])
+}
+
+model category {
+  id   String @id @default(cuid())
+  name String @unique
 }
 
 model RestaurantSettings {
@@ -102,7 +99,7 @@ model MenuItem {
   name        String
   description String
   price       Decimal       @db.Decimal(10, 2)
-  category    MenuCategory
+  category    String
   imageUrl    String
   rating      Float         @default(0)
   prepTime    Int           @default(0)

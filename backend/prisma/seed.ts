@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, TableStatus, MenuCategory, BookingStatus, PaymentStatus } from '@prisma/client';
+import { Prisma, PrismaClient, UserRole, TableStatus, BookingStatus, PaymentStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -24,7 +24,7 @@ const initialMenuItems = [
     name: 'Paneer Tikka',
     description: 'Char-grilled paneer with spices and herbs.',
     price: 9.5,
-    category: MenuCategory.starters,
+    category: 'starters' as Prisma.MenuItemCreateManyInput['category'],
     imageUrl: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8',
     rating: 4.8,
     prepTime: 18,
@@ -36,7 +36,7 @@ const initialMenuItems = [
     name: 'Chicken Biryani',
     description: 'Fragrant basmati rice with marinated chicken.',
     price: 14.25,
-    category: MenuCategory.biryani,
+    category: 'biryani' as Prisma.MenuItemCreateManyInput['category'],
     imageUrl: 'https://images.unsplash.com/photo-1563379091339-03246963d8f5',
     rating: 4.9,
     prepTime: 30,
@@ -48,7 +48,7 @@ const initialMenuItems = [
     name: 'Garlic Naan',
     description: 'Soft flatbread brushed with garlic butter.',
     price: 3.75,
-    category: MenuCategory.bread,
+    category: 'bread' as Prisma.MenuItemCreateManyInput['category'],
     imageUrl: 'https://images.unsplash.com/photo-1574653853027-5382a3d6d3b0',
     rating: 4.7,
     prepTime: 12,

@@ -22,6 +22,7 @@ export const generateTables = (): RestaurantTable[] => {
       status: Math.random() > 0.7 ? 'booked' : 'available',
     });
   }
+  
   return tables;
 };
 

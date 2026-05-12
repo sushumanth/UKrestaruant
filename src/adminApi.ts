@@ -75,6 +75,11 @@ type PublicOperationalDataResponse = {
   }>;
 };
 
+type CategoryItem = {
+  id: string;
+  name: string;
+};
+
 type BookingsResponse = {
   items: Array<{
     id: string;
@@ -247,6 +252,24 @@ export const fetchPublicOperationalData = async (): Promise<{
 export const fetchMenuItems = async (): Promise<MenuItem[]> => {
   const response = await backendRequest<{ items: PublicOperationalDataResponse['menuItems'] }>('/menu?limit=1000&page=1', { auth: false });
   return response.items.map(mapBackendMenuItem);
+};
+
+export const fetchMenuCategories = async (): Promise<string[]> => {
+  const response = await backendRequest<{ items: CategoryItem[] }>('/categories', { auth: false });
+  return response.items.map((item) => item.name);
+};
+
+export const createMenuCategory = async (name: string): Promise<string> => {
+  const response = await backendRequest<{ item: CategoryItem } | CategoryItem>('/categories', {
+    method: 'POST',
+    body: { name },
+  });
+
+  const normalized = response && typeof response === 'object' && 'item' in response
+    ? response.item
+    : response;
+
+  return normalized.name;
 };
 
 export const upsertMenuItem = async (menuItem: MenuItem, isNew: boolean = false): Promise<MenuItem> => {

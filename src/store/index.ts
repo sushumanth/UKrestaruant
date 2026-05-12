@@ -183,26 +183,54 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
 // Menu Store
 interface MenuState {
   menuItems: MenuItem[];
+  menuCategories: string[];
+  setMenuCategories: (categories: string[]) => void;
   setMenuItems: (menuItems: MenuItem[]) => void;
   upsertMenuItem: (menuItem: MenuItem) => void;
   removeMenuItem: (menuItemId: string) => void;
+  addMenuCategory: (category: string) => void;
 }
+
+const normalizeCategory = (category: string) => category.trim();
+
+const mergeCategories = (existingCategories: string[], nextCategories: string[]) =>
+  Array.from(new Set([...existingCategories, ...nextCategories.map(normalizeCategory).filter(Boolean)])).sort((a, b) => a.localeCompare(b));
 
 export const useMenuStore = create<MenuState>()(
   persist(
     (set) => ({
       menuItems: [],
-      setMenuItems: (menuItems) => set({ menuItems }),
+      menuCategories: [],
+      setMenuCategories: (categories) =>
+        set({ menuCategories: mergeCategories([], categories) }),
+      setMenuItems: (menuItems) =>
+        set((state) => ({
+          menuItems,
+          menuCategories: mergeCategories(state.menuCategories, menuItems.map((item) => item.category)),
+        })),
+      addMenuCategory: (category) => {
+        const normalized = normalizeCategory(category);
+
+        if (!normalized) {
+          return;
+        }
+
+        set((state) => ({
+          menuCategories: mergeCategories(state.menuCategories, [normalized]),
+        }));
+      },
       upsertMenuItem: (menuItem) =>
         set((state) => {
           const exists = state.menuItems.some((item) => item.id === menuItem.id);
+          const nextCategories = mergeCategories(state.menuCategories, [menuItem.category]);
 
           if (!exists) {
-            return { menuItems: [...state.menuItems, menuItem] };
+            return { menuItems: [...state.menuItems, menuItem], menuCategories: nextCategories };
           }
 
           return {
             menuItems: state.menuItems.map((item) => (item.id === menuItem.id ? menuItem : item)),
+            menuCategories: nextCategories,
           };
         }),
       removeMenuItem: (menuItemId) =>
@@ -210,7 +238,10 @@ export const useMenuStore = create<MenuState>()(
           menuItems: state.menuItems.filter((item) => item.id !== menuItemId),
         })),
     }),
-    { name: 'menu-storage' }
+    {
+      name: 'menu-storage',
+      partialize: (state) => ({ menuItems: state.menuItems }),
+    }
   )
 );
 

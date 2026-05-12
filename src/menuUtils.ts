@@ -1,4 +1,4 @@
-import type { MenuCategory, MenuItem } from '@/types';
+import type { MenuItem } from '@/types';
 
 export const formatMenuRating = (rating?: number | null) => Number(rating ?? 0).toFixed(1);
 
@@ -7,7 +7,7 @@ export const formatMenuPrice = (price?: number | null) => Number(price ?? 0).toF
 export const getVisibleMenuItems = (
   menuItems: MenuItem[],
   searchQuery: string,
-  activeCategory: MenuCategory | 'all',
+  activeCategory: string | 'all',
 ): MenuItem[] => {
   const query = searchQuery.trim().toLowerCase();
   const visibleItems: MenuItem[] = [];
