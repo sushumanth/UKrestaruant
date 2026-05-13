@@ -118,7 +118,7 @@ const PaymentForm = ({
         )}
       </div>
 
-      {/* <Button
+      <Button
         type="submit"
         disabled={!stripe || isProcessing}
         className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#c39243,#a56f25)] px-6 text-sm font-bold text-white shadow-[0_10px_22px_rgba(165,111,37,0.28)] transition hover:scale-[1.01] hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-50"
@@ -135,15 +135,7 @@ const PaymentForm = ({
             <ArrowRight size={18} />
           </>
         )}
-      </Button> */}
-       <Button
-                type="button"
-                onClick={onSuccess}
-                className="mt-5 h-13 w-full rounded-2xl bg-[linear-gradient(135deg,#c39243,#a56f25)] text-base font-bold text-white shadow-[0_12px_28px_rgba(165,111,37,0.32)] transition hover:scale-[1.01] hover:bg-[linear-gradient(135deg,#d19d4d,#ad762b)] disabled:opacity-50"
-              >
-                Pay {formatCurrency(amount)} now
-                <ArrowRight size={20} className="ml-2" />
-              </Button>
+      </Button>
 
       <button
         type="button"
@@ -311,14 +303,14 @@ export const BookingPaymentPage = () => {
       updatedAt: new Date().toISOString(),
     };
 
-    // const saveResult = await saveBookingToSupabase(newBooking);
+    const saveResult = await saveBookingToSupabase(newBooking);
 
-    // if (!saveResult.ok) {
-    //   const errorMessage = saveResult.error ?? 'Unable to save your booking to database.';
-    //   setSaveError(errorMessage);
-    //   console.warn('Supabase booking save failed:', errorMessage);
-    //   return { ok: false, error: errorMessage };
-    // }
+    if (!saveResult.ok) {
+      const errorMessage = saveResult.error ?? 'Unable to save your booking to database.';
+      setSaveError(errorMessage);
+      console.warn('Supabase booking save failed:', errorMessage);
+      return { ok: false, error: errorMessage };
+    }
 
     addBooking(newBooking);
 
