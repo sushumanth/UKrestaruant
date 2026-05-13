@@ -116,30 +116,56 @@ model MenuItem {
 }
 
 model Booking {
-  id                    String          @id @default(cuid())
-  bookingCode           String          @unique
+  id                    String            @id @default(cuid())
+
+  bookingCode           String            @unique
+
   customerName          String
   customerEmail         String
   customerPhone         String
-  bookingDate           DateTime        @db.Date
-  bookingTime           String
+
   guests                Int
+
+  bookingDate           DateTime          @db.Date
+
+  bookingStart          DateTime
+  bookingEnd            DateTime
+
+  // includes cleaning buffer
+  releaseTime           DateTime
+
+  durationMinutes       Int
+
+  graceExpiresAt        DateTime?
+
   tableId               String?
   tableNumber           Int?
-  status                BookingStatus   @default(pending)
-  specialRequests       String?
-  depositAmount         Decimal         @db.Decimal(10, 2) @default(0)
-  paymentStatus         PaymentStatus   @default(pending)
-  stripePaymentIntentId String?
-  customerId            String?
-  customer              User?           @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  table                 RestaurantTable? @relation(fields: [tableId], references: [id], onDelete: SetNull)
-  createdAt             DateTime        @default(now())
-  updatedAt             DateTime        @updatedAt
 
-  @@index([customerEmail, bookingDate])
-  @@index([bookingDate, bookingTime])
+  status                BookingStatus     @default(pending)
+
+  specialRequests       String?
+
+  depositAmount         Decimal           @db.Decimal(10, 2) @default(0)
+
+  paymentStatus         PaymentStatus     @default(pending)
+
+  stripePaymentIntentId String?
+
+  customerId            String?
+
+  customer              User?             @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  table                 RestaurantTable?  @relation(fields: [tableId], references: [id], onDelete: SetNull)
+
+  createdAt             DateTime          @default(now())
+
+  updatedAt             DateTime          @updatedAt
+
+  @@index([bookingDate])
+  @@index([bookingStart])
+  @@index([releaseTime])
   @@index([status])
+  @@index([tableId, bookingStart])
 }
 
 model Order {

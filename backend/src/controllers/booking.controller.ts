@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { asyncHandler } from '../utils/async-handler';
 import { bookingSchema, bookingStatusSchema } from '../validations/booking.validation';
-import { createBooking, getAvailableSlots, getBookingById, getOccupiedTableIds, listBookings, updateBookingStatus } from '../services/booking.service';
+import { createBooking, getAvailableSlots, getAvailableTables, getBookingById, getOccupiedTableIds, listBookings, updateBookingStatus } from '../services/booking.service';
 
 export const placeBooking = asyncHandler(async (request: Request, response: Response) => {
   const payload = bookingSchema.parse(request.body);
@@ -42,4 +42,12 @@ export const availableSlots = asyncHandler(async (request: Request, response: Re
 export const occupiedTables = asyncHandler(async (request: Request, response: Response) => {
   const tableIds = await getOccupiedTableIds(String(request.query.date ?? ''), String(request.query.time ?? ''));
   return response.status(200).json({ tableIds });
+});
+
+export const availableTables = asyncHandler(async (request: Request, response: Response) => {
+  const date = String(request.query.date ?? '');
+  const time = String(request.query.time ?? '');
+  const guests = Number(request.query.guests ?? 1);
+  const tables = await getAvailableTables(date, time, guests);
+  return response.status(200).json({ tables });
 });

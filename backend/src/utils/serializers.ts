@@ -63,7 +63,8 @@ export const serializeBooking = (booking: Booking) => ({
   customerEmail: booking.customerEmail,
   customerPhone: booking.customerPhone,
   bookingDate: booking.bookingDate,
-  bookingTime: booking.bookingTime,
+  // provide a bookingTime string for legacy clients (HH:mm)
+  bookingTime: booking.bookingStart ? new Date(booking.bookingStart).toISOString().slice(11, 16) : (booking.bookingTime ?? ''),
   guests: booking.guests,
   tableId: booking.tableId,
   tableNumber: booking.tableNumber,

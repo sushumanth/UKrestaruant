@@ -11,6 +11,7 @@ import {
 import { Calendar as DateCalendar } from '@/components/ui/calendar';
 import { useBookingStore, useMenuCartStore, useTableStore } from '@/store';
 import { formatCurrency, formatDate, formatTime } from '@/mockData';
+import { getAvailableTables } from '@/backendBookingApi';
 
 const baseSlotTimes = [
   '11:00',  '11:30',
@@ -38,6 +39,9 @@ export const BookingSelectionPage = () => {
   const [draftDate, setDraftDate] = useState(new Date());
   const [draftTimeFilter, setDraftTimeFilter] = useState('All Times');
   const [selectedSlotTime, setSelectedSlotTime] = useState('');
+  const [isLoadingTables, setIsLoadingTables] = useState(false);
+  const [availableTables, setAvailableTables] = useState<Array<{ id: string; tableNumber: number; capacity: number; status: string }>>([]);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const hasInitializedSelectionRef = useRef(false);
 
   const baseDepositAmount = 5;
@@ -123,30 +127,33 @@ export const BookingSelectionPage = () => {
 
   const selectedBookingDate = useMemo(() => format(draftDate, 'yyyy-MM-dd'), [draftDate]);
 
-  const availableTables = useMemo(() => {
+  // Fetch available tables when date, time, or guest count changes
+  useEffect(() => {
     if (!selectedSlotTime) {
-      return [];
+      setAvailableTables([]);
+      setFetchError(null);
+      return;
     }
 
-    const occupiedStatuses = ['pending', 'confirmed', 'arrived', 'seated'];
-    const selectedTimeValue = selectedSlotTime.slice(0, 5);
+    const fetchTables = async () => {
+      setIsLoadingTables(true);
+      setFetchError(null);
+      
+      const result = await getAvailableTables(selectedBookingDate, selectedSlotTime, draftGuests);
+      
+      if (result.ok) {
+        setAvailableTables(result.tables);
+      } else {
+        setAvailableTables([]);
+        setFetchError(result.error || 'Unable to fetch available tables.');
+      }
+      
+      setIsLoadingTables(false);
+    };
 
-    return tables
-      .slice()
-      .sort((left, right) => left.tableNumber - right.tableNumber)
-      .filter((table) => {
-        const isTooSmall = table.capacity < draftGuests;
-        const isBookedForSlot = bookings.some(
-          (booking) =>
-            booking.date === selectedBookingDate &&
-            booking.time.slice(0, 5) === selectedTimeValue &&
-            occupiedStatuses.includes(booking.status) &&
-            (booking.tableId === table.id || booking.tableNumber === table.tableNumber)
-        );
-
-        return table.status !== 'blocked' && !isTooSmall && !isBookedForSlot;
-      });
-  }, [bookings, draftGuests, selectedBookingDate, selectedSlotTime, tables]);
+    const debounceTimer = setTimeout(fetchTables, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [selectedSlotTime, draftGuests, selectedBookingDate]);
 
   useEffect(() => {
     if (!selectedTable) {
@@ -546,11 +553,22 @@ export const BookingSelectionPage = () => {
                         </p>
                       </div>
                       <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
-                        {availableTables.length} open
+                        {isLoadingTables ? 'Loading...' : `${availableTables.length} open`}
                       </span>
                     </div>
 
-                    {availableTables.length > 0 ? (
+                    {isLoadingTables ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm text-amber-700/70">
+                          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-amber-300 border-r-amber-700" />
+                          Checking available tables...
+                        </div>
+                      </div>
+                    ) : fetchError ? (
+                      <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        {fetchError}
+                      </div>
+                    ) : availableTables.length > 0 ? (
                       <div className="grid max-h-64 grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3">
                         {availableTables.map((table) => (
                           <button
@@ -578,7 +596,8 @@ export const BookingSelectionPage = () => {
                       </div>
                     ) : (
                       <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
-                        No tables are available for this date and time. Choose another slot.
+                        <p className="font-medium mb-1">No tables available</p>
+                        <p className="text-xs text-amber-700/70">Please choose another date or time slot.</p>
                       </div>
                     )}
 

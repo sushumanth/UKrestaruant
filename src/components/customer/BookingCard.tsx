@@ -178,7 +178,8 @@ export const BookingCard = ({ compact = false }: BookingCardProps) => {
         return;
       }
 
-      setOccupiedTableIds(occupiedResult.tableIds);
+      // Only show tables that are NOT occupied and CAN fit the party
+      setOccupiedTableIds(occupiedResult.tableIds || []);
     };
 
     void loadOccupiedTables();
@@ -186,7 +187,7 @@ export const BookingCard = ({ compact = false }: BookingCardProps) => {
     return () => {
       isMounted = false;
     };
-  }, [date, occupancyRefreshTick, time]);
+  }, [date, guests, occupancyRefreshTick, time]);
 
   useEffect(() => {
     const client = backendClient;
@@ -283,11 +284,23 @@ export const BookingCard = ({ compact = false }: BookingCardProps) => {
       return;
     }
 
+    // Refresh occupied tables when entering table selection step to show most current availability
+    if (date && time) {
+      const dateString = format(date, 'yyyy-MM-dd');
+      const refreshOccupied = async () => {
+        const occupiedResult = await getOccupiedTableIds(dateString, time);
+        if (occupiedResult.ok) {
+          setOccupiedTableIds(occupiedResult.tableIds || []);
+        }
+      };
+      void refreshOccupied();
+    }
+
     setIsLoadingTables(true);
     const timer = window.setTimeout(() => setIsLoadingTables(false), 650);
 
     return () => window.clearTimeout(timer);
-  }, [step, date, time, guests]);
+  }, [step, date, time]);
 
   useEffect(() => {
     if (step !== 1) {
@@ -521,37 +534,28 @@ export const BookingCard = ({ compact = false }: BookingCardProps) => {
             <>
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs">
                 <p className="text-[#A9B1BE]">
-                  {availableTableCount} of {tableSeatMap.length} tables available for {guests} guests at {time || '--:--'}.
+                  {availableTableCount} available tables for {guests} {guests === 1 ? 'guest' : 'guests'} at {time ? formatTime(time) : '--:--'}.
                 </p>
                 <div className="flex flex-wrap items-center gap-3 text-[#A9B1BE]">
                   <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-400/70" /> Available</span>
                   <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#D4AF37]" /> Selected</span>
-                  <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-rose-400/70" /> Unavailable</span>
                 </div>
               </div>
 
               <div className="max-h-80 overflow-y-auto pr-1">
                 <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-7 gap-2.5">
-                  {tableSeatMap.map((table) => {
+                  {tableSeatMap.filter((table) => !table.isUnavailable).map((table) => {
                     const isSelected = selectedTableId === table.id;
-                    const isDisabled = table.isUnavailable;
 
                     return (
                       <button
                         key={table.id}
                         type="button"
-                        disabled={isDisabled}
-                        onClick={() => {
-                          if (!isDisabled) {
-                            setSelectedTableId(table.id);
-                          }
-                        }}
+                        onClick={() => setSelectedTableId(table.id)}
                         className={`rounded-lg border px-2 py-2.5 text-center transition-all duration-200 ${
                           isSelected
                             ? 'border-[#D4AF37] bg-[rgba(212,175,55,0.22)] text-[#F8E8B2]'
-                            : isDisabled
-                              ? 'cursor-not-allowed border-rose-500/30 bg-rose-500/10 text-rose-200/70'
-                              : 'border-[rgba(255,255,255,0.13)] bg-[rgba(255,255,255,0.05)] text-[#DDE3ED] hover:border-emerald-400/70 hover:bg-emerald-400/10'
+                            : 'border-[rgba(255,255,255,0.13)] bg-[rgba(255,255,255,0.05)] text-[#DDE3ED] hover:border-emerald-400/70 hover:bg-emerald-400/10'
                         }`}
                         title={`Table ${table.tableNumber} · capacity ${table.capacity}`}
                       >

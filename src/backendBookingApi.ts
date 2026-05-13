@@ -31,6 +31,18 @@ type OccupiedTablesResponse = {
   tableIds: string[];
 };
 
+type AvailableTablesResponse = {
+  tables: Array<{
+    id: string;
+    tableNumber: number;
+    capacity: number;
+    status: string;
+    timeSlot?: string | null;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+};
+
 type CustomerBookingsResponse = {
   items: Array<{
     id: string;
@@ -149,6 +161,23 @@ export const getOccupiedTableIds = async (
     return { ok: true, tableIds: response.tableIds };
   } catch (error) {
     return { ok: false, tableIds: [], error: error instanceof Error ? error.message : 'Unable to fetch occupied tables.' };
+  }
+};
+
+export const getAvailableTables = async (
+  date: string,
+  time: string,
+  guests: number
+): Promise<{ ok: boolean; tables: AvailableTablesResponse['tables']; error?: string }> => {
+  try {
+    const response = await backendRequest<AvailableTablesResponse>(
+      `/bookings/available-tables?date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}&guests=${encodeURIComponent(String(guests))}`,
+      { auth: false }
+    );
+
+    return { ok: true, tables: response.tables };
+  } catch (error) {
+    return { ok: false, tables: [], error: error instanceof Error ? error.message : 'Unable to fetch available tables.' };
   }
 };
 
