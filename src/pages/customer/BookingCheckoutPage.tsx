@@ -31,8 +31,6 @@ export const BookingCheckoutPage = () => {
   const { tables, selectedTable, setSelectedTable } = useTableStore();
   const { items: cartItems } = useMenuCartStore();
 
-  const step = 1;
-
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',

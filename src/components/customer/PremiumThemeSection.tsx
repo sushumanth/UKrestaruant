@@ -61,10 +61,11 @@ const getStepSize = () => {
   const firstCard = scroller.querySelector('[data-signature-card]') as HTMLDivElement | null;
   if (!firstCard) return 0;
 
-  const gap = 20; // this must match gap-5
+  const mobileGap = 28;
+  const desktopGap = 20;
   return isMobileLayout()
-    ? firstCard.offsetHeight + gap
-    : firstCard.offsetWidth + gap;
+    ? firstCard.offsetHeight + mobileGap
+    : firstCard.offsetWidth + desktopGap;
 };
 
 const jumpToIndex = (index: number) => {
@@ -239,11 +240,11 @@ const animateToIndex = (index: number) => {
               <span className="block h-px w-16 bg-gradient-to-l from-transparent to-[#c4a053]" />
             </div>
 
-            <div className="relative mt-10 sm:mt-12 no-select">
+            <div className="relative mt-8 px-2 pt-12 pb-12 sm:mt-10 md:px-0 md:pt-0 no-select">
               <button
   type="button"
   onClick={() => scrollDishes(-1)}
-  className="absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053] md:left-0 md:top-1/2 md:-translate-x-0 md:-translate-y-1/2"
+  className="absolute left-1/2 top-2 z-20 -translate-x-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053] md:left-0 md:top-1/2 md:-translate-x-0 md:-translate-y-1/2"
   aria-label="Previous dishes"
 >
   <ChevronUp size={18} className="md:hidden" />
@@ -253,7 +254,7 @@ const animateToIndex = (index: number) => {
               <button
   type="button"
   onClick={() => scrollDishes(1)}
-  className="absolute bottom-0 left-1/2 z-20 -translate-x-1/2 translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053] md:bottom-auto md:left-auto md:right-0 md:top-1/2 md:translate-x-0 md:-translate-y-1/2"
+  className="absolute bottom-2 left-1/2 z-20 -translate-x-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053] md:bottom-auto md:left-auto md:right-0 md:top-1/2 md:translate-x-0 md:-translate-y-1/2"
   aria-label="Next dishes"
 >
   <ChevronDown size={18} className="md:hidden" />
@@ -263,10 +264,10 @@ const animateToIndex = (index: number) => {
 
               <div    
                 ref={scrollerRef}
-                className="mx-auto max-h-[440px] px-8 py-8 scroll-smooth md:mx-11 md:max-h-none md:overflow-hidden md:px-0 md:py-0"
+                className="mx-auto h-[430px] max-h-[430px] w-full px-1 py-0 scroll-smooth sm:h-[460px] sm:max-h-[460px] md:h-auto md:mx-11 md:max-h-none md:px-0 overflow-hidden"
                 style={{ scrollbarWidth: 'none' }}
               >
-                <div className="flex flex-col items-center md:flex-row md:items-stretch md:snap-x md:snap-mandatory gap-5 pt-4 pb-8 [perspective:1000px] ">
+                <div className="flex flex-col items-center md:flex-row md:items-stretch md:snap-x md:snap-mandatory gap-8 py-0 md:gap-5 md:pt-4 md:pb-8 [perspective:1000px] ">
                   {loopedDishes.map((dish, i) => {
                     const realIndex = i % signatureDishes.length;
                     return (
@@ -277,7 +278,7 @@ const animateToIndex = (index: number) => {
                       initial={false}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.45, ease: 'easeOut' }}
-                      className="relative flex h-auto w-[240px] min-w-[240px] shrink-0 snap-start justify-center sm:w-[240px] sm:min-w-[240px] lg:w-[303px] lg:min-w-[303px]"
+                      className="relative flex h-auto w-[260px] min-w-[260px] shrink-0 snap-start justify-center md:w-[275px] md:min-w-[275px] lg:w-[303px] lg:min-w-[303px]"
                     >
                       <DishFrame
               name={dish.name}
