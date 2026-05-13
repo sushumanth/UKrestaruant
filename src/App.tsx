@@ -21,9 +21,9 @@ import { EmployeeLayout } from '@/layouts/EmployeeLayout';
 // Pages
 import { HomePage } from '@/pages/customer/HomePage';
 import { MenuPage } from '@/pages/customer/MenuPage';
-import { OrderPage } from '@/pages/customer/OrderPage';
 import { CartPage } from '@/pages/customer/CartPage';
 import { BookingPage } from '@/pages/customer/BookingPage';
+import { BookingCheckoutPage } from '@/pages/customer/BookingCheckoutPage';
 import { BookingConfirmationPage } from '@/pages/customer/BookingConfirmationPage';
 import { AdminDashboard } from '@/pages/admin/AdminDashboard';
 import { AdminBookings } from '@/pages/admin/AdminBookings';
@@ -35,6 +35,7 @@ import { EmployeeDashboard } from '@/pages/employee/EmployeeDashboard';
 import { EmployeeBookings } from '@/pages/employee/EmployeeBookings';
 import { EmployeeMenu } from '@/pages/employee/EmployeeMenu';
 import { LoginPage } from '@/pages/LoginPage';
+import { BookingPaymentPage } from './pages/customer/BookingPaymentPage';
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
@@ -240,10 +241,11 @@ function App() {
         <Route path="/" element={<CustomerLayout />}>
           <Route index element={<HomePage />} />
           <Route path="menu" element={<MenuPage />} />
-          <Route path="order" element={<OrderPage />} />
           <Route path="cart" element={<CartPage />} />
           <Route path="book" element={<BookingPage />} />
-          <Route path="confirmation" element={<BookingConfirmationPage />} />
+          <Route path="book/checkout" element={<BookingCheckoutPage />} />
+          <Route path="book/payment" element={<BookingPaymentPage />} />
+          <Route path="book/confirmation/:bookingId" element={<BookingConfirmationPage />} />
         </Route>
 
         <Route path="/login" element={<LoginPage />} />

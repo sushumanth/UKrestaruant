@@ -342,7 +342,7 @@ export const BookingCard = ({ compact = false }: BookingCardProps) => {
       setAvailableSlots(timeSlots);
       
       setIsChecking(false);
-      navigate('/book');
+      navigate(`/book/checkout?date=${dateStr}&time=${time}&guests=${guests}&tableId=${selectedTableId}`);
     }, 800);
   };
 

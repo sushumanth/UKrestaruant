@@ -13,7 +13,7 @@ export const Footer = () => {
           {/* ===== BRAND ===== */}
           <div className="sm:col-span-2 lg:col-span-1">
             <Link to="/" className="inline-flex items-center mb-4 group">
-              <div className="relative flex items-center">
+              <div className="relative flex items-center no-select">
                 <img
                   src="/logo1.png"
                   alt="Singh's Dining logo"
@@ -38,7 +38,7 @@ export const Footer = () => {
             </p>
             
             {/* Social icons (optional visual filler) */}
-            <div className="flex items-center gap-3 mt-4">
+            <div className="flex items-center gap-3 mt-4 no-select">
               {['Instagram', 'Facebook', 'Twitter'].map((social) => (
                 <a
                   key={social}
@@ -54,23 +54,23 @@ export const Footer = () => {
 
           {/* ===== CONTACT ===== */}
           <div>
-            <h4 className="font-serif text-base sm:text-lg text-[#F4F6FA] mb-3 sm:mb-4">Contact</h4>
+            <h4 className="font-serif text-base sm:text-lg text-[#F4F6FA] mb-3 sm:mb-4 no-select">Contact</h4>
             <ul className="space-y-2.5 sm:space-y-3">
               <li className="flex items-start gap-2.5">
-                <MapPin size={16} className="text-[#D4A23A] mt-1 flex-shrink-0" aria-hidden="true" />
+                <MapPin size={16} className="no-select text-[#D4A23A] mt-1 flex-shrink-0" aria-hidden="true" />
                 <span className="text-[#AFB8C8] text-sm leading-snug">
                   12 Royal Exchange<br />
                   Manchester M2 7EA
                 </span>
               </li>
               <li className="flex items-center gap-2.5">
-                <Phone size={16} className="text-[#D4A23A] flex-shrink-0" aria-hidden="true" />
+                <Phone size={16} className="no-select text-[#D4A23A] flex-shrink-0" aria-hidden="true" />
                 <a href="tel:+441611234567" className="text-[#AFB8C8] text-sm hover:text-[#D4A23A] transition-colors">
                   +44 (0)161 123 4567
                 </a>
               </li>
               <li className="flex items-center gap-2.5">
-                <Mail size={16} className="text-[#D4A23A] flex-shrink-0" aria-hidden="true" />
+                <Mail size={16} className="no-select text-[#D4A23A] flex-shrink-0" aria-hidden="true" />
                 <a href="mailto:hello@luxereserve.co" className="text-[#AFB8C8] text-sm hover:text-[#D4A23A] transition-colors">
                   hello@luxereserve.co
                 </a>
@@ -81,7 +81,7 @@ export const Footer = () => {
           {/* ===== HOURS ===== */}
           <div>
             <h4 className="flex items-start gap-2.5 font-serif text-base sm:text-lg text-[#F4F6FA] mb-3 sm:mb-4">
-              <Clock size={16} className="text-[#D4A23A] mt-1.5 flex-shrink-0" aria-hidden="true" />Hours
+              <Clock size={16} className="no-select text-[#D4A23A] mt-1.5 flex-shrink-0" aria-hidden="true" />Hours
             </h4>
             <ul className="space-y-2.5 sm:space-y-3">
               <li className="text-[#AFB8C8] text-sm">
@@ -97,7 +97,7 @@ export const Footer = () => {
 
           {/* ===== QUICK LINKS ===== */}
           <div>
-            <h4 className="font-serif text-base sm:text-lg text-[#F4F6FA] mb-3 sm:mb-4">Quick Links</h4>
+            <h4 className="font-serif text-base sm:text-lg text-[#F4F6FA] mb-3 sm:mb-4 no-select">Quick Links</h4>
             <ul className="space-y-2 sm:space-y-2.5">
               {[
                 { label: 'Book a Table', to: '/book' },
@@ -120,7 +120,7 @@ export const Footer = () => {
         </div>
 
         {/* ===== BOTTOM BAR ===== */}
-        <div className="mt-8 sm:mt-10 pt-6 border-t border-[rgba(244,246,250,0.08)]">
+        <div className="mt-8 sm:mt-10 pt-6 border-t border-[rgba(244,246,250,0.08)] no-select">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
             <p className="text-[#AFB8C8]/90">
               © {new Date().getFullYear()} Singh&apos;s Dining. All rights reserved.

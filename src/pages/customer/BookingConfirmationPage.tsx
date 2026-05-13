@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { Check, Calendar, Clock, Users, MapPin, Mail, Download, Share2 } from 'lucide-react';
+import { useLocation, useNavigate, Link, useParams } from 'react-router-dom';
+import { Check, Calendar, Clock, Users, MapPin, Mail, Download, Share2, Home, BadgeCheck, LockKeyhole } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatDate, formatTime, formatCurrency } from '@/lib/mockData';
 import { jsPDF } from 'jspdf';
 import type { Booking } from '@/types';
+import { useBookingStore } from '@/store';
+import { getBookingByBookingId } from '@/lib/supabaseBookingApi';
 
 interface BookingCharges {
   baseDepositAmount: number;
@@ -16,8 +18,11 @@ interface BookingCharges {
 export const BookingConfirmationPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const booking = location.state?.booking as Booking | undefined;
+  const { bookingId } = useParams<{ bookingId: string }>();
   const charges = location.state?.charges as BookingCharges | undefined;
+  const bookings = useBookingStore((state) => state.bookings);
+  const [booking, setBooking] = useState<Booking | null>((location.state?.booking as Booking | undefined) ?? null);
+  const [isLoading, setIsLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState<string>('');
 
   const getShareText = (activeBooking: Booking, paidAmount: number) => [
@@ -158,199 +163,362 @@ export const BookingConfirmationPage = () => {
   };
 
   useEffect(() => {
-    if (!booking) {
-      navigate('/');
-    }
-  }, [booking, navigate]);
+  if (!bookingId) {
+    navigate('/book', { replace: true });
+    return;
+  }
 
-  if (!booking) return null;
+  const stateBooking = location.state?.booking as Booking | undefined;
+
+  if (stateBooking?.bookingId === bookingId) {
+    setBooking(stateBooking);
+    setIsLoading(false);
+    return;
+  }
+
+  const storeBooking = bookings.find((item) => item.bookingId === bookingId);
+
+  if (storeBooking) {
+    setBooking(storeBooking);
+    setIsLoading(false);
+    return;
+  }
+
+  const loadBooking = async () => {
+    setIsLoading(true);
+
+    const result = await getBookingByBookingId(bookingId);
+
+    if (!result.ok || !result.booking) {
+      navigate('/book', { replace: true });
+      return;
+    }
+
+    setBooking(result.booking);
+    setIsLoading(false);
+  };
+
+  void loadBooking();
+}, [bookingId, bookings, location.state, navigate]);
+
+if (isLoading) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#f5f1ed]">
+      <div className="rounded-2xl bg-white px-8 py-6 shadow-lg text-amber-900">
+        Loading your booking confirmation...
+      </div>
+    </div>
+  );
+}
+
+if (!booking) {
+  return null;
+}
 
   const paidAmount = charges?.totalPaid ?? booking.depositAmount;
   const paidLabel = charges?.cartSubtotal ? 'Payment Received' : 'Deposit Paid';
 
   return (
-    <div className="min-h-screen pt-24 pb-16" style={{ background: 'linear-gradient(135deg, #e8e4df 0%, #f5f1ed 100%)' }}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="rounded-2xl overflow-hidden shadow-lg bg-white p-5 sm:p-8 sm:py-10 lg:p-10">
-        {/* Success Header */}
-        <div className="text-center mb-12">
-          <div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
-            <Check size={40} className="text-emerald-600" />
+  <main className="relative min-h-screen overflow-hidden bg-[#efe8dc] px-3 py-3 sm:px-4 lg:px-5">
+    {/* Floral background */}
+    <div className="absolute inset-0 opacity-45 pointer-events-none">
+      <img
+        src="/bookfirstpage.png"
+        alt=""
+        className="h-full w-full object-cover"
+        draggable={false}
+      />
+    </div>
+
+    <div className="relative z-10 mx-auto mt-20 max-w-6xl">
+      <section className="overflow-hidden rounded-[1.5rem] border border-white/70 bg-[#fffaf1]/90 shadow-[0_22px_55px_rgba(65,42,25,0.2)] backdrop-blur-xl">
+        {/* Compact header */}
+        <div className="px-4 pb-4 pt-5 text-center sm:px-6">
+          <div className="flex items-center justify-center gap-3">
+            <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-amber-600/50 bg-amber-700/40">
+              <span className="text-lg">🍽️</span>
+            </div>
+
+            <p className="font-serif text-[clamp(1.15rem,2.2vw,1.7rem)] tracking-[0.26em] text-[#1f1813]">
+              LUXE RESERVE
+            </p>
           </div>
-          <span className="inline-block text-amber-700 text-xs font-bold tracking-widest uppercase mb-3">✓ Booking Confirmed</span>
-          <h1 className="font-serif text-amber-900 text-[clamp(38px,5.2vw,56px)] leading-[0.92] mb-4">
-            Thank you, {booking.customerName.split(' ')[0]}
+
+          <div className="mt-1 flex items-center justify-center gap-3">
+            <span className="h-px w-10 bg-[#b98b42]" />
+            <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-[#b98b42]">
+              Premium Dining Experience
+            </p>
+            <span className="h-px w-10 bg-[#b98b42]" />
+          </div>
+
+          <div className="mx-auto mt-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 ring-8 ring-emerald-500/8">
+            <Check size={28} className="text-emerald-700" />
+          </div>
+
+          <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[#6f5c4b]">
+            Booking Confirmed
+          </p>
+
+          <h1 className="mt-2 font-serif text-[clamp(2rem,4vw,3.6rem)] leading-none text-[#2b2018]">
+            Thank you, {booking.customerName?.split(' ')[0] || 'Guest'}
           </h1>
-          <p className="text-amber-800/70 text-lg max-w-3xl mx-auto">
-            Your reservation has been confirmed. We've sent a confirmation email to <span className="font-semibold">{booking.customerEmail}</span>
+
+          <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-[#776b5e]">
+            Your reservation has been confirmed.
+            {booking.customerEmail ? (
+              <>
+                {' '}We&apos;ve sent a confirmation email to{' '}
+                <span className="font-semibold text-[#3d3128]">
+                  {booking.customerEmail}
+                </span>
+                .
+              </>
+            ) : null}
           </p>
         </div>
 
-        {/* Booking Card */}
-        <div className="rounded-xl border border-amber-100/10 p-8 mb-8 bg-gradient-to-br from-amber-50/90 to-yellow-50/85 relative overflow-hidden" style={{
-          backgroundImage: 'url(/artimage.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundColor: '#f8ecd8'
-        }}>
-          {/* Overlay for readability */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#fff6e2]/90 via-[#fff8ed]/50 to-[#fff3e0]/99 rounded-xl" />
-          <div className="absolute inset-0 bg-[rgba(255,247,232,0.5)] backdrop-blur-[1.5px] rounded-xl" />
-          
-          {/* Content wrapper */}
-          <div className="relative z-10">
-          <div className="flex items-center justify-between mb-6 pb-6 border-b border-amber-300/70">
-            <div>
-              <p className="text-amber-900/80 text-sm font-medium mb-1">Booking Reference</p>
-              <p className="font-mono text-2xl text-amber-800 font-bold">{booking.bookingId}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-amber-900/80 text-sm font-medium mb-1">Status</p>
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 text-emerald-700 text-sm border border-emerald-300/50 font-medium">
-                <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                Confirmed
-              </span>
-            </div>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-6 mb-6">
-            <div className="flex items-center gap-4 rounded-xl border border-amber-200/70 bg-white/72 px-3.5 py-3 backdrop-blur-sm">
-              <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
-                <Calendar size={22} className="text-amber-700" />
-              </div>
+        {/* Main one-screen content */}
+        <div className="grid gap-4 px-4 pb-4 sm:px-5 lg:grid-cols-[1fr_0.95fr] lg:px-7">
+          {/* Left booking card */}
+          <section className="rounded-[1.2rem] border border-[#eadfce] bg-white/50 p-4 shadow-sm backdrop-blur-md">
+            <div className="flex items-start justify-between gap-4 border-b border-[#eadfce] pb-4">
               <div>
-                <p className="text-amber-900/70 text-xs font-semibold uppercase">Date</p>
-                <p className="text-amber-950 font-semibold mt-1">{formatDate(booking.date)}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 rounded-xl border border-amber-200/70 bg-white/72 px-3.5 py-3 backdrop-blur-sm">
-              <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
-                <Clock size={22} className="text-amber-700" />
-              </div>
-              <div>
-                <p className="text-amber-900/70 text-xs font-semibold uppercase">Time</p>
-                <p className="text-amber-950 font-semibold mt-1">{formatTime(booking.time)}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 rounded-xl border border-amber-200/70 bg-white/72 px-3.5 py-3 backdrop-blur-sm">
-              <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
-                <Users size={22} className="text-amber-700" />
-              </div>
-              <div>
-                <p className="text-amber-900/70 text-xs font-semibold uppercase">Party Size</p>
-                <p className="text-amber-950 font-semibold mt-1">{booking.guests} {booking.guests === 1 ? 'guest' : 'guests'}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 rounded-xl border border-amber-200/70 bg-white/72 px-3.5 py-3 backdrop-blur-sm">
-              <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
-                <MapPin size={22} className="text-amber-700" />
-              </div>
-              <div>
-                <p className="text-amber-900/70 text-xs font-semibold uppercase">Table</p>
-                <p className="text-amber-950 font-semibold mt-1">
-                  {booking.tableNumber ? `Table ${booking.tableNumber}` : 'To be assigned'}
+                <p className="text-sm font-semibold text-[#6f5c4b]">
+                  Booking Reference
+                </p>
+                <p className="mt-2 font-mono text-2xl font-bold tracking-wide text-[#8a5d21]">
+                  {booking.bookingId}
                 </p>
               </div>
-            </div>
-          </div>
 
-          {booking.specialRequests && (
-            <div className="pt-6 border-t border-amber-300/70">
-              <div className="rounded-xl border border-amber-200/70 bg-white/72 px-4 py-3 backdrop-blur-sm">
-                <p className="text-amber-900/80 text-sm font-semibold mb-2 uppercase">Special Requests</p>
-                <p className="text-amber-950">{booking.specialRequests}</p>
+              <div className="text-right">
+                <p className="text-sm font-semibold text-[#6f5c4b]">
+                  Status
+                </p>
+                <span className="mt-2 inline-flex items-center gap-2 rounded-full border border-emerald-300/50 bg-emerald-500/15 px-4 py-2 text-sm font-semibold text-emerald-700">
+                  <Check size={15} />
+                  Confirmed
+                </span>
               </div>
             </div>
-          )}
-          </div>
-        </div>
 
-        {/* Payment Info */}
-        <div className="rounded-xl border border-amber-200/50 p-6 mb-8 bg-gradient-to-br from-emerald-50/80 to-teal-50/80">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center">
-                <Mail size={22} className="text-emerald-700" />
-              </div>
-              <div>
-                <p className="text-emerald-900 font-semibold">{paidLabel}</p>
-                <p className="text-emerald-700/70 text-sm">{formatCurrency(paidAmount)}</p>
-                {charges?.cartSubtotal ? (
-                  <p className="text-emerald-700/70 text-xs mt-1">
-                    {formatCurrency(charges.baseDepositAmount)} deposit + {formatCurrency(charges.cartSubtotal)} pre-order menu
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="flex items-center gap-3 rounded-2xl border border-[#eadfce] bg-[#fffaf1]/70 px-4 py-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#fff2db] text-[#a8752b]">
+                  <Calendar size={18} />
+                </span>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#9a8d80]">
+                    Date
                   </p>
-                ) : null}
+                  <p className="text-sm font-semibold text-[#3d3128]">
+                    {formatDate(booking.date)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 rounded-2xl border border-[#eadfce] bg-[#fffaf1]/70 px-4 py-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#fff2db] text-[#a8752b]">
+                  <Clock size={18} />
+                </span>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#9a8d80]">
+                    Time
+                  </p>
+                  <p className="text-sm font-semibold text-[#3d3128]">
+                    {formatTime(booking.time)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 rounded-2xl border border-[#eadfce] bg-[#fffaf1]/70 px-4 py-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#fff2db] text-[#a8752b]">
+                  <Users size={18} />
+                </span>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#9a8d80]">
+                    Party Size
+                  </p>
+                  <p className="text-sm font-semibold text-[#3d3128]">
+                    {booking.guests} {booking.guests === 1 ? 'guest' : 'guests'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 rounded-2xl border border-[#eadfce] bg-[#fffaf1]/70 px-4 py-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#fff2db] text-[#a8752b]">
+                  <MapPin size={18} />
+                </span>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#9a8d80]">
+                    Table
+                  </p>
+                  <p className="text-sm font-semibold text-[#3d3128]">
+                    {booking.tableNumber ? `Table ${booking.tableNumber}` : 'To be assigned'}
+                  </p>
+                </div>
               </div>
             </div>
-            <span className="text-emerald-700 text-sm font-bold bg-emerald-100/60 px-3 py-1 rounded-full">✓ Paid</span>
-          </div>
-        </div>
 
-        {/* Actions */}
-        <div className="flex flex-wrap gap-4 mb-12">
-          <Button className="bg-amber-700 hover:bg-amber-800 text-white font-medium py-2 px-6 rounded-lg flex items-center gap-2 transition-all" onClick={handleDownloadPdf}>
-            <Download size={18} />
-            Download PDF
-          </Button>
-          <Button className="bg-amber-100 hover:bg-amber-200 text-amber-900 font-medium py-2 px-6 rounded-lg flex items-center gap-2 transition-all border border-amber-200" onClick={handleShare}>
-            <Share2 size={18} />
-            Share
-          </Button>
-        </div>
-        {actionMessage && (
-          <p className="text-sm text-amber-700 mb-8 -mt-6 font-medium">{actionMessage}</p>
-        )}
-
-        {/* Important Info */}
-        <div className="space-y-4 mb-12">
-          <h3 className="font-serif text-3xl text-amber-900">Important Information</h3>
-          <div className="rounded-xl border border-amber-200/50 p-6 space-y-4 bg-gradient-to-br from-amber-50/60 to-yellow-50/60">
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-amber-700/20 flex items-center justify-center flex-shrink-0 mt-0.5 border border-amber-300/50">
-                <span className="text-amber-700 text-xs font-bold">1</span>
-              </div>
-              <div>
-                <p className="text-amber-900 font-semibold mb-1">Arrival Time</p>
-                <p className="text-amber-700/70 text-sm">
-                  Please arrive within 15 minutes of your reservation time. 
-                  Your table may be released after this time.
+            {booking.specialRequests && (
+              <div className="mt-4 rounded-2xl border border-[#eadfce] bg-[#fffaf1]/70 px-4 py-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#9a8d80]">
+                  Special Requests
+                </p>
+                <p className="mt-1 text-sm leading-5 text-[#3d3128]">
+                  {booking.specialRequests}
                 </p>
               </div>
+            )}
+
+            {/* Payment mini card */}
+            <div className="mt-4 rounded-2xl border border-emerald-200/60 bg-emerald-50/70 px-4 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                    <Mail size={18} />
+                  </span>
+
+                  <div>
+                    <p className="font-semibold text-emerald-900">
+                      {paidLabel}
+                    </p>
+                    <p className="text-sm text-emerald-700/75">
+                      {formatCurrency(paidAmount)}
+                    </p>
+
+                    {charges?.cartSubtotal ? (
+                      <p className="mt-1 text-xs text-emerald-700/70">
+                        {formatCurrency(charges.baseDepositAmount)} deposit +{' '}
+                        {formatCurrency(charges.cartSubtotal)} pre-order menu
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-700">
+                  <Check size={14} />
+                  Paid
+                </span>
+              </div>
             </div>
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-amber-700/20 flex items-center justify-center flex-shrink-0 mt-0.5 border border-amber-300/50">
-                <span className="text-amber-700 text-xs font-bold">2</span>
+
+            {/* Buttons */}
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <Button
+                type="button"
+                onClick={handleDownloadPdf}
+                className="h-12 rounded-xl bg-[linear-gradient(135deg,#c39243,#a56f25)] text-sm font-bold text-white shadow-[0_10px_22px_rgba(165,111,37,0.25)] hover:opacity-95"
+              >
+                <Download size={18} className="mr-2" />
+                Download PDF
+              </Button>
+
+              <Button
+                type="button"
+                onClick={handleShare}
+                className="h-12 rounded-xl border border-[#cbb28d] bg-white text-sm font-bold text-[#7a5b32] hover:bg-[#fff8ef]"
+              >
+                <Share2 size={18} className="mr-2" />
+                Share
+              </Button>
+            </div>
+
+            {actionMessage && (
+              <p className="mt-3 text-center text-sm font-medium text-[#8a5d21]">
+                {actionMessage}
+              </p>
+            )}
+          </section>
+
+          {/* Right important info */}
+          <section className="rounded-[1.2rem] border border-[#eadfce] bg-white/50 p-4 shadow-sm backdrop-blur-md">
+            <h2 className="font-serif text-[1.8rem] leading-none text-[#2b2018]">
+              Important Information
+            </h2>
+
+            <div className="mt-5 space-y-4">
+              <div className="flex gap-4 border-b border-[#eadfce] pb-4">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#fff2db] font-serif text-xl font-bold text-[#a8752b]">
+                  1
+                </span>
+
+                <div>
+                  <h3 className="font-serif text-xl text-[#2b2018]">
+                    Arrival Time
+                  </h3>
+                  <p className="mt-1 text-sm leading-6 text-[#776b5e]">
+                    Please arrive within 15 minutes of your reservation time.
+                    Your table may be released after this time.
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-amber-900 font-semibold mb-1">Cancellation Policy</p>
-                <p className="text-amber-700/70 text-sm">
-                  Cancellations made at least 24 hours in advance will receive a full refund. 
-                  Late cancellations may forfeit the deposit.
-                </p>
+
+              <div className="flex gap-4 border-b border-[#eadfce] pb-4">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#fff2db] font-serif text-xl font-bold text-[#a8752b]">
+                  2
+                </span>
+
+                <div>
+                  <h3 className="font-serif text-xl text-[#2b2018]">
+                    Cancellation Policy
+                  </h3>
+                  <p className="mt-1 text-sm leading-6 text-[#776b5e]">
+                    Cancellations made at least 24 hours in advance will receive
+                    a full refund. Late cancellations may forfeit the deposit.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#fff2db] font-serif text-xl font-bold text-[#a8752b]">
+                  3
+                </span>
+
+                <div>
+                  <h3 className="font-serif text-xl text-[#2b2018]">
+                    Dress Code
+                  </h3>
+                  <p className="mt-1 text-sm leading-6 text-[#776b5e]">
+                    Smart casual attire is recommended for the best dining
+                    experience.
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-amber-700/20 flex items-center justify-center flex-shrink-0 mt-0.5 border border-amber-300/50">
-                <span className="text-amber-700 text-xs font-bold">3</span>
+
+            <div className="mt-6 rounded-2xl border border-[#eadfce] bg-[#fffaf1]/70 px-4 py-4">
+              <div className="flex items-center gap-3 text-sm text-[#7a6c60]">
+                <BadgeCheck size={18} className="text-[#a8752b]" />
+                <span>Secure booking confirmed instantly.</span>
               </div>
-              <div>
-                <p className="text-amber-900 font-semibold mb-1">Dress Code</p>
-                <p className="text-amber-700/70 text-sm">
-                  Smart casual attire is recommended for the best dining experience.
-                </p>
+
+              <div className="mt-3 flex items-center gap-3 text-sm text-[#7a6c60]">
+                <LockKeyhole size={18} className="text-[#a8752b]" />
+                <span>Payment details are processed securely.</span>
               </div>
             </div>
-          </div>
+          </section>
         </div>
 
-        {/* Back to Home */}
-        <div className="text-center">
-          <Link to="/" className="inline-flex items-center gap-2 bg-amber-700 hover:bg-amber-800 text-white font-medium py-2 px-8 rounded-lg transition-all">
+        {/* Bottom home button */}
+        <div className="px-4 pb-5 sm:px-5 lg:px-7">
+          <Link
+            to="/"
+            className="flex h-12 w-full items-center justify-center gap-3 rounded-xl bg-[linear-gradient(135deg,#c39243,#a56f25)] text-base font-bold text-white shadow-[0_10px_22px_rgba(165,111,37,0.25)] transition hover:scale-[1.005] hover:opacity-95"
+          >
+            <Home size={19} />
             Return to Home
           </Link>
+
+          <p className="mt-3 flex items-center justify-center gap-2 text-xs text-[#8a7c6d]">
+            <LockKeyhole size={13} />
+            Secure booking • Instant confirmation • Fully refundable with 24 hours notice.
+          </p>
         </div>
-        </div>
-      </div>
+      </section>
     </div>
-  );
+  </main>
+);
 };

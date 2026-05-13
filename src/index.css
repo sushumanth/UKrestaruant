@@ -55,6 +55,11 @@
   
   html {
     scroll-behavior: smooth;
+    scrollbar-width: none;
+  }
+
+  html::-webkit-scrollbar {
+    display: none;
   }
 
   html,
@@ -416,5 +421,61 @@
   -webkit-user-select: none;
   user-select: none;
   -webkit-user-drag: none;
+}
+
+  .hero-artboard {
+  width: 100vw;
+  aspect-ratio: 16 / 9;
+  transform: translate(-50%, -50%);
+}
+
+@media (min-aspect-ratio: 16/9) {
+  .hero-artboard {
+    width: 100vw;
+    height: auto;
+  }
+}
+
+@media (max-aspect-ratio: 16/9) {
+  .hero-artboard {
+    height: 100vh;
+    width: auto;
+  }
+}
+
+@keyframes steamRise {
+  0% {
+    opacity: 0;
+    transform: translate3d(var(--steam-x-start), 22px, 0) scale(0.72)
+      rotate(var(--steam-rotate));
+    filter: blur(1px);
+  }
+
+  18% {
+    opacity: var(--steam-max-opacity);
+  }
+
+  52% {
+    opacity: calc(var(--steam-max-opacity)*0.95);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--steam-x-end), -95px, 0) scale(1.18)
+      rotate(8deg);
+    filter: blur(5px);
+  }
+}
+
+.steam-puff {
+  opacity: 0;
+  animation-name: steamRise;
+  animation-duration: var(--steam-duration);
+  animation-delay: var(--steam-delay);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+  mix-blend-mode: screen;
+  will-change: transform, opacity, filter;
 }
 }

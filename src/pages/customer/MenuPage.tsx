@@ -240,46 +240,45 @@ const MenuCard = ({
       </div>
 
       {/* Content */}
-      <div className="flex flex-1 flex-col p-1 md:p-3 lg:p-4">
-        <div className="flex items-start justify-between gap-2">
+      <div className="flex flex-1 flex-col p-1 md:p-3 lg:p-4 gap-5">
+        <div className="gap-2">
           <h3 className="font-serif text-lg font-medium leading-tight text-[#2d2319] sm:text-xl lg:text-2xl">
             {item.name}
           </h3>
-        </div>
-
-        {/* Description */}
+          {/* Description */}
         <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[#6f5f4a] md:mt-2 lg:mt-3 sm:text-sm lg:line-clamp-3">
           {item.description}
         </p>
+        </div>
 
         {/* Meta: Rating & Prep Time */}
-        <div className="mt-1 flex items-center gap-4 text-xs text-[#7d6a57] md:mt-2 lg:mt-3 sm:text-sm">
+        <div className="mt-auto flex flex-col pt-1 md:pt-2 lg:pt-3">
           {/* <span className="inline-flex items-center gap-1.5">
             <Star size={13} className="text-[#b9832f] sm:size-[14px]" aria-hidden="true" />
             <span className="tabular-nums">{formatMenuRating(item.rating)}</span>
           </span> */}
-          <span className="inline-flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1.5 text-xs text-[#7d6a57] sm:text-sm">
             <Clock3 size={13} className="sm:size-[14px]" aria-hidden="true" />
             <span className="tabular-nums">{item.prepTime} min</span>
           </span>
-        </div>
+        
 
         {/* Price & Actions */}
-        <div className="mt-auto flex items-center justify-between pt-1 md:pt-2 lg:pt-3">
+        <div className="flex items-center justify-between pt-1 md:pt-2 lg:pt-3">
           <span className="text-base font-semibold text-[#7d2419] sm:text-lg lg:text-xl">
             {formatCurrency(item.price)}
           </span>
 
           {quantity > 0 ? (
             <div 
-              className="no-select inline-flex items-center rounded-full border border-[#8f2a1d] bg-[#7d2419] p-1 text-[#fff3df] shadow-[0_4px_12px_rgba(60,20,10,0.2)]"
+              className="no-select inline-flex items-center rounded-full border border-[#8f2a1d] bg-[#7d2419] p-1 text-[#fff3df] shadow-[0_4px_12px_rgba(60,20,10,0.2)] no-select"
               role="group"
               aria-label={`Quantity controls for ${item.name}`}
             >
               <button
                 type="button"
                 onClick={() => onUpdateQty(quantity - 1)}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-[#942d21] focus:outline-none focus:ring-2 focus:ring-[#fff3df]/50"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-[#942d21] focus:outline-none focus:ring-2 focus:ring-[#fff3df]/50 no-select"
                 aria-label={`Remove one ${item.name}`}
               >
                 <Minus size={14} aria-hidden="true" />
@@ -290,7 +289,7 @@ const MenuCard = ({
               <button
                 type="button"
                 onClick={onAdd}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-[#942d21] focus:outline-none focus:ring-2 focus:ring-[#fff3df]/50"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-[#942d21] focus:outline-none focus:ring-2 focus:ring-[#fff3df]/50 no-select"
                 aria-label={`Add one ${item.name}`}
               >
                 <Plus size={14} aria-hidden="true" />
@@ -300,13 +299,14 @@ const MenuCard = ({
             <button
               type="button"
               onClick={onAdd}
-              className="inline-flex items-center gap-2 rounded-full bg-[#7d2419] px-2 py-1 text-sm font-semibold text-[#fff3df] transition-colors hover:bg-[#942d21] focus:outline-none focus:ring-2 focus:ring-[#7d2419] focus:ring-offset-2 focus:ring-offset-[#fffaf1] md:px-3 md:py-1.5 lg:px-4 lg:py-2"
+              className="no-select inline-flex items-center gap-2 rounded-full bg-[#7d2419] px-2 py-1 text-sm font-semibold text-[#fff3df] transition-colors hover:bg-[#942d21] focus:outline-none focus:ring-2 focus:ring-[#7d2419] focus:ring-offset-2 focus:ring-offset-[#fffaf1] md:px-3 md:py-1.5 lg:px-4 lg:py-2"
               aria-label={`Add ${item.name} to cart`}
             >
               <Plus size={14} aria-hidden="true" />
               <span>Add</span>
             </button>
           )}
+        </div>
         </div>
       </div>
     </motion.article>

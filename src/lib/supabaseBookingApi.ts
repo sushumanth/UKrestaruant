@@ -127,3 +127,52 @@ export const getOccupiedTableIdsFromSupabase = async (
     tableIds,
   };
 };
+
+export const getBookingByBookingId = async (
+  bookingId: string
+): Promise<{ ok: boolean; booking?: Booking; error?: string }> => {
+  if (!isSupabaseConfigured || !supabase) {
+    return {
+      ok: false,
+      error: 'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.',
+    };
+  }
+
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .eq('booking_id', bookingId)
+    .single();
+
+  if (error) {
+    return {
+      ok: false,
+      error: error.message,
+    };
+  }
+
+  const booking: Booking = {
+    id: data.id,
+    bookingId: data.booking_id,
+    customerName: data.customer_name,
+    customerEmail: data.customer_email,
+    customerPhone: data.customer_phone,
+    date: data.booking_date,
+    time: data.booking_time,
+    guests: data.guests,
+    tableId: data.table_id ?? undefined,
+    tableNumber: data.table_number ?? undefined,
+    status: data.status,
+    specialRequests: data.special_requests ?? '',
+    depositAmount: data.deposit_amount,
+    paymentStatus: data.payment_status,
+    stripePaymentIntentId: data.stripe_payment_intent_id ?? undefined,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  };
+
+  return {
+    ok: true,
+    booking,
+  };
+};
