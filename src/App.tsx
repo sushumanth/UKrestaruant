@@ -23,6 +23,10 @@ import { MenuPage } from '@/pages/customer/MenuPage';
 import { CartPage } from '@/pages/customer/CartPage';
 import { OrderOnlinePage } from '@/pages/customer/order_online';
 import { BookingPage } from '@/pages/customer/BookingPage';
+import BookingSelectionPage from '@/pages/customer/BookingSelectionPage';
+import BookingDetailsPage from '@/pages/customer/BookingDetailsPage';
+import BookingPaymentPage from '@/pages/customer/BookingPaymentPage';
+
 import { BookingConfirmationPage } from '@/pages/customer/BookingConfirmationPage';
 import { CustomerAuthPage } from '@/pages/customer/CustomerAuthPage';
 import { CustomerDashboardPage } from '@/pages/customer/CustomerDashboardPage';
@@ -320,7 +324,10 @@ function App() {
             </CustomerProtectedRoute>
           }
         >
-          <Route index element={<BookingPage />} />
+          <Route index element={<BookingSelectionPage />} />
+          <Route path="details" element={<BookingDetailsPage />} />
+          <Route path="payment" element={<BookingPaymentPage />} />
+          <Route path="legacy" element={<BookingPage />} />
         </Route>
 
         <Route

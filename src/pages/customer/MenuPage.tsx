@@ -100,29 +100,28 @@ export const MenuPage = () => {
                 />
               </div>
 
-              <div className="flex gap-3 items-center flex-wrap sm:flex-nowrap">
+              <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => setActiveCategory('all')}
-                  className={`rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap ${
+                  className={`rounded-full px-4 py-2 text-sm font-medium ${
                     activeCategory === 'all' ? 'bg-[#7d2419] text-[#fff3df]' : 'bg-[#f5ead7] text-[#6c583f]'
                   }`}
                 >
                   All
                 </button>
-                <select
-                  value={activeCategory === 'all' ? '' : activeCategory}
-                  onChange={(e) => setActiveCategory(e.target.value || 'all')}
-                  className="rounded-full px-4 py-2 text-sm font-medium border border-[#dcc9a4] bg-white text-[#6c583f] outline-none focus:border-[#c26d37] focus:ring-2 focus:ring-[#c26d37]/20 cursor-pointer"
-                  aria-label="Filter by category"
-                >
-                  <option value="">Select Category</option>
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => setActiveCategory(category)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium ${
+                      activeCategory === category ? 'bg-[#7d2419] text-[#fff3df]' : 'bg-[#f5ead7] text-[#6c583f]'
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
               </div>
             </div>
           </section>

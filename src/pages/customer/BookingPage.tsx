@@ -781,6 +781,7 @@ export const BookingPage = () => {
             totalPaid: totalChargeNow,
             itemCount: cartItemCount,
           },
+          saveOk: true,
         },
       });
     }, 1500);
