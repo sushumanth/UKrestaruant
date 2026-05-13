@@ -264,7 +264,7 @@ const animateToIndex = (index: number) => {
 
               <div    
                 ref={scrollerRef}
-                className="mx-auto h-[430px] max-h-[430px] w-full px-1 py-0 scroll-smooth sm:h-[460px] sm:max-h-[460px] md:h-auto md:mx-11 md:max-h-none md:px-0 overflow-hidden"
+                className="mx-auto h-[430px] max-h-[430px] px-1 py-0 scroll-smooth sm:h-[460px] sm:max-h-[460px] md:h-auto md:mx-11 md:max-h-none md:px-0 overflow-hidden"
                 style={{ scrollbarWidth: 'none' }}
               >
                 <div className="flex flex-col items-center md:flex-row md:items-stretch md:snap-x md:snap-mandatory gap-8 py-0 md:gap-5 md:pt-4 md:pb-8 [perspective:1000px] ">
