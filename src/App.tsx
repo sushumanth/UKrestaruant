@@ -41,6 +41,8 @@ import { EmployeeDashboard } from '@/pages/employee/EmployeeDashboard';
 import { EmployeeBookings } from '@/pages/employee/EmployeeBookings';
 import { EmployeeMenu } from '@/pages/employee/EmployeeMenu';
 import { LoginPage } from '@/pages/LoginPage';
+import { SupportHarmanPage } from './pages/SupportHarmanPage';
+import { FloatingSupportButton } from './components/support/FloatingSupportButton';
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
@@ -271,6 +273,7 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <FloatingSupportButton />
       <Routes>
         <Route path="/" element={<CustomerLayout />}>
           <Route index element={<HomePage />} />
@@ -278,6 +281,7 @@ function App() {
           <Route path="online-order" element={<OrderOnlinePage />} />
           <Route path="cart" element={<CartPage />} />
           <Route path="confirmation" element={<BookingConfirmationPage />} />
+          <Route path="support-harman" element={<SupportHarmanPage />} />
         </Route>
 
         <Route path="/login" element={<LoginPage />} />
