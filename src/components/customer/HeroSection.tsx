@@ -32,6 +32,81 @@ const operatingHighlights = [
   },
 ];
 
+const steamItems = [
+  {
+    src: "/steam-1.png",
+    left: "54%",
+    top: "57%",
+    width: "11%",
+    delay: "0s",
+    duration: "6.2s",
+    opacity: 0.54,
+    xStart: "-8px",
+    xEnd: "14px",
+    rotate: "-3deg",
+  },
+  {
+    src: "/steam-2.png",
+    left: "57%",
+    top: "64%",
+    width: "12%",
+    delay: "0.9s",
+    duration: "7s",
+    opacity: 0.52,
+    xStart: "8px",
+    xEnd: "16px",
+    rotate: "3deg",
+  },
+  {
+    src: "/steam-4.png",
+    left: "63%",
+    top: "60%",
+    width: "10%",
+    delay: "1.6s",
+    duration: "6.8s",
+    opacity: 0.58,
+    xStart: "6px",
+    xEnd: "-12px",
+    rotate: "4deg",
+  },
+  {
+    src: "/steam-3.png",
+    left: "73%",
+    top: "66%",
+    width: "12%",
+    delay: "2.3s",
+    duration: "6.5s",
+    opacity: 0.52,
+    xStart: "-6px",
+    xEnd: "12px",
+    rotate: "-2deg",
+  },
+  {
+    src: "/steam-4.png",
+    left: "84%",
+    top: "68%",
+    width: "10%",
+    delay: "2.9s",
+    duration: "6.8s",
+    opacity: 0.58,
+    xStart: "6px",
+    xEnd: "-12px",
+    rotate: "4deg",
+  },
+  {
+    src: "/steam-1.png",
+    left: "73%",
+    top: "61%",
+    width: "10%",
+    delay: "0.8s",
+    duration: "6.8s",
+    opacity: 0.18,
+    xStart: "6px",
+    xEnd: "-12px",
+    rotate: "4deg",
+  },
+];
+
 export const HeroSection = () => {
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -39,10 +114,10 @@ export const HeroSection = () => {
   return (
     <section
       className="relative min-h-[100svh] overflow-hidden bg-[#140705]">
-      <div className="absolute inset-0 select-none">
-        <div className='relative h-full w-full overflow-hidden'>
-         
-<div className="absolute inset-0 z-0 overflow-hidden">
+{/* ROOM INTERIOR */}
+<div className="absolute no-select inset-0 z-10 overflow-hidden">
+  <div className="absolute left-1/2 top-1/2 aspect-video h-full w-auto -translate-x-1/2 -translate-y-1/2 min-h-full min-w-full">  {/* relative h-full w-full */}
+  <div className="absolute inset-0 z-0 overflow-hidden">
   <video
     ref={videoRef}
     className="absolute inset-0 h-full w-full object-cover lg:top-10 lg:right-0 lg:scale-[0.65] lg:origin-top-right lg:object-center"
@@ -51,28 +126,18 @@ export const HeroSection = () => {
     loop
     playsInline
     preload="metadata"
-    poster='/london.webp'
+    poster='/london-thumb.webp'
     onLoadedData={() => {
       if (videoRef.current) {
-        videoRef.current.playbackRate = 1;
+        videoRef.current.playbackRate = 0.75;
       }
     }}
   >
     <source src="/london_vid.webm" type="video/webm" />
-    <source src="/london_vid.mp4" type="video/mp4" />
+    <source src="/london_view.mp4" type="video/mp4" /> 
   </video>
 </div>
-
-{/* LAYER 6: Steam (Over Food) */}
-{/* <div className="absolute bottom-[15%] left-1/2 -translate-x-1/2 z-20 w-[60%] max-w-xl no-select">
-  <img
-    src="steam.webp"
-    alt="Steam"
-    className="w-full h-auto opacity-80"
-    draggable={false}
-  />
-</div> */}
-          {/* London background 
+{/* London background  
         <div className="absolute inset-0 z-0 overflow-hidden">
   <img
     src="/london.webp"
@@ -80,27 +145,50 @@ export const HeroSection = () => {
     className="absolute inset-0 w-full h-full object-cover lg:top-10 lg:right-0 lg:scale-[0.65] lg:origin-top-right lg:object-center"
     draggable={false}
   />
-</div>
-{/* ROOM INTERIOR */}
-<div className="absolute inset-0 z-10">
+</div> */}
+    <div className='absolute inset-0 z-10 overflow-hidden'>
   <img
     src="/room-interior.webp"
     alt="Restaurant Interior"
-    className="no-select w-full h-full object-cover lg:object-center object-[40%_center] sm:object-[60%_center]"
-    loading="lazy"
+    className="inset-0 w-full h-full absolute" // no-select w-full h-full object-cover lg:object-center object-[40%_center] sm:object-[60%_center]
     draggable={false}
   />
-</div>
+  </div>
+  <div className="pointer-events-none absolute inset-0 z-[22] hidden md:block">
+  {steamItems.map((steam, index) => (
+    <img
+      key={index}
+      src={steam.src}
+      alt=""
+      loading='lazy'
+      className="steam-puff absolute h-auto"
+      style={
+        {
+          left: steam.left,
+          top: steam.top,
+          width: steam.width,
+          "--steam-max-opacity": steam.opacity,
+          "--steam-delay": steam.delay,
+          "--steam-duration": steam.duration,
+          "--steam-x-start": steam.xStart,
+          "--steam-x-end": steam.xEnd,
+          "--steam-rotate": steam.rotate,
+        } as React.CSSProperties
+      }
+      draggable={false}
+    />
+  ))}
+  </div>
         
 <Lantern
-  className="lg:flex justify-center items-start w-[200px] sm:w-[210px] md:w-[230px] lg:w-[240px] left-[85%] -translate-x-1/2 sm:left-[52%] md:left-[53%] lg:right-[41%]" //lg:flex justify-center items-start top-0 left-[85%] -translate-x-1/2 w-[200px] h-[300px] sm:-top-[15%] sm:left-[52%] sm:w-[210px] sm:h-[315px] md:top-[-10%] md:left-[53%] md:w-[230px] md:h-[345px] lg:top-0 lg:left-auto lg:right-[41%] lg:translate-x-0 lg:w-[240px] lg:h-[360px] 
-  imgClassName="h-[250px] sm:h-[260px] md:h-[275px] lg:h-[300px] "
+  className="flex justify-center items-start w-[200px] sm:w-[210px] md:w-[230px] lg:w-[240px] xl:w-[300px] left-[43%] top-[0px] " //lg:flex justify-center items-start top-0 left-[85%] -translate-x-1/2 w-[200px] h-[300px] sm:-top-[15%] sm:left-[52%] sm:w-[210px] sm:h-[315px] md:top-[-10%] md:left-[53%] md:w-[230px] md:h-[345px] lg:top-0 lg:left-auto lg:right-[41%] lg:translate-x-0 lg:w-[240px] lg:h-[360px] 
+  imgClassName="h-[260px] md:h-[280px] lg:h-[300px] xl:h-[350px] "
   heavyWind={true}
   topMask={{
     enabled: true,
     color: "0,0,0",
 
-    width: 70,
+    width: 200,
     height: 200,
 
     fromOpacity: 1,
@@ -126,14 +214,14 @@ export const HeroSection = () => {
 />
 
 <Lantern
-  className="hidden lg:flex justify-center items-start top-[-15%] right-[-5%] w-[320px] h-[460px]"
+  className="hidden lg:flex justify-center items-start top-[-15%] left-[85%] w-[320px] h-[460px]"
   imgClassName="h-[420px]"
   heavyWind={false}
   topMask={{
     enabled: true,
     color: "0,0,0",
 
-    width: 100,
+    width: 270,
     height: 400,
 
     fromOpacity: 1,
@@ -160,10 +248,10 @@ export const HeroSection = () => {
 </div>
 </div>
  {/* context */}
-       <div className="relative z-20 mx-auto flex flex-col min-h-[100svh] w-full items-start justify-end px-5 pb-[140px] pt-24 md:px-6 md:pb-[160px] lg:justify-center lg:pl-8 xl:pl-16">
-         <div className="w-full max-w-[19rem] sm:max-w-[22rem] md:max-w-[34rem] lg:max-w-[48rem] xl:max-w-[56rem]">
+       <div className="pointer-events-none relative z-20 mx-auto flex flex-col min-h-[100svh] w-full items-start justify-end px-5 pb-[140px] pt-24 md:px-6 md:pb-[160px] lg:justify-center lg:pl-8 xl:pl-16">
+         <div className="w-full">
           <svg
-            viewBox="0 0 850 120"
+            viewBox="0 0 1200 120"
             className="block w-full overflow-visible select-none" 
             preserveAspectRatio="xMinYMid meet"
             role="img"
@@ -230,9 +318,9 @@ export const HeroSection = () => {
             Proudly Non-Halal Restaurant
           </div>
 
-          <div className="mt-1 flex flex-col items-start gap-3 md:flex-row px-1 md:px-1 md:mt-0 lg:mt-5 select-none"> 
+          <div className="pointer-events-auto mt-1 flex flex-col items-start gap-3 md:flex-row px-1 md:px-1 md:mt-5 lg:mt-5 no-select"> 
             <Link
-              to="/order"
+              to="/menu"
               className="gap-2 rounded-xl border border-[#7a3e19] bg-[linear-gradient(90deg,#67130f,#7d1712)] px-4 py-2.5 md:px-4 md:py-3 lg:px-6 text-sm font-semibold uppercase tracking-[0.08em] text-[#f8dfab] transition-colors hover:bg-[linear-gradient(90deg,#7b1913,#94221a)] md:w-auto"
             >
               Order Online
@@ -245,7 +333,7 @@ export const HeroSection = () => {
             </Link>
           </div>
 
-<div className="mt-8 hidden lg:inline-flex rounded-full select-none border border-[#f2d7a1]/25 bg-[linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.05))] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#f2d7a1] shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
+<div className="mt-8 hidden lg:inline-flex rounded-full no-select border border-[#f2d7a1]/25 bg-[linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.05))] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#f2d7a1] shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
             Proudly Non-Halal Restaurant
           </div>
         </div>
