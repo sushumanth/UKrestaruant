@@ -56,44 +56,57 @@ interface BookingState {
   setIsLoading: (loading: boolean) => void;
 }
 
-export const useBookingStore = create<BookingState>()((set) => ({
-  bookings: [],
-  currentBooking: null,
-  selectedDate: '',
-  selectedTime: '',
-  selectedGuests: 2,
-  availableSlots: [],
-  isLoading: false,
-  setBookings: (bookings) => set({ bookings }),
-  addBooking: (booking) => set((state) => ({ 
-    bookings: [booking, ...state.bookings] 
-  })),
-  updateBooking: (booking) => set((state) => ({
-    bookings: state.bookings.map((b) => 
-      b.id === booking.id ? booking : b
-    ),
-  })),
-  deleteBooking: (bookingId) => set((state) => ({
-    bookings: state.bookings.filter((b) => b.id !== bookingId),
-  })),
-  setCurrentBooking: (booking) => set({ currentBooking: booking }),
-  setSelectedDate: (date) => set({ selectedDate: date }),
-  setSelectedTime: (time) => set({ selectedTime: time }),
-  setSelectedGuests: (guests) => set({ selectedGuests: guests }),
-  setAvailableSlots: (slots) => set({ availableSlots: slots }),
-  updateBookingStatus: (bookingId, status) => {
-    set((state) => ({
-      bookings: state.bookings.map((b) =>
-        b.id === bookingId ? { ...b, status } : b
-      ),
-    }));
+export const useBookingStore = create<BookingState>()(
+  persist(
+    (set) => ({
+      bookings: [],
+      currentBooking: null,
+      selectedDate: '',
+      selectedTime: '',
+      selectedGuests: 2,
+      availableSlots: [],
+      isLoading: false,
+      setBookings: (bookings) => set({ bookings }),
+      addBooking: (booking) => set((state) => ({ 
+        bookings: [booking, ...state.bookings] 
+      })),
+      updateBooking: (booking) => set((state) => ({
+        bookings: state.bookings.map((b) => 
+          b.id === booking.id ? booking : b
+        ),
+      })),
+      deleteBooking: (bookingId) => set((state) => ({
+        bookings: state.bookings.filter((b) => b.id !== bookingId),
+      })),
+      setCurrentBooking: (booking) => set({ currentBooking: booking }),
+      setSelectedDate: (date) => set({ selectedDate: date }),
+      setSelectedTime: (time) => set({ selectedTime: time }),
+      setSelectedGuests: (guests) => set({ selectedGuests: guests }),
+      setAvailableSlots: (slots) => set({ availableSlots: slots }),
+      updateBookingStatus: (bookingId, status) => {
+        set((state) => ({
+          bookings: state.bookings.map((b) =>
+            b.id === bookingId ? { ...b, status } : b
+          ),
+        }));
 
-    void updateBookingStatus(bookingId, status).catch((error: unknown) => {
-      console.warn('Failed to sync booking status to backend:', error);
-    });
-  },
-  setIsLoading: (loading) => set({ isLoading: loading }),
-}));
+        void updateBookingStatus(bookingId, status).catch((error: unknown) => {
+          console.warn('Failed to sync booking status to backend:', error);
+        });
+      },
+      setIsLoading: (loading) => set({ isLoading: loading }),
+    }),
+    {
+      name: 'booking-storage',
+      partialize: (state) => ({
+        selectedDate: state.selectedDate,
+        selectedTime: state.selectedTime,
+        selectedGuests: state.selectedGuests,
+        currentBooking: state.currentBooking,
+      }),
+    }
+  )
+);
 
 // Table Store
 interface TableState {

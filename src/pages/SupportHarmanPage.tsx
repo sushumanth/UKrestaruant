@@ -8,7 +8,7 @@ import {
   BadgeCheck,
   Play,
   Check,
-  ArrowRight,
+  
 } from 'lucide-react';
 
 const supportAreas = [
