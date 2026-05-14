@@ -59,6 +59,12 @@ const initialMenuItems = [
 ];
 
 async function main() {
+  const addMinutes = (date: Date, minutes: number) => {
+    const next = new Date(date);
+    next.setMinutes(next.getMinutes() + minutes);
+    return next;
+  };
+
   const settings = await prisma.restaurantSettings.findFirst();
 
   if (!settings) {
@@ -115,14 +121,24 @@ async function main() {
   if (bookingCount === 0) {
     const table = await prisma.restaurantTable.findFirst();
     if (table) {
+      const bookingDate = new Date();
+      const bookingStart = new Date(bookingDate);
+      bookingStart.setHours(19, 0, 0, 0);
+      const durationMinutes = 90;
+      const bookingEnd = addMinutes(bookingStart, durationMinutes);
+      const releaseTime = addMinutes(bookingEnd, 15);
+
       await prisma.booking.create({
         data: {
           bookingCode: 'BK-DEMO-001',
           customerName: 'Demo Customer',
           customerEmail: 'customer@example.com',
           customerPhone: '+44 7000 000000',
-          bookingDate: new Date(),
-          bookingTime: '19:00',
+          bookingDate,
+          bookingStart,
+          bookingEnd,
+          releaseTime,
+          durationMinutes,
           guests: 2,
           tableId: table.id,
           tableNumber: table.tableNumber,

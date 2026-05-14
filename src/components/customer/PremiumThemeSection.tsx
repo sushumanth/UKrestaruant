@@ -1,3 +1,4 @@
+'use client';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
@@ -30,7 +31,7 @@ const signatureDishes: SignatureDish[] = [
     description: 'Char-grilled paneer cubes with smoky spice marinade.',
     image: '/dining_room.jpg',
   },
-   {
+  {
     name: 'Paneer Tikka 2',
     description: 'Char-grilled paneer cubes with smoky spice marinade.',
     image: '/dining_room.jpg',
@@ -39,190 +40,210 @@ const signatureDishes: SignatureDish[] = [
 
 export const PremiumThemeSection = () => {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
-const currentIndexRef = useRef(signatureDishes.length);
-const autoDirectionRef = useRef<1 | -1>(-1);
-const autoStepCountRef = useRef(0);
-const isAnimatingRef = useRef(false);
+  const currentIndexRef = useRef(signatureDishes.length);
+  const autoDirectionRef = useRef<1 | -1>(-1);
+  const autoStepCountRef = useRef(0);
+  const isAnimatingRef = useRef(false);
 
-const loopedDishes = [
-  ...signatureDishes,
-  ...signatureDishes,
-  ...signatureDishes,
-];
+  // Track touch start position to detect scroll direction
+  const touchStartXRef = useRef(0);
+  const touchStartYRef = useRef(0);
 
-const isMobileLayout = useCallback(() => {
-  return window.matchMedia('(max-width: 767px)').matches;
-}, []);
+  const loopedDishes = [
+    ...signatureDishes,
+    ...signatureDishes,
+    ...signatureDishes,
+  ];
 
-const getStepSize = useCallback(() => {
-  const scroller = scrollerRef.current;
-  if (!scroller) return 0;
+  const isMobileLayout = useCallback(() => {
+    return window.matchMedia('(max-width: 767px)').matches;
+  }, []);
 
-  const firstCard = scroller.querySelector('[data-signature-card]') as HTMLDivElement | null;
-  if (!firstCard) return 0;
+  const getStepSize = useCallback(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return 0;
+    const firstCard = scroller.querySelector('[data-signature-card]') as HTMLDivElement | null;
+    if (!firstCard) return 0;
+    const gap = 20;
+    return firstCard.offsetWidth + gap;
+  }, []);
 
-  const gap = 20; // this must match gap-5
-  return isMobileLayout()
-    ? firstCard.offsetWidth + gap
-    : firstCard.offsetWidth + gap;
-}, [isMobileLayout]);
-
-const jumpToIndex = useCallback((index: number) => {
-  const scroller = scrollerRef.current;
-  if (!scroller) return;
-
-  const step = getStepSize();
-  const target = step * index;
-
-  if (isMobileLayout()) {
-    scroller.scrollLeft = target;
-  } else {
-    scroller.scrollLeft = target;
-  }
-
-  currentIndexRef.current = index;
-}, [getStepSize, isMobileLayout]);
-
-const animateToIndex = useCallback((index: number) => {
-  const scroller = scrollerRef.current;
-  if (!scroller || isAnimatingRef.current) return;
-
-  isAnimatingRef.current = true;
-
-  const step = getStepSize();
-  const target = step * index;
-
-  const start = scroller.scrollLeft;
-  const distance = target - start;
-  const duration = 750;
-  const startTime = performance.now();
-
-  const easeInOutCubic = (t: number) => {
-    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-  };
-
-  const frame = (time: number) => {
-    const progress = Math.min((time - startTime) / duration, 1);
-    const eased = easeInOutCubic(progress);
-    const nextValue = start + distance * eased;
-
-    scroller.scrollLeft = nextValue;
-
-    if (progress < 1) {
-      requestAnimationFrame(frame);
-      return;
-    }
-
+  const jumpToIndex = useCallback((index: number) => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const step = getStepSize();
+    scroller.scrollLeft = step * index;
     currentIndexRef.current = index;
+  }, [getStepSize]);
 
-    const total = signatureDishes.length;
+  const animateToIndex = useCallback((index: number) => {
+    const scroller = scrollerRef.current;
+    if (!scroller || isAnimatingRef.current) return;
 
-    // If we move into copy 3, silently reset to same item in copy 2
-    if (currentIndexRef.current >= total * 2) {
-      jumpToIndex(currentIndexRef.current - total);
-    }
+    isAnimatingRef.current = true;
 
-    // If we move into copy 1, silently reset to same item in copy 2
-    if (currentIndexRef.current < total) {
-      jumpToIndex(currentIndexRef.current + total);
-    }
+    const step = getStepSize();
+    const target = step * index;
+    const start = scroller.scrollLeft;
+    const distance = target - start;
+    const duration = 750;
+    const startTime = performance.now();
 
-    isAnimatingRef.current = false;
-  };
+    const easeInOutCubic = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-  requestAnimationFrame(frame);
-}, [getStepSize, isMobileLayout, jumpToIndex]);
+    const frame = (time: number) => {
+      const progress = Math.min((time - startTime) / duration, 1);
+      scroller.scrollLeft = start + distance * easeInOutCubic(progress);
 
-  useEffect(() => {
-  const scroller = scrollerRef.current;
-  if (!scroller) return;
-
-  jumpToIndex(signatureDishes.length);
-
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    return;
-  }
-
-  const isMobile = isMobileLayout();
-  let isPaused = false;
-  let animationFrameId = 0;
-  let resumeTimeoutId = 0;
-
-  const pauseForInteraction = () => {
-    isPaused = true;
-    if (resumeTimeoutId) clearTimeout(resumeTimeoutId);
-    resumeTimeoutId = window.setTimeout(() => {
-      isPaused = false;
-    }, 3000);
-  };
-
-  const handleTouchEnd = () => {
-    if (resumeTimeoutId) clearTimeout(resumeTimeoutId);
-    resumeTimeoutId = window.setTimeout(() => {
-      isPaused = false;
-    }, 2000);
-  };
-
-  scroller.addEventListener('touchstart', pauseForInteraction, { passive: true });
-  scroller.addEventListener('touchend', handleTouchEnd);
-
-  const mobileLoop = () => {
-    if (!scrollerRef.current) return;
-
-    if (!isPaused && !isAnimatingRef.current) {
-      const step = getStepSize();
-      const total = signatureDishes.length;
-      const loopDistance = step * total;
-
-      scroller.scrollLeft += 0.85;
-
-      if (scroller.scrollLeft >= loopDistance * 2) {
-        scroller.scrollLeft -= loopDistance;
+      if (progress < 1) {
+        requestAnimationFrame(frame);
+        return;
       }
 
-      currentIndexRef.current = Math.round(scroller.scrollLeft / step);
+      currentIndexRef.current = index;
+      const total = signatureDishes.length;
+
+      if (currentIndexRef.current >= total * 2) {
+        jumpToIndex(currentIndexRef.current - total);
+      }
+      if (currentIndexRef.current < total) {
+        jumpToIndex(currentIndexRef.current + total);
+      }
+
+      isAnimatingRef.current = false;
+    };
+
+    requestAnimationFrame(frame);
+  }, [getStepSize, jumpToIndex]);
+
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    jumpToIndex(signatureDishes.length);
+
+    // ── FIX: Wheel handler — let vertical scroll pass through to page ──────
+    const handleWheel = (e: WheelEvent) => {
+      const isMoreVertical = Math.abs(e.deltaY) > Math.abs(e.deltaX);
+
+      if (isMoreVertical) {
+        // Don't preventDefault — let the page scroll normally
+        return;
+      }
+
+      // Horizontal wheel: handle carousel scroll, block page side-scroll
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (isAnimatingRef.current) return;
+      const direction = e.deltaX > 0 ? 1 : -1;
+      animateToIndex(currentIndexRef.current + direction);
+    };
+
+    scroller.addEventListener('wheel', handleWheel, { passive: false });
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return () => {
+        scroller.removeEventListener('wheel', handleWheel);
+      };
     }
 
-    animationFrameId = window.requestAnimationFrame(mobileLoop);
-  };
+    const isMobile = isMobileLayout();
+    let isPaused = false;
+    let animationFrameId = 0;
+    let resumeTimeoutId = 0;
 
-  const timer = isMobile ? 0 : window.setInterval(() => {
-    if (isPaused || isAnimatingRef.current) return;
+    // ── FIX: Touch handlers — only intercept horizontal swipes ────────────
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartXRef.current = e.touches[0].clientX;
+      touchStartYRef.current = e.touches[0].clientY;
+      // Don't pause yet — wait to see if it's horizontal
+    };
 
-    const direction = autoDirectionRef.current;
-    animateToIndex(currentIndexRef.current + direction);
+    const handleTouchMove = (e: TouchEvent) => {
+      const dx = Math.abs(e.touches[0].clientX - touchStartXRef.current);
+      const dy = Math.abs(e.touches[0].clientY - touchStartYRef.current);
 
-    autoStepCountRef.current += 1;
+      if (dy > dx) {
+        // Vertical swipe — do NOT intercept, let page scroll
+        return;
+      }
 
-    // pattern: two one side, one back
-    if (direction === -1 && autoStepCountRef.current >= 2) {
-      autoDirectionRef.current = 1;
-      autoStepCountRef.current = 0;
-    } else if (direction === 1 && autoStepCountRef.current >= 1) {
-      autoDirectionRef.current = -1;
-      autoStepCountRef.current = 0;
+      // Horizontal swipe — pause autoplay
+      isPaused = true;
+      if (resumeTimeoutId) clearTimeout(resumeTimeoutId);
+    };
+
+    const handleTouchEnd = () => {
+      if (resumeTimeoutId) clearTimeout(resumeTimeoutId);
+      resumeTimeoutId = window.setTimeout(() => {
+        isPaused = false;
+      }, 2000);
+    };
+
+    scroller.addEventListener('touchstart', handleTouchStart, { passive: true });
+    scroller.addEventListener('touchmove', handleTouchMove, { passive: true });
+    scroller.addEventListener('touchend', handleTouchEnd);
+
+    // ── Mobile continuous scroll loop ─────────────────────────────────────
+    const mobileLoop = () => {
+      if (!scrollerRef.current) return;
+
+      if (!isPaused && !isAnimatingRef.current) {
+        const step = getStepSize();
+        const total = signatureDishes.length;
+        const loopDistance = step * total;
+
+        scroller.scrollLeft += 0.85;
+
+        if (scroller.scrollLeft >= loopDistance * 2) {
+          scroller.scrollLeft -= loopDistance;
+        }
+
+        currentIndexRef.current = Math.round(scroller.scrollLeft / step);
+      }
+
+      animationFrameId = window.requestAnimationFrame(mobileLoop);
+    };
+
+    // ── Desktop auto-advance timer ────────────────────────────────────────
+    const timer = isMobile
+      ? 0
+      : window.setInterval(() => {
+          if (isPaused || isAnimatingRef.current) return;
+
+          const direction = autoDirectionRef.current;
+          animateToIndex(currentIndexRef.current + direction);
+          autoStepCountRef.current += 1;
+
+          if (direction === -1 && autoStepCountRef.current >= 2) {
+            autoDirectionRef.current = 1;
+            autoStepCountRef.current = 0;
+          } else if (direction === 1 && autoStepCountRef.current >= 1) {
+            autoDirectionRef.current = -1;
+            autoStepCountRef.current = 0;
+          }
+        }, 4600);
+
+    if (isMobile) {
+      animationFrameId = window.requestAnimationFrame(mobileLoop);
     }
-  }, 4600);
 
-  if (isMobile) {
-    animationFrameId = window.requestAnimationFrame(mobileLoop);
-  }
+    const handleResize = () => jumpToIndex(currentIndexRef.current);
+    window.addEventListener('resize', handleResize);
 
-  const handleResize = () => {
-    jumpToIndex(currentIndexRef.current);
-  };
-
-  window.addEventListener('resize', handleResize);
-
-  return () => {
-    if (timer) window.clearInterval(timer);
-    window.cancelAnimationFrame(animationFrameId);
-    if (resumeTimeoutId) clearTimeout(resumeTimeoutId);
-    window.removeEventListener('resize', handleResize);
-    scroller.removeEventListener('touchstart', pauseForInteraction);
-    scroller.removeEventListener('touchend', handleTouchEnd);
-  };
-}, [animateToIndex, jumpToIndex]);
+    return () => {
+      scroller.removeEventListener('wheel', handleWheel);
+      scroller.removeEventListener('touchstart', handleTouchStart);
+      scroller.removeEventListener('touchmove', handleTouchMove);
+      scroller.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('resize', handleResize);
+      if (timer) window.clearInterval(timer);
+      window.cancelAnimationFrame(animationFrameId);
+      if (resumeTimeoutId) clearTimeout(resumeTimeoutId);
+    };
+  }, [animateToIndex, getStepSize, isMobileLayout, jumpToIndex]);
 
   const scrollDishes = (direction: 1 | -1) => {
     animateToIndex(currentIndexRef.current + direction);
@@ -260,7 +281,7 @@ const animateToIndex = useCallback((index: number) => {
               <span className="block h-px w-16 bg-gradient-to-r from-transparent to-[#c4a053]" />
               <svg width="20" height="10" viewBox="0 0 20 10" fill="none" aria-hidden="true">
                 <circle cx="10" cy="5" r="3" fill="#c4a053" />
-                <circle cx="2"  cy="5" r="1.5" fill="#c4a053" opacity="0.5" />
+                <circle cx="2" cy="5" r="1.5" fill="#c4a053" opacity="0.5" />
                 <circle cx="18" cy="5" r="1.5" fill="#c4a053" opacity="0.5" />
               </svg>
               <span className="block h-px w-16 bg-gradient-to-l from-transparent to-[#c4a053]" />
@@ -268,112 +289,58 @@ const animateToIndex = useCallback((index: number) => {
 
             <div className="relative mt-10 sm:mt-12 no-select">
               <button
-  type="button"
-  onClick={() => scrollDishes(-1)}
-  className="absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053] md:left-0 md:top-1/2 md:-translate-x-0 md:-translate-y-1/2"
-  aria-label="Previous dishes"
->
-  <ChevronLeft size={18} />
-</button>
+                type="button"
+                onClick={() => scrollDishes(-1)}
+                className="absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053] md:left-0 md:top-1/2 md:-translate-x-0 md:-translate-y-1/2"
+                aria-label="Previous dishes"
+              >
+                <ChevronLeft size={18} />
+              </button>
 
               <button
-  type="button"
-  onClick={() => scrollDishes(1)}
-  className="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053] md:bottom-auto md:left-auto md:right-0 md:top-1/2 md:translate-x-0 md:-translate-y-1/2"
-  aria-label="Next dishes"
->
-  <ChevronRight size={18} />
-</button>
-
-
-              <div    
-                ref={scrollerRef}
-                className="mx-auto max-h-[440px] overflow-x-auto overflow-y-hidden overscroll-x-contain overscroll-y-none px-3 py-6 sm:px-6 sm:py-8 scroll-smooth md:mx-11 md:max-h-none md:overflow-hidden md:px-0 md:py-0"
-                style={{ scrollbarWidth: 'none' }}
+                type="button"
+                onClick={() => scrollDishes(1)}
+                className="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full border border-[#c4a976] bg-[#e8d5ac] p-2.5 text-[#5c4322] shadow-sm transition-colors hover:bg-[#dabb8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a053] md:bottom-auto md:left-auto md:right-0 md:top-1/2 md:translate-x-0 md:-translate-y-1/2"
+                aria-label="Next dishes"
               >
+                <ChevronRight size={18} />
+              </button>
+
+<div    
+  ref={scrollerRef}
+  className="mx-auto max-h-[440px] overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-y px-3 py-6 sm:px-6 sm:py-8 scroll-smooth md:mx-11 md:max-h-none md:overflow-hidden md:px-0 md:py-0"
+  style={{ scrollbarWidth: 'none' }}
+>
                 <div className="flex flex-row items-stretch md:snap-x md:snap-mandatory gap-5 pt-4 pb-8 [perspective:1000px] w-max md:w-auto md:items-stretch">
                   {loopedDishes.map((dish, i) => {
                     const realIndex = i % signatureDishes.length;
                     return (
-                    <motion.div
-                      layout
-                      key={`${dish.name}-${i}`}
-                      data-signature-card
-                      initial={false}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.45, ease: 'easeOut' }}
-                      className="relative flex h-auto w-[calc(100vw-2rem)] min-w-[calc(100vw-2rem)] shrink-0 snap-start justify-center sm:w-[280px] sm:min-w-[280px] md:w-[240px] md:min-w-[240px] lg:w-[303px] lg:min-w-[303px]"
-                    >
-                      <DishFrame
-              name={dish.name}
-              image={dish.image}
-              description={dish.description}
-            />
-             {realIndex !== signatureDishes.length + 1 && (
-                <div className="no-select absolute right-[-10px] top-0 hidden h-full md:block">
-                  <div className="absolute left-1/2 top-16 h-[calc(75%+16px)] w-[2px] -translate-x-1/2 bg-[#c6a96d]" />
-                  <div className="absolute left-1/2 top-16 h-[calc(75%+20px)] w-[7px] -translate-x-1/2 bg-gradient-to-b from-transparent via-[#dcc18a]/55 to-transparent blur-[1px]" />
-                </div>
-              )}
-                    </motion.div>
+                      <motion.div
+                        layout
+                        key={`${dish.name}-${i}`}
+                        data-signature-card
+                        initial={false}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.45, ease: 'easeOut' }}
+                        className="relative flex h-auto w-[calc(100vw-2rem)] min-w-[calc(100vw-2rem)] shrink-0 snap-start justify-center sm:w-[280px] sm:min-w-[280px] md:w-[240px] md:min-w-[240px] lg:w-[303px] lg:min-w-[303px]"
+                      >
+                        <DishFrame
+                          name={dish.name}
+                          image={dish.image}
+                          description={dish.description}
+                        />
+                        {realIndex !== signatureDishes.length + 1 && (
+                          <div className="no-select absolute right-[-10px] top-0 hidden h-full md:block">
+                            <div className="absolute left-1/2 top-16 h-[calc(75%+16px)] w-[2px] -translate-x-1/2 bg-[#c6a96d]" />
+                            <div className="absolute left-1/2 top-16 h-[calc(75%+20px)] w-[7px] -translate-x-1/2 bg-gradient-to-b from-transparent via-[#dcc18a]/55 to-transparent blur-[1px]" />
+                          </div>
+                        )}
+                      </motion.div>
                     );
-      })}
+                  })}
                 </div>
               </div>
             </div>
-
-            {/* <div className="mt-10 grid gap-3 md:grid-cols-2">
-             <div className="relative w-full min-h-[220px] overflow-hidden rounded-2xl border border-[#6f2f22]">
-                <img
-                  src="/bookorderimg.png"
-                  alt="Order online Indian food"
-                  className="absolute inset-0 w-full h-full object-cover object-[75%_center]"
-                  loading="lazy"
-                />
-
-                <div className="absolute inset-0 bg-[linear-gradient(100deg,rgba(20,4,4,0.97)_0%,rgba(40,8,8,0.9)_35%,rgba(60,12,10,0.55)_60%,rgba(0,0,0,0)_85%)]" />
-
-                <div className="relative z-10 p-6 sm:p-8 max-w-[420px]">
-                  <h3 className="font-serif text-[clamp(26px,2.8vw,36px)] text-[#f4dfb4] leading-tight">
-                    Order Online
-                  </h3>
-                  <p className="mt-3 text-[13px] text-[#f5e8cc]/90 leading-relaxed">
-                    Enjoy your favourite dishes at home with quick London delivery.
-                  </p>
-                  <Link
-                    to="/order"
-                    className="mt-5 inline-flex items-center gap-2 rounded-lg border border-[#c8994b] bg-[#3f0808]/70 px-5 py-2 text-xs font-bold uppercase tracking-wide text-[#f8e3b8] hover:bg-[#5a1212]/80 transition"
-                  >
-                    <ShoppingBag size={14} />
-                    Order Now
-                  </Link>
-                </div>
-              </div>
-
-              <div
-                className="relative overflow-hidden rounded-2xl border border-[#1f4e43] p-5 sm:p-6"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(115deg,rgba(8,40,34,0.8),rgba(15,58,49,0)), url('/tablecard.png')",
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              >
-                <h3 className="font-serif text-[clamp(22px,2.7vw,32px)] font-normal leading-tight text-[#f2e3bf]">
-                  Book Your Table
-                </h3>
-                <p className="mt-2 max-w-sm text-[12px] leading-relaxed text-[#eef0de]/85 sm:text-[13px]">
-                  Reserve your table and enjoy a complete royal dining experience.
-                </p>
-                <Link
-                  to="/booking"
-                  className="mt-4 inline-flex items-center gap-2 rounded-lg border border-[#b89b61] bg-[rgba(8,33,29,0.55)] px-5 py-2 text-[10px] font-bold uppercase tracking-[0.1em] text-[#f8e3b8] transition-colors hover:bg-[rgba(12,50,43,0.62)]"
-                >
-                  <CalendarDays size={14} />
-                  Book Now
-                </Link>
-              </div>
-            </div> */}
           </motion.div>
         </div>
       </section>
