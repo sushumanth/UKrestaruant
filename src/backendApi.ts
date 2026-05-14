@@ -10,6 +10,7 @@ export type BackendUser = {
   id: string;
   email: string;
   role: BackendRole;
+  isBlocked?: boolean;
   firstName: string;
   lastName: string;
   phone?: string | null;
@@ -264,6 +265,7 @@ export const mapBackendUser = (user: BackendUser): User => ({
   id: user.id,
   email: user.email,
   role: user.role === 'customer' ? 'customer' : user.role,
+  isBlocked: user.isBlocked,
   firstName: user.firstName,
   lastName: user.lastName,
   phone: user.phone ?? undefined,

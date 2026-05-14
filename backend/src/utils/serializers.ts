@@ -6,6 +6,7 @@ export const serializeUser = (user: User) => ({
   id: user.id,
   email: user.email,
   role: user.role,
+  isBlocked: user.isBlocked,
   firstName: user.firstName,
   lastName: user.lastName,
   phone: user.phone,

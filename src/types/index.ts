@@ -8,6 +8,7 @@ export interface User {
   id: string;
   email: string;
   role: UserRole;
+  isBlocked?: boolean;
   firstName: string;
   lastName: string;
   phone?: string;

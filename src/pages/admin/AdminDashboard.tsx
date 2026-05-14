@@ -12,6 +12,7 @@ import {
 import { useBookingStore, useTableStore, useAnalyticsStore } from '@/store';
 import { formatCurrency, formatDate, statusColors, statusLabels } from '@/mockData';
 import { Button } from '@/components/ui/button';
+import { fetchStaffOperationalData } from '@/adminApi';
 
 import {
   LineChart,
@@ -24,7 +25,7 @@ import {
 } from 'recharts';
 
 export const AdminDashboard = () => {
-  const { bookings } = useBookingStore();
+  const { bookings, setBookings } = useBookingStore();
   const { tables } = useTableStore();
   const { reports } = useAnalyticsStore();
   const [todayStats, setTodayStats] = useState({
@@ -37,14 +38,39 @@ export const AdminDashboard = () => {
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
-    const todayBookings = bookings.filter(b => b.date === today);
     setTodayStats({
-      totalBookings: todayBookings.length,
-      totalGuests: todayBookings.reduce((sum, b) => sum + b.guests, 0),
-      revenue: todayBookings.filter(b => b.paymentStatus === 'paid').reduce((sum, b) => sum + b.depositAmount, 0),
-      noShows: todayBookings.filter(b => b.status === 'no_show').length,
+      totalBookings: bookings.length,
+      totalGuests: bookings.reduce((sum, booking) => sum + booking.guests, 0),
+      revenue: bookings
+        .filter((booking) => booking.paymentStatus === 'paid')
+        .reduce((sum, booking) => sum + booking.depositAmount, 0),
+      noShows: bookings.filter((booking) => booking.status === 'no_show').length,
     });
-  }, [bookings, today]);
+  }, [bookings]);
+
+  useEffect(() => {
+    if (bookings.length > 0) {
+      return;
+    }
+
+    let isMounted = true;
+
+    void (async () => {
+      try {
+        const staffData = await fetchStaffOperationalData();
+
+        if (isMounted) {
+          setBookings(staffData.bookings);
+        }
+      } catch (error) {
+        console.warn('Failed to load admin dashboard bookings:', error);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [bookings.length, setBookings]);
 
   // Get upcoming bookings
   const upcomingBookings = bookings

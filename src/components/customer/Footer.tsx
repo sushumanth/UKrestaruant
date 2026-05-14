@@ -17,7 +17,7 @@ export const Footer = () => {
                 <img
                   src="/logo1.png"
                   alt="Singh's Dining logo"
-                  className="absolute -left-7 sm:-left-8 top-1/2 h-14 w-14 sm:h-16 sm:w-16 -translate-y-1/2 object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)] transition-transform group-hover:scale-[1.02]"
+                  className="absolute left-7 sm:-left-8 top-1/2 h-14 w-14 sm:h-16 sm:w-16 -translate-y-1/2 object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)] transition-transform group-hover:scale-[1.02]"
                   loading="eager"
                   draggable={false}
                 />

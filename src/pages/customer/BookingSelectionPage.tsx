@@ -1,34 +1,33 @@
+
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { format, addMonths, subMonths, startOfMonth, getDay, getDaysInMonth } from 'date-fns';
+import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users,
   Calendar,
   Clock,
-  Armchair,
-  ShieldCheck,
-  Receipt,
-  Sun,
-  Moon,
-  ChevronLeft,
-  ChevronRight,
-  Check,
-  User,
-  PartyPopper
+  Users,
+  ChevronDown,
+  Search,
+  Sparkles,
 } from 'lucide-react';
+
+import { Calendar as DateCalendar } from '@/components/ui/calendar';
 import { useBookingStore, useMenuCartStore, useTableStore } from '@/store';
 import type { RestaurantTable } from '@/types';
 import { formatCurrency } from '@/mockData';
 import { getAvailableTables } from '@/backendBookingApi';
 
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-const LUNCH_SLOTS = ['11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30'];
-const DINNER_SLOTS = ['18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30'];
-const MONTHS = [
-  'January','February','March','April','May','June',
-  'July','August','September','October','November','December',
+const baseSlotTimes = [
+  '11:00', '11:30',
+  '12:00', '12:30',
+  '13:00', '13:30',
+  '14:00', '14:30',
+  '18:00', '18:30',
+  '19:00', '19:30',
+  '20:00', '20:30',
+  '21:00', '21:30',
 ];
 const DAYS_OF_WEEK = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
@@ -64,86 +63,245 @@ type MenuCartItem = ReturnType<typeof useMenuCartStore.getState>['items'][number
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export const BookingSelectionPage = () => {
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const { setSelectedDate, setSelectedTime, setSelectedGuests } = useBookingStore();
+  const {
+    selectedDate,
+    selectedTime,
+    setSelectedDate,
+    setSelectedTime,
+    setSelectedGuests,
+  } = useBookingStore();
+
   const { selectedTable, setSelectedTable } = useTableStore();
-  const [tableRequiredError, setTableRequiredError] = useState('');
+
   const { items: cartItems } = useMenuCartStore();
 
   const params            = new URLSearchParams(location.search);
   const skipSelectionFlag = Boolean(params.get('skipSelection'));
 
-  // ── Booking step state ──
-  const [step, setStep]           = useState<Step>(0);
-  const [guests, setGuests]       = useState<number | null>(null);
-  const [draftDate, setDraftDate] = useState<Date>(new Date());
-  const [draftTime, setDraftTime] = useState<string | null>(null);
-  const [period, setPeriod]       = useState<Period>('lunch');
-  const [calDate, setCalDate]     = useState(new Date()); // for month navigation
+  const [activeSection, setActiveSection] = useState<'guests' | 'date' | 'time' | null>('date');
 
-  // ── Table fetching ──
+  const [draftGuests, setDraftGuests] = useState(2);
+  const [draftDate, setDraftDate] = useState(new Date());
+
+  const [draftTimeFilter, setDraftTimeFilter] = useState('All Times');
+
+  const [selectedSlotTime, setSelectedSlotTime] = useState('');
+
   const [isLoadingTables, setIsLoadingTables] = useState(false);
+
   const [availableTables, setAvailableTables] = useState<
-    Array<{ id: string; tableNumber: number; capacity: number; status: string; location?: string }>
+    Array<{
+      id: string;
+      tableNumber: number;
+      capacity: number;
+      status: string;
+    }>
   >([]);
+
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  const hasInitializedRef = useRef(false);
+  const hasInitializedSelectionRef = useRef(false);
 
   const baseDepositAmount = 5;
-  const cartSubtotal      = useMemo(
-    () => cartItems.reduce((t, i) => t + i.price * i.quantity, 0),
-    [cartItems],
+
+  const cartSubtotal = useMemo(
+    () =>
+      cartItems.reduce(
+        (total, item) => total + item.price * item.quantity,
+        0
+      ),
+    [cartItems]
   );
+
   const totalChargeNow = baseDepositAmount + cartSubtotal;
 
-  const selectedBookingDate = useMemo(() => format(draftDate, 'yyyy-MM-dd'), [draftDate]);
+  const guestOptions = Array.from({ length: 10 }, (_, i) => i + 1);
+
+  const timeFilterOptions = [
+    'All Times',
+    '11:00',
+    '12:00',
+    '13:00',
+    '14:00',
+    '18:00',
+    '19:00',
+    '20:00',
+    '21:00',
+  ];
+
+  useEffect(() => {
+    hasInitializedSelectionRef.current = false;
+  }, [location.search]);
 
   // ── Init store values ──
   useEffect(() => {
-    if (hasInitializedRef.current) return;
-    const today   = format(new Date(), 'yyyy-MM-dd');
-    const upcoming = getUpcomingSlot();
-    setSelectedDate(today);
-    setSelectedTime(upcoming);
-    const cartCount = cartItems.reduce((t, i) => t + (i.quantity ?? 0), 0);
-    setSelectedGuests(cartCount > 0 ? Math.min(10, Math.max(1, cartCount)) : 2);
-    hasInitializedRef.current = true;
-  }, [cartItems, setSelectedDate, setSelectedGuests, setSelectedTime]);
+    if (hasInitializedSelectionRef.current) {
+      return;
+    }
 
-  // ── Fetch tables when time selected ──
+    const params = new URLSearchParams(location.search);
+
+    const skip = params.get('skipSelection');
+
+    const now = new Date();
+
+    const today = format(now, 'yyyy-MM-dd');
+
+    const [hoursNow, minutesNow] = [
+      now.getHours(),
+      now.getMinutes(),
+    ];
+
+    const upcoming =
+      baseSlotTimes.find((t) => {
+        const [h, m] = t.split(':').map(Number);
+
+        if (h > hoursNow) return true;
+
+        if (h === hoursNow && m > minutesNow + 25) return true;
+
+        return false;
+      }) || baseSlotTimes[0];
+
+    if (!skip) {
+      setSelectedDate(today);
+
+      setSelectedTime(upcoming);
+
+      const cartCount = cartItems
+        ? cartItems.reduce(
+            (total, item) => total + (item.quantity ?? 0),
+            0
+          )
+        : 0;
+
+      setSelectedGuests(
+        cartCount > 0
+          ? Math.min(10, Math.max(1, cartCount))
+          : 2
+      );
+
+      hasInitializedSelectionRef.current = true;
+
+      return;
+    }
+
+    if (selectedDate && selectedTime) {
+      hasInitializedSelectionRef.current = true;
+      return;
+    }
+
+    setSelectedDate(today);
+
+    setSelectedTime(upcoming);
+
+    const cartCount = cartItems
+      ? cartItems.reduce(
+          (total, item) => total + (item.quantity ?? 0),
+          0
+        )
+      : 0;
+
+    setSelectedGuests(
+      cartCount > 0
+        ? Math.min(10, Math.max(1, cartCount))
+        : 2
+    );
+
+    hasInitializedSelectionRef.current = true;
+  }, [
+    cartItems,
+    location.search,
+    selectedDate,
+    selectedTime,
+    setSelectedDate,
+    setSelectedGuests,
+    setSelectedTime,
+  ]);
+
+  const visibleSlots = useMemo(() => {
+    const filteredTimes =
+      draftTimeFilter === 'All Times'
+        ? baseSlotTimes
+        : baseSlotTimes.filter((time) =>
+            time.startsWith(draftTimeFilter.slice(0, 2))
+          );
+
+    return filteredTimes.map((time, index) => {
+      const seed =
+        draftDate.getDate() + draftGuests + index * 2;
+
+      const available = seed % 7 !== 0;
+
+      return {
+        time,
+        available,
+      };
+    });
+  }, [draftDate, draftGuests, draftTimeFilter]);
+
+  const selectedBookingDate = useMemo(
+    () => format(draftDate, 'yyyy-MM-dd'),
+    [draftDate]
+  );
+
   useEffect(() => {
     if (!draftTime) { setAvailableTables([]); return; }
     let active = true;
     const run = async () => {
       setIsLoadingTables(true);
+
       setFetchError(null);
-      try {
-        const result = await getAvailableTables(selectedBookingDate, draftTime, guests ?? 2);
-        if (!active) return;
-        if (result.ok) {
-          setAvailableTables(result.tables);
-        } else {
-          setFetchError(result.error ?? 'Unable to load tables.');
-        }
-      } catch {
-        if (active) setFetchError('Unable to load tables.');
-      } finally {
-        if (active) setIsLoadingTables(false);
+
+      const result = await getAvailableTables(
+        selectedBookingDate,
+        selectedSlotTime,
+        draftGuests
+      );
+
+      if (result.ok) {
+        setAvailableTables(result.tables);
+      } else {
+        setAvailableTables([]);
+
+        setFetchError(
+          result.error || 'Unable to fetch available tables.'
+        );
       }
+
+      setIsLoadingTables(false);
     };
     const t = setTimeout(run, 300);
     return () => { active = false; clearTimeout(t); };
   }, [draftTime, guests, selectedBookingDate]);
 
-  // ── Deselect table if no longer available ──
+    const debounceTimer = setTimeout(fetchTables, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [
+    selectedSlotTime,
+    draftGuests,
+    selectedBookingDate,
+  ]);
+
   useEffect(() => {
-    if (selectedTable && !availableTables.some((t) => t.id === selectedTable.id)) {
+    if (!selectedTable) return;
+
+    const stillAvailable = availableTables.some(
+      (table) => table.id === selectedTable.id
+    );
+
+    if (!stillAvailable) {
       setSelectedTable(null);
     }
-  }, [availableTables, selectedTable, setSelectedTable]);
+  }, [
+    availableTables,
+    selectedTable,
+    setSelectedTable,
+  ]);
 
   const goStep = (n: Step) => setStep(n);
 
@@ -153,392 +311,473 @@ export const BookingSelectionPage = () => {
       setTableRequiredError('Please select a table before proceeding.');
       return;
     }
+
+    setSelectedSlotTime(time);
+  };
+
+  const applySearchFilters = () => {
+    setSelectedSlotTime('');
+    setActiveSection(null);
+  };
+
+  const continueWithSelectedSlot = () => {
+    if (!selectedSlotTime) return;
+
     setSelectedDate(format(draftDate, 'yyyy-MM-dd'));
-    setSelectedTime(draftTime);
-    setSelectedGuests(guests);
+
+    setSelectedTime(selectedSlotTime);
+
+    setSelectedGuests(draftGuests);
+
     navigate('/booking/details');
   };
 
-  const handleProceedToDetails = () => {
-    setSelectedDate(format(new Date(), 'yyyy-MM-dd'));
-    setSelectedTime(getUpcomingSlot());
-    const cartCount = cartItems.reduce((t, i) => t + (i.quantity ?? 0), 0);
-    setSelectedGuests(cartCount > 0 ? Math.min(10, Math.max(1, cartCount)) : 2);
-    navigate('/booking/details');
-  };
-
-  const currentSlots = period === 'lunch' ? LUNCH_SLOTS : DINNER_SLOTS;
-
-  // Pseudo-unavailability seeded by date+guest combo for demo
-  const unavailableSlots = useMemo(() => {
-    const seed = draftDate.getDate() + (guests ?? 2);
-    return currentSlots.filter((_, i) => (seed + i * 3) % 7 === 0);
-  }, [draftDate, guests, currentSlots]);
-
-  // ─── Cart helpers (skipSelection flow) ───────────────────────────────────
-  const CartItemRow = ({ item }: { item: MenuCartItem }) => {
-    const updateItemQuantity = useMenuCartStore((s) => s.updateItemQuantity);
-    return (
-      <div className="flex items-center gap-3 rounded-2xl border border-amber-200/40 bg-white/50 p-2.5">
-        <img src={item.image} alt={item.name} className="w-12 h-12 rounded-xl object-cover" />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="font-semibold text-amber-900 truncate">{item.name}</p>
-              <p className="text-xs text-amber-800/70">{formatCurrency(item.price)} each</p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => updateItemQuantity(item.id, Math.max(0, item.quantity - 1))}
-                className="rounded-full border border-amber-400/50 bg-amber-100/40 px-2 py-0.5 text-amber-800 hover:bg-amber-100/70 transition-colors"
-              >
-                −
-              </button>
-              <span className="w-7 text-center text-sm text-zinc-800">{item.quantity}</span>
-              <button
-                type="button"
-                onClick={() => updateItemQuantity(item.id, item.quantity + 1)}
-                className="rounded-full border border-amber-400/50 bg-amber-100/40 px-2 py-0.5 text-amber-800 hover:bg-amber-100/70 transition-colors"
-              >
-                +
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // ─── skipSelection + cart flow ─────────────────────────────────────────────
-  if (skipSelectionFlag && cartItems.length > 0) {
-    return (
-      <PageShell>
-        <LeftColumn variant="preorder" />
-        <RightColumn>
-          <PanelHeader icon="🧾" subtitle="Review your pre-order" />
-          <div className="p-5 space-y-3">
-            {cartItems.map((item) => (
-              <CartItemRow key={item.id} item={item} />
-            ))}
-          </div>
-          <div className="px-5 py-4 bg-amber-50/30 border-t border-amber-200/40 space-y-3">
-            <SummaryRow label="Subtotal" value={formatCurrency(cartSubtotal)} />
-            <SummaryRow label="Deposit"  value={formatCurrency(baseDepositAmount)} />
-            <SummaryRow label="Total charge now" value={formatCurrency(totalChargeNow)} bold />
-            <div className="grid grid-cols-2 gap-3 pt-1">
-              <button onClick={handleProceedToDetails} className="btn-primary">Proceed to Details</button>
-              <button onClick={() => navigate('/cart')} className="btn-ghost">Edit Cart</button>
-            </div>
-          </div>
-        </RightColumn>
-      </PageShell>
-    );
-  }
-
-  // ─── Main booking flow ─────────────────────────────────────────────────────
-  const stepsDone: boolean[] = [
-    guests !== null,
-    draftDate > new Date(new Date().setHours(0,0,0,0) - 1),
-    draftTime !== null,
-    true, // table optional
-  ];
   return (
-    <PageShell>
-      <LeftColumn variant="default" />
+    <div className="min-h-screen w-full bg-[#0a0908] text-zinc-100 overflow-y-auto relative flex flex-col">
 
-      <RightColumn>
-        {/* ── Header ── */}
-        <PanelHeader icon="🍽️" subtitle="Reserve your table" />
+      {/* Background */}
+      <div className="absolute inset-0 z-0 fixed">
+        <img
+          src="/bookfirstpage.png"
+          className="w-full h-full object-cover opacity-20"
+          alt=""
+        />
 
-        {/* ── Step tabs ── */}
-        <div className="flex border-b border-amber-200/30 bg-amber-50/40">
-          {(['Guests', 'Date', 'Time', 'Table'] as const).map((label, i) => (
-            <button
-              key={label}
-              onClick={() => i <= step || stepsDone[i - 1] ? goStep(i as Step) : undefined}
-              className={[
-                'flex-1 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors relative',
-                step === i
-                  ? 'text-amber-700 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-amber-600'
-                  : i < step
-                  ? 'text-emerald-700/80 cursor-pointer'
-                  : 'text-zinc-500 cursor-default',
-              ].join(' ')}
-            >
-              {i < step ? <Check size={10} className="inline mr-1 mb-0.5" /> : null}
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {/* ── Live summary bar ── */}
-        <div className="grid grid-cols-4 divide-x divide-amber-200/30 bg-amber-50/30 border-b border-amber-200/25">
-          {[
-            { icon: <Users size={12} />,     val: guests ? `${guests}` : '—',                         label: 'guests'  },
-            { icon: <Calendar size={12} />,  val: draftDate ? format(draftDate, 'dd MMM') : '—',      label: 'date'    },
-            { icon: <Clock size={12} />,     val: draftTime ?? '—',                                   label: 'time'    },
-            { icon: <Armchair size={12} />,  val: selectedTable ? `T${selectedTable.tableNumber}` : '—', label: 'table' },
-          ].map(({ icon, val, label }) => (
-            <div key={label} className="flex flex-col items-center py-2.5 gap-0.5">
-              <span className="text-amber-700/60">{icon}</span>
-              <span className="text-[11px] font-medium text-zinc-700">{val}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* ── Step panels ── */}
-        <div className="overflow-hidden">
-          <AnimatePresence mode="wait">
-
-            {/* STEP 0 — GUESTS */}
-            {step === 0 && (
-              <StepPanel key="guests">
-                <StepLabel>How many guests?</StepLabel>
-                <div className="grid grid-cols-5 gap-2 mb-4">
-                  {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-                    <button
-                      key={n}
-                      onClick={() => setGuests(n)}
-                      className={[
-                        'flex flex-col items-center justify-center gap-1 rounded-xl border py-3 text-xs font-semibold transition-all',
-                        guests === n
-                          ? 'border-amber-600 bg-amber-200/50 text-amber-900'
-                          : 'border-amber-200/40 bg-white/50 text-zinc-700 hover:border-amber-400/60 hover:bg-amber-50/60',
-                      ].join(' ')}
-                    >
-                      <span className="text-[#f0c27a]">
-  {n === 1 ? (
-    <User size={18} strokeWidth={2.2} />
-  ) : n <= 2 ? (
-    <Users size={18} strokeWidth={2.2} />
-  ) : n <= 4 ? (
-    <Users size={20} strokeWidth={2.2} />
-  ) : (
-    <PartyPopper size={18} strokeWidth={2.2} />
-  )}
-</span>
-                      {n}
-                    </button>
-                  ))}
-
-                </div>
-               
-                <button className="w-full text-center py-2.5 rounded-xl border border-amber-200/40 bg-white/30 text-xs text-zinc-600 hover:text-zinc-800 transition-colors mb-4">
-                  More than 10? <span className="text-amber-700 font-semibold">Contact us directly →</span>
-                </button>
-                <DepositNote />
-                <StepCTA disabled={!guests} onClick={() => goStep(1)}>
-                  Choose a date →
-                </StepCTA>
-              </StepPanel>
-            )}
-
-            {/* STEP 1 — DATE */}
-            {step === 1 && (
-              <StepPanel key="date">
-                <StepLabel>Pick a date</StepLabel>
-                <MiniCalendar
-                  value={draftDate}
-                  calDate={calDate}
-                  onChange={(d) => { setDraftDate(d); }}
-                  onPrev={() => setCalDate((c) => subMonths(c, 1))}
-                  onNext={() => setCalDate((c) => addMonths(c, 1))}
-                />
-                <StepCTA disabled={false} onClick={() => goStep(2)}>
-                  Choose a time →
-                </StepCTA>
-              </StepPanel>
-            )}
-
-            {/* STEP 2 — TIME */}
-            {step === 2 && (
-              <StepPanel key="time">
-                <StepLabel>Select a time slot</StepLabel>
-                {/* Period toggle */}
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  {(['lunch', 'dinner'] as Period[]).map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => { setPeriod(p); setDraftTime(null); }}
-                      className={[
-                        'flex items-center justify-center gap-1.5 py-2 rounded-xl border text-xs font-semibold transition-all',
-                        period === p
-                          ? 'border-amber-600/70 bg-amber-200/60 text-amber-900'
-                          : 'border-amber-200/40 bg-white/50 text-zinc-700 hover:border-amber-300/60',
-                      ].join(' ')}
-                    >
-                      {p === 'lunch' ? <Sun size={13} /> : <Moon size={13} />}
-                      {p === 'lunch' ? 'Lunch' : 'Dinner'}
-                    </button>
-                  ))}
-                </div>
-                {/* Slots */}
-                <div className="grid grid-cols-4 gap-2 mb-4">
-                  {currentSlots.map((t) => {
-                    const isUnavail = unavailableSlots.includes(t);
-                    const isSelected = draftTime === t;
-                    return (
-                      <button
-                        key={t}
-                        disabled={isUnavail}
-                        onClick={() => setDraftTime(t)}
-                        className={[
-                          'py-2.5 rounded-xl border text-xs font-semibold transition-all',
-                          isUnavail
-                            ? 'border-zinc-300/40 bg-zinc-100/40 text-zinc-500 line-through cursor-not-allowed'
-                            : isSelected
-                            ? 'border-amber-600 bg-amber-200/60 text-amber-900 ring-1 ring-amber-400/40'
-                            : 'border-amber-200/40 bg-white/50 text-zinc-700 hover:border-amber-400/60 hover:bg-amber-50/50',
-                        ].join(' ')}
-                      >
-                        {t}
-                      </button>
-                    );
-                  })}
-                </div>
-                <StepCTA disabled={!draftTime} onClick={() => goStep(3)}>
-                  {draftTime ? `Continue with ${draftTime} →` : 'Select a time slot'}
-                </StepCTA>
-              </StepPanel>
-            )}
-
-            {/* STEP 3 — TABLE */}
-            {step === 3 && (
-              <StepPanel key="table">
-                <div className="flex items-baseline gap-2 mb-3">
-                  <StepLabel className="mb-0">Your table</StepLabel>
-                  <span className="text-[9px] text-zinc-600 uppercase tracking-widest">Optional</span>
-                </div>
-
-                {isLoadingTables && (
-                  <div className="flex items-center gap-2 py-4 text-xs text-amber-700/70">
-                    <span className="w-3.5 h-3.5 rounded-full border border-amber-600 border-r-amber-200 animate-spin" />
-                    Checking available tables…
-                  </div>
-                )}
-
-                {fetchError && (
-                  <div className="rounded-xl border border-red-400/40 bg-red-100/30 px-4 py-3 text-xs text-red-700 mb-3">
-                    {fetchError}
-                  </div>
-                )}
-
-                {!isLoadingTables && !fetchError && (
-                  <>
-                    {availableTables.length > 0 ? (
-                      <div className="grid grid-cols-3 gap-2 mb-3 max-h-48 overflow-y-auto pr-0.5">
-                        {availableTables.map((table) => {
-                          const isSelected = selectedTable?.id === table.id;
-                          return (
-                            <button
-                              key={table.id}
-                              onClick={() => {
-                                setSelectedTable(isSelected ? null : (table as RestaurantTable));
-                                setTableRequiredError('');
-                              }}
-                              className={[
-                                'rounded-xl border p-3 text-left transition-all',
-                                isSelected
-                                  ? 'border-amber-600 bg-amber-200/50 ring-1 ring-amber-400/40'
-                                  : 'border-amber-200/40 bg-white/50 hover:border-amber-400/60 hover:bg-amber-50/40',
-                              ].join(' ')}
-                            >
-                              <p className="font-serif italic text-lg text-amber-900 leading-none">T{table.tableNumber}</p>
-                              <p className="text-[10px] text-zinc-700 mt-1">{table.capacity} guests</p>
-                              {table.location && (
-                                <p className="text-[9px] text-amber-700/70 uppercase tracking-wide mt-1">{table.location}</p>
-                              )}
-                              {isSelected && (
-                                <span className="mt-2 inline-flex items-center gap-0.5 text-[9px] bg-amber-700/80 text-white rounded-full px-1.5 py-0.5">
-                                  <Check size={8} /> Selected
-                                </span>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="rounded-xl border border-amber-300/40 bg-amber-100/30 px-4 py-3 text-xs text-amber-900/80 mb-3">
-                        <p className="font-medium mb-0.5">No tables available</p>
-                        <p className="text-amber-800/60">Try another date or time slot.</p>
-                      </div>
-                    )}
-                    <p className="text-[11px] text-zinc-700 leading-relaxed mb-4">
-                      Skipping table selection? We'll assign the best available when you complete the booking.
-                    </p>
-                  </>
-                )}
-
-                {/* Final receipt note */}
-                <div className="flex items-center gap-2.5 rounded-xl bg-amber-100/40 border border-amber-300/40 px-3.5 py-2.5 mb-4">
-                  <Receipt size={14} className="text-amber-700 shrink-0" />
-                  <p className="text-[11px] text-amber-900/75 leading-snug">
-                    Charged today: <strong className="text-amber-800 font-semibold">£5 deposit</strong>. Balance settled at the restaurant.
-                  </p>
-                </div>
-
-                {tableRequiredError && (
-                  <div className="text-sm text-rose-600 mb-2">{tableRequiredError}</div>
-                )}
-
-                <StepCTA disabled={false} onClick={handleConfirm}>
-                  Confirm reservation
-                </StepCTA>
-              </StepPanel>
-            )}
-
-          </AnimatePresence>
-        </div>
-      </RightColumn>
-    </PageShell>
-  );
-};
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-const PageShell = ({ children }: { children: ReactNode }) => (
-  <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-[#faf8f3] via-[#f5f2ed] to-[#f0eae0] text-zinc-900 pt-20">
-    <div className="absolute inset-0 z-0">
-      <img src="/bookfirstpage.png" className="w-full h-full object-cover opacity-8" alt="" />
-      <div className="absolute inset-0 bg-gradient-to-tr from-[#faf8f3]/40 via-transparent to-[#f5f2ed]/30" />
-    </div>
-    <main className="relative z-10 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
-      <div className="grid lg:grid-cols-12 gap-6 items-start">{children}</div>
-    </main>
-  </div>
-);
-
-const LeftColumn = ({ variant }: { variant: 'default' | 'preorder' }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 14 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="lg:col-span-6 space-y-4"
-  >
-    
-
-    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif leading-[1.02] text-zinc-900">
-      Book Your <br />
-      <span className="text-amber-700 italic">Perfect Table</span>
-    </h1>
- <div className="p-3.5 rounded-2xl bg-amber-100/10 border border-amber-300/30">
-   <p className="text-[11px] text-amber-900/85 leading-relaxed">
-      {variant === 'preorder'
-        ? 'Join us for an unforgettable culinary journey. Reserve your table now and experience authentic flavours crafted with passion.'
-        : "Just a stone's throw from the iconic Birmingham Bull Ring is our vibrant restaurant. Experience authentic cuisine in an elegant setting designed for unforgettable moments."}
-    </p>
-    </div>
-
-    <div className="rounded-3xl bg-white/40 backdrop-blur-xl border border-white/60 p-5 sm:p-6 shadow-lg">
-      <h3 className="text-[11px] uppercase tracking-[0.3em] font-bold text-amber-700 mb-3">Opening Hours</h3>
-      <div className="space-y-1.5">
-        {openingTimes.map((item) => (
-          <div key={item.day} className="flex justify-between gap-4 text-[13px]">
-            <span className="font-medium text-zinc-800">{item.day}</span>
-            <span className="font-mono text-amber-700 text-right">{item.time}</span>
-          </div>
-        ))}
+        <div className="absolute inset-0 bg-gradient-to-tr from-[#0a0908] via-transparent to-[#0a0908]/50" />
       </div>
+
+      <main className="relative z-10 flex-1 max-w-7xl mx-auto w-full px-4 sm:px-8 flex items-center py-6">
+
+        <div className="grid lg:grid-cols-12 gap-8 items-start w-full">
+
+          {/* LEFT SIDE */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="lg:col-span-6 space-y-6 text-left"
+          >
+            <div className="space-y-4">
+
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+                <Sparkles size={14} className="text-amber-500" />
+
+                <span className="text-[10px] uppercase tracking-widest font-bold text-amber-200">
+                  Premium Dining
+                </span>
+              </div>
+
+              <h1 className="text-5xl sm:text-6xl font-serif leading-[1.1]">
+                Book Your <br />
+
+                <span className="text-amber-500 italic">
+                  Perfect Table
+                </span>
+              </h1>
+
+              <p className="text-lg font-light opacity-80 leading-relaxed">
+                Experience luxury dining with authentic flavors crafted with passion and elegance.
+              </p>
+
+              {/* Opening Hours */}
+              <div className="mt-8 bg-white/5 rounded-2xl p-6 border border-white/10">
+
+                <h3 className="text-xs uppercase tracking-[0.3em] font-bold text-amber-500 mb-4">
+                  Opening Hours
+                </h3>
+
+                <div className="space-y-2">
+                  {[
+                    { day: 'Monday', time: '11:30am – 9:30pm' },
+                    { day: 'Tuesday', time: '11:30am – 9:30pm' },
+                    { day: 'Wednesday', time: '11:30am – 9:30pm' },
+                    { day: 'Thursday', time: '11:30am – 9:30pm' },
+                    { day: 'Friday', time: '11:30am – 10:00pm' },
+                    { day: 'Saturday', time: '11:30am – 10:00pm' },
+                    { day: 'Sunday', time: '11:30am – 8:00pm' },
+                  ].map((item) => (
+                    <div
+                      key={item.day}
+                      className="flex justify-between text-sm text-zinc-400"
+                    >
+                      <span className="font-medium text-zinc-300">
+                        {item.day}
+                      </span>
+
+                      <span className="font-mono text-amber-400">
+                        {item.time}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Deposit */}
+              <div className="mt-8 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <p className="text-xs text-amber-100/80 leading-relaxed">
+                  <span className="font-semibold">Note:</span>{' '}
+                  A small deposit of £5 secures your reservation.
+                </p>
+              </div>
+
+              {/* CART SUMMARY */}
+              {skipSelectionFlag && cartItems.length > 0 && (
+                <div className="bg-zinc-900/90 backdrop-blur-2xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden mt-8">
+
+                  <div className="bg-[#5c2e0a] p-6 text-center">
+                    <h2 className="text-xl font-serif tracking-[0.3em] uppercase text-white italic">
+                      Your Pre-Order
+                    </h2>
+                  </div>
+
+                  <div className="p-5 space-y-4">
+
+                    {cartItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3"
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-14 h-14 rounded-lg object-cover"
+                        />
+
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+
+                            <div>
+                              <p className="font-semibold text-white">
+                                {item.name}
+                              </p>
+
+                              <p className="text-xs text-amber-400">
+                                {formatCurrency(item.price)} each
+                              </p>
+                            </div>
+
+                            <div className="text-sm text-zinc-300">
+                              x{item.quantity}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="border-t border-white/10 pt-4 space-y-2">
+
+                      <div className="flex justify-between text-sm">
+                        <span>Subtotal</span>
+
+                        <span>
+                          {formatCurrency(cartSubtotal)}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between text-sm">
+                        <span>Deposit</span>
+
+                        <span>
+                          {formatCurrency(baseDepositAmount)}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between font-bold text-lg">
+                        <span>Total</span>
+
+                        <span className="text-amber-400">
+                          {formatCurrency(totalChargeNow)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          {/* RIGHT SIDE */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="lg:col-span-6 flex justify-end"
+          >
+            <div className="w-full max-w-[520px] bg-zinc-900/95 backdrop-blur-2xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
+
+              <div className="bg-[#5c2e0a] p-6 text-center">
+                <h2 className="text-xl font-serif tracking-[0.3em] uppercase text-white italic">
+                  Luxe Reserve
+                </h2>
+              </div>
+
+              <div className="p-6 space-y-4 max-h-[85vh] overflow-y-auto">
+
+                {/* TOP SUMMARY */}
+                <div className="flex flex-wrap items-center gap-3 text-xs text-zinc-400 border border-white/10 rounded-xl p-4 bg-white/5">
+
+                  <div className="flex items-center gap-1">
+                    <Users size={14} />
+                    {draftGuests}
+                  </div>
+
+                  <div className="w-px h-4 bg-white/10" />
+
+                  <div className="flex items-center gap-1">
+                    <Calendar size={14} />
+
+                    {draftDate.toLocaleDateString('en-GB', {
+                      day: '2-digit',
+                      month: 'short',
+                    })}
+                  </div>
+
+                  <div className="w-px h-4 bg-white/10" />
+
+                  <div className="flex items-center gap-1">
+                    <Clock size={14} />
+                    {draftTimeFilter}
+                  </div>
+                </div>
+
+                {/* GUESTS */}
+                <SectionItem
+                  title="Number of Guests"
+                  active={activeSection === 'guests'}
+                  onClick={() =>
+                    setActiveSection(
+                      activeSection === 'guests'
+                        ? null
+                        : 'guests'
+                    )
+                  }
+                >
+                  <div className="grid grid-cols-5 gap-2 mt-3">
+                    {guestOptions.map((num) => (
+                      <button
+                        key={num}
+                        onClick={() => setDraftGuests(num)}
+                        className={`py-2 rounded-lg border text-xs transition-all ${
+                          draftGuests === num
+                            ? 'bg-amber-600 border-amber-600 text-white'
+                            : 'bg-white/5 border-white/10 text-zinc-400'
+                        }`}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+                </SectionItem>
+
+                {/* DATE */}
+                <SectionItem
+                  title="Select Date"
+                  active={activeSection === 'date'}
+                  onClick={() =>
+                    setActiveSection(
+                      activeSection === 'date'
+                        ? null
+                        : 'date'
+                    )
+                  }
+                >
+                  <div className="mt-3 bg-white/5 rounded-2xl p-4 border border-white/10">
+                    <DateCalendar
+                      mode="single"
+                      selected={draftDate}
+                      onSelect={(date) => {
+                        if (date) setDraftDate(date);
+                      }}
+                      disabled={(date) =>
+                        date < new Date()
+                      }
+                      className="text-white"
+                    />
+                  </div>
+                </SectionItem>
+
+                {/* TIME */}
+                <SectionItem
+                  title="Preferred Time"
+                  active={activeSection === 'time'}
+                  onClick={() =>
+                    setActiveSection(
+                      activeSection === 'time'
+                        ? null
+                        : 'time'
+                    )
+                  }
+                >
+                  <div className="grid grid-cols-3 gap-2 mt-3">
+
+                    {timeFilterOptions.map((time) => (
+                      <button
+                        key={time}
+                        onClick={() =>
+                          handleTimeFilterSelect(time)
+                        }
+                        className={`py-2 rounded-lg border text-xs transition-all ${
+                          selectedSlotTime === time ||
+                          draftTimeFilter === time
+                            ? 'bg-amber-600 border-amber-600 text-white shadow-lg'
+                            : 'bg-white/5 border-white/10 text-zinc-400'
+                        }`}
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
+                </SectionItem>
+
+                {/* SEARCH BUTTON */}
+                <button
+                  onClick={applySearchFilters}
+                  className="w-full py-4 mt-2 rounded-xl bg-amber-700 hover:bg-amber-600 text-white font-bold uppercase tracking-[0.2em] shadow-xl transition-all"
+                >
+                  Search Available Slots
+                </button>
+
+                {/* SLOT RESULTS */}
+                {draftTimeFilter !== 'All Times' && (
+                  <AnimatePresence>
+
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="pt-6 space-y-6 border-t border-white/10 mt-4"
+                    >
+
+                      {/* SLOTS */}
+                      <div className="grid grid-cols-4 gap-3">
+
+                        {visibleSlots.map((slot, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() =>
+                              slot.available &&
+                              setSelectedSlotTime(slot.time)
+                            }
+                            disabled={!slot.available}
+                            className={`py-3 px-2 rounded-xl font-medium text-sm transition-all ${
+                              slot.available
+                                ? selectedSlotTime === slot.time
+                                  ? 'bg-amber-700 text-white shadow-md ring-2 ring-amber-800'
+                                  : 'bg-white/5 border border-white/10 text-zinc-300 hover:border-amber-500'
+                                : 'bg-zinc-800 text-zinc-600 cursor-not-allowed opacity-40'
+                            }`}
+                          >
+                            {slot.time}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* TABLES */}
+                      {selectedSlotTime && (
+                        <div className="space-y-4">
+
+                          <div className="flex justify-between items-end">
+                            <div>
+                              <p className="text-[10px] text-amber-600 font-bold uppercase tracking-widest">
+                                Available Tables
+                              </p>
+
+                              <p className="text-xs text-zinc-500 mt-1">
+                                {formatDate(
+                                  draftDate
+                                    .toISOString()
+                                    .split('T')[0]
+                                )}{' '}
+                                at {formatTime(selectedSlotTime)}
+                              </p>
+                            </div>
+
+                            <span className="bg-amber-500/10 text-amber-600 text-[10px] px-2 py-1 rounded-full font-bold border border-amber-500/20">
+                              {isLoadingTables
+                                ? 'Loading...'
+                                : `${availableTables.length} open`}
+                            </span>
+                          </div>
+
+                          {isLoadingTables ? (
+                            <div className="text-sm text-amber-400">
+                              Checking available tables...
+                            </div>
+                          ) : fetchError ? (
+                            <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                              {fetchError}
+                            </div>
+                          ) : availableTables.length > 0 ? (
+                            <div className="grid grid-cols-3 gap-3">
+
+                              {availableTables.map((table) => (
+                                <button
+                                  key={table.id}
+                                  onClick={() =>
+                                    setSelectedTable(table)
+                                  }
+                                  className={`p-4 rounded-2xl border transition-all text-left relative group ${
+                                    selectedTable?.id === table.id
+                                      ? 'bg-amber-500/10 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                                      : 'bg-white/5 border-white/10 hover:border-amber-500/30'
+                                  }`}
+                                >
+                                  <div className="flex justify-between items-start">
+
+                                    <p
+                                      className={`font-serif text-xl ${
+                                        selectedTable?.id === table.id
+                                          ? 'text-amber-500'
+                                          : 'text-white'
+                                      }`}
+                                    >
+                                      T{table.tableNumber}
+                                    </p>
+
+                                    {selectedTable?.id ===
+                                      table.id && (
+                                      <span className="bg-amber-700 text-[8px] text-white px-1.5 py-0.5 rounded-md font-bold uppercase">
+                                        Selected
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <p className="text-[10px] text-zinc-500 mt-1">
+                                    {table.capacity} guests
+                                  </p>
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-4 text-sm text-amber-200">
+                              No tables available for this slot.
+                            </div>
+                          )}
+
+                          <p className="text-[11px] text-amber-700/70 leading-relaxed italic">
+                            Selecting a table is optional.
+                            System can auto-assign the best
+                            available table.
+                          </p>
+
+                          {/* CONTINUE */}
+                          <button
+                            onClick={
+                              continueWithSelectedSlot
+                            }
+                            disabled={!selectedSlotTime}
+                            className="w-full py-4 mt-4 rounded-xl bg-[#854d2b] text-white font-bold uppercase tracking-widest shadow-xl transition-all hover:bg-amber-700 disabled:opacity-40"
+                          >
+                            Continue with{' '}
+                            {selectedSlotTime}
+                          </button>
+                        </div>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </main>
     </div>
 
     <div className="p-3.5 rounded-2xl bg-amber-100/40 border border-amber-300/50">
@@ -709,20 +948,53 @@ const MiniCalendar = ({
   );
 };
 
-// ─── Cart helpers (skipSelection flow) ───────────────────────────────────────
- 
-const SummaryRow = ({
-  label,
-  value,
-  bold = false,
+const SectionItem = ({
+  title,
+  active,
+  onClick,
+  children,
 }: {
-  label: string;
-  value: string;
-  bold?: boolean;
+  title: string;
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
 }) => (
-  <div className={`flex items-center justify-between ${bold ? 'text-[13px] font-semibold text-amber-900 pt-1' : 'text-[11px] text-zinc-700'}`}>
-    <span>{label}</span>
-    <span className={bold ? '' : 'font-semibold text-amber-900'}>{value}</span>
+  <div className="border-b border-white/5 pb-3 last:border-0">
+
+    <button
+      onClick={onClick}
+      className="w-full flex justify-between items-center group"
+    >
+      <span
+        className={`text-[10px] font-bold uppercase tracking-widest transition-colors ${
+          active
+            ? 'text-amber-500'
+            : 'text-zinc-500 group-hover:text-zinc-300'
+        }`}
+      >
+        {title}
+      </span>
+
+      <ChevronDown
+        size={14}
+        className={`text-zinc-600 transition-transform ${
+          active ? 'rotate-180 text-amber-500' : ''
+        }`}
+      />
+    </button>
+
+    <AnimatePresence>
+      {active && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          className="overflow-hidden"
+        >
+          {children}
+        </motion.div>
+      )}
+    </AnimatePresence>
   </div>
 );
 
