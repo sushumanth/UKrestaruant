@@ -60,6 +60,7 @@ export const AdminMenu = () => {
   const { menuItems, menuCategories, setMenuCategories, addMenuCategory, upsertMenuItem, removeMenuItem } = useMenuStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | 'all'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -159,6 +160,48 @@ export const AdminMenu = () => {
         );
       });
   }, [searchQuery, selectedCategory, sortedMenuItems]);
+
+  const MENU_ITEMS_PER_PAGE = 6;
+
+  const getVisiblePages = (page: number, totalPages: number) => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
+
+    const pages: Array<number | 'ellipsis'> = [1];
+    const start = Math.max(2, page - 1);
+    const end = Math.min(totalPages - 1, page + 1);
+
+    if (start > 2) {
+      pages.push('ellipsis');
+    }
+
+    for (let current = start; current <= end; current += 1) {
+      pages.push(current);
+    }
+
+    if (end < totalPages - 1) {
+      pages.push('ellipsis');
+    }
+
+    pages.push(totalPages);
+    return pages;
+  };
+
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / MENU_ITEMS_PER_PAGE));
+
+  const paginatedItems = useMemo(
+    () => filteredItems.slice((currentPage - 1) * MENU_ITEMS_PER_PAGE, currentPage * MENU_ITEMS_PER_PAGE),
+    [currentPage, filteredItems]
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory]);
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
 
   const handleFormChange = <K extends keyof MenuFormState>(key: K, value: MenuFormState[K]) => {
     setFormState((current) => ({ ...current, [key]: value }));
@@ -359,7 +402,7 @@ export const AdminMenu = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredItems.map((item) => (
+              {paginatedItems.map((item) => (
                 <tr key={item.id} className="border-b border-amber-100 hover:bg-amber-50/30 transition-colors">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
@@ -410,6 +453,55 @@ export const AdminMenu = () => {
           <div className="py-16 text-center">
             <UtensilsCrossed size={32} className="mx-auto mb-3 text-amber-700/40" />
             <p className="text-amber-700/60">No menu items found.</p>
+          </div>
+        )}
+
+        {filteredItems.length > 0 && (
+          <div className="flex flex-col gap-3 border-t border-amber-200/60 bg-amber-50/30 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-amber-700/70">
+              Showing {(currentPage - 1) * MENU_ITEMS_PER_PAGE + 1} to {Math.min(currentPage * MENU_ITEMS_PER_PAGE, filteredItems.length)} of {filteredItems.length} items
+            </p>
+
+            <div className="flex items-center gap-2 overflow-x-auto">
+              <button
+                type="button"
+                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                disabled={currentPage === 1}
+                className="rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm text-amber-700 transition-colors disabled:cursor-not-allowed disabled:opacity-40 hover:bg-amber-50"
+              >
+                Prev
+              </button>
+
+              {getVisiblePages(currentPage, totalPages).map((page, index) =>
+                page === 'ellipsis' ? (
+                  <span key={`ellipsis-${index}`} className="px-2 text-amber-500">
+                    …
+                  </span>
+                ) : (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => setCurrentPage(page)}
+                    className={`min-w-9 rounded-lg border px-3 py-2 text-sm transition-colors ${
+                      page === currentPage
+                        ? 'border-amber-700 bg-amber-700 text-white'
+                        : 'border-amber-200 bg-white text-amber-700 hover:bg-amber-50'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
+
+              <button
+                type="button"
+                onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                disabled={currentPage === totalPages}
+                className="rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm text-amber-700 transition-colors disabled:cursor-not-allowed disabled:opacity-40 hover:bg-amber-50"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>

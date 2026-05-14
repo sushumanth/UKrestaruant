@@ -26,12 +26,25 @@ type AuthResponse = {
     id: string;
     email: string;
     role: 'admin' | 'employee' | 'customer';
+    isBlocked?: boolean;
     firstName: string;
     lastName: string;
     phone?: string | null;
     createdAt?: string;
     updatedAt?: string;
   };
+};
+
+type StaffMemberResponse = {
+  id: string;
+  email: string;
+  role: 'admin' | 'employee';
+  isBlocked: boolean;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 type PublicOperationalDataResponse = {
@@ -120,6 +133,7 @@ const buildAppUser = (user: AuthResponse['user']): User => {
     id: mapped.id,
     email: mapped.email,
     role: mapped.role,
+    isBlocked: mapped.isBlocked,
     firstName: mapped.firstName,
     lastName: mapped.lastName,
     phone: mapped.phone,
@@ -207,6 +221,7 @@ export const resolveCurrentStaffUser = async (): Promise<User | null> => {
       id: session.user.id,
       email: session.user.email,
       role: session.user.role === 'admin' ? 'admin' : 'employee',
+      isBlocked: false,
       firstName: fallback.firstName,
       lastName: fallback.lastName,
       phone: session.user.phone ?? undefined,
@@ -439,4 +454,46 @@ export const createStaffMember = async (payload: {
   });
 
   return buildAppUser(response.user);
+};
+
+export const fetchStaffMembers = async (): Promise<User[]> => {
+  const response = await backendRequest<{ items: StaffMemberResponse[] }>('/auth/staff');
+  return response.items.map(mapBackendUser);
+};
+
+export const updateStaffMember = async (payload: {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  password?: string;
+}): Promise<User> => {
+  const response = await backendRequest<{ item: StaffMemberResponse }>(`/auth/staff/${payload.id}`, {
+    method: 'PATCH',
+    body: {
+      email: payload.email.trim().toLowerCase(),
+      firstName: payload.firstName.trim(),
+      lastName: payload.lastName.trim(),
+      phone: payload.phone?.trim() ?? null,
+      password: payload.password?.trim() || undefined,
+    },
+  });
+
+  return mapBackendUser(response.item);
+};
+
+export const setStaffMemberBlocked = async (id: string, isBlocked: boolean): Promise<User> => {
+  const response = await backendRequest<{ item: StaffMemberResponse }>(`/auth/staff/${id}/block`, {
+    method: 'PATCH',
+    body: { isBlocked },
+  });
+
+  return mapBackendUser(response.item);
+};
+
+export const deleteStaffMember = async (id: string): Promise<void> => {
+  await backendRequest<void>(`/auth/staff/${id}`, {
+    method: 'DELETE',
+  });
 };

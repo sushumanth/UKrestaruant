@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { login, me, register, createStaff } from '../controllers/auth.controller';
+import { blockStaff, createStaff, listStaff, login, me, register, removeStaff, updateStaff } from '../controllers/auth.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/role.middleware';
 
@@ -9,5 +9,9 @@ router.post('/register', register);
 router.post('/login', login);
 router.get('/me', authenticate, me);
 router.post('/staff', authenticate, requireRole('admin'), createStaff);
+router.get('/staff', authenticate, requireRole('admin'), listStaff);
+router.patch('/staff/:id', authenticate, requireRole('admin'), updateStaff);
+router.patch('/staff/:id/block', authenticate, requireRole('admin'), blockStaff);
+router.delete('/staff/:id', authenticate, requireRole('admin'), removeStaff);
 
 export default router;

@@ -6,7 +6,7 @@ export const EmployeeHeader = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
-    <header className="h-20 bg-white border-b border-amber-200 flex items-center justify-between px-6 shadow-sm">
+    <header className="hidden md:flex h-20 bg-white border-b border-amber-200 items-center justify-between px-6 shadow-sm">
       {/* Search */}
       <div className="flex-1 max-w-md">
         <div className="relative">
