@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Check, Calendar, Clock, Users, CreditCard, Shield, LockKeyhole, BadgeCheck } from 'lucide-react';
+import { Check, CreditCard, Shield, LockKeyhole, BadgeCheck } from 'lucide-react';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { Button } from '@/components/ui/button';
@@ -51,22 +51,22 @@ const PaymentForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="rounded-2xl border border-amber-200/70 bg-white/90 p-5 sm:p-6 shadow-[0_14px_38px_rgba(128,78,24,0.12)]">
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <span className="text-amber-950 text-base font-semibold block">Card Details</span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 text-[11px] uppercase tracking-[0.12em]">
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <div className="rounded-2xl border border-amber-200/70 bg-white/90 p-3.5 shadow-[0_14px_38px_rgba(128,78,24,0.12)]">
+        <div className="mb-2.5 flex items-center justify-between gap-2.5">
+          <span className="block text-[12px] font-semibold text-amber-950">Card Details</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.12em] text-emerald-700">
             <LockKeyhole size={12} />
             Encrypted
           </span>
         </div>
 
-        <div className="rounded-xl border border-amber-200/80 bg-white px-4 py-4 shadow-inner">
+        <div className="rounded-xl border border-amber-200/80 bg-white px-3 py-2.5 shadow-inner">
           <CardElement
             options={{
               style: {
                 base: {
-                  fontSize: '16px',
+                  fontSize: '13px',
                   color: '#3F2A1D',
                   '::placeholder': {
                     color: '#9C7A60',
@@ -76,41 +76,41 @@ const PaymentForm = ({
             }}
           />
         </div>
-        <p className="text-amber-800/70 text-xs mt-3">
+
+        <p className="mt-1.5 text-[10px] text-amber-800/70">
           Your payment details are processed securely and never stored on our servers.
         </p>
-        {error && (
-          <p className="text-rose-600 text-sm mt-2 font-medium">{error}</p>
-        )}
+
+        {error && <p className="mt-2 text-[13px] font-medium text-rose-600">{error}</p>}
       </div>
 
       <Button
         type="submit"
         disabled={!stripe || isProcessing}
-        className="w-full h-12 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold shadow-[0_12px_24px_rgba(180,95,25,0.28)] disabled:opacity-50"
+        className="h-10 w-full rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(180,95,25,0.28)] transition-all hover:from-amber-700 hover:to-amber-800 disabled:opacity-50"
       >
         {isProcessing ? (
           <span className="flex items-center gap-2">
-            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
             Processing secure payment...
           </span>
         ) : (
           <span className="flex items-center gap-2">
-            <CreditCard size={18} />
+            <CreditCard size={16} />
             Pay {formatCurrency(amount)} now
           </span>
         )}
       </Button>
 
-      <div className="grid sm:grid-cols-3 gap-2.5 text-xs">
-        <div className="inline-flex items-center justify-center gap-1.5 rounded-full border border-amber-200/80 bg-white/90 px-3 py-2 text-amber-900/80 font-medium">
-          <Shield size={13} /> PCI compliant
+      <div className="grid gap-1.5 text-[10px] sm:grid-cols-3">
+        <div className="inline-flex items-center justify-center gap-1.5 rounded-full border border-amber-200/80 bg-white/90 px-2.5 py-1.5 font-medium text-amber-900/80">
+          <Shield size={12} /> PCI compliant
         </div>
-        <div className="inline-flex items-center justify-center gap-1.5 rounded-full border border-amber-200/80 bg-white/90 px-3 py-2 text-amber-900/80 font-medium">
-          <LockKeyhole size={13} /> 256-bit SSL
+        <div className="inline-flex items-center justify-center gap-1.5 rounded-full border border-amber-200/80 bg-white/90 px-2.5 py-1.5 font-medium text-amber-900/80">
+          <LockKeyhole size={12} /> 256-bit SSL
         </div>
-        <div className="inline-flex items-center justify-center gap-1.5 rounded-full border border-amber-200/80 bg-white/90 px-3 py-2 text-amber-900/80 font-medium">
-          <BadgeCheck size={13} /> Verified checkout
+        <div className="inline-flex items-center justify-center gap-1.5 rounded-full border border-amber-200/80 bg-white/90 px-2.5 py-1.5 font-medium text-amber-900/80">
+          <BadgeCheck size={12} /> Verified checkout
         </div>
       </div>
     </form>
@@ -151,15 +151,10 @@ export const BookingPaymentPage = () => {
   const handlePaymentSuccess = async (): Promise<{ ok: boolean; error?: string }> => {
     setSaveError('');
 
-    const chosenTable = selectedTable && selectedTable.capacity >= selectedGuests && selectedTable.status !== 'blocked'
-      ? selectedTable
-      : findOptimalTable(
-          selectedGuests,
-          tables,
-          [],
-          selectedDate,
-          selectedTime,
-        );
+    const chosenTable =
+      selectedTable && selectedTable.capacity >= selectedGuests && selectedTable.status !== 'blocked'
+        ? selectedTable
+        : findOptimalTable(selectedGuests, tables, [], selectedDate, selectedTime);
 
     const newBooking: Booking = {
       id: `booking-${Date.now()}`,
@@ -191,7 +186,6 @@ export const BookingPaymentPage = () => {
     if (chosenTable) {
       const timeSlot = new Date(`${selectedDate}T${selectedTime}:00`).toISOString();
       setSelectedTable(chosenTable);
-      // keep the existing booking payload and handoff, table state is preserved in the store
       void timeSlot;
     }
 
@@ -204,7 +198,7 @@ export const BookingPaymentPage = () => {
     setIsConfirmed(true);
     setSelectedTable(null);
     clearCart();
-    
+
     navigate('/confirmation', {
       state: {
         booking: newBooking,
@@ -228,8 +222,16 @@ export const BookingPaymentPage = () => {
   const step = 2;
 
   return (
-    <div className="min-h-screen pt-20 pb-16 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #e8e4df 0%, #f5f1ed 100%)' }}>
-      <div className="absolute inset-y-0 -left-32 w-[450px] opacity-15 pointer-events-none" style={{ transform: 'scaleX(-1)' }}>
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-[#faf8f3] via-[#f5f2ed] to-[#f0eae0] text-zinc-900 pt-20 pb-4">
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <img src="/bookfirstpage.png" className="w-full h-full object-cover opacity-8" alt="" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-[#faf8f3]/40 via-transparent to-[#f5f2ed]/30" />
+      </div>
+
+      <div
+        className="absolute inset-y-0 -left-32 w-[450px] opacity-15 pointer-events-none"
+        style={{ transform: 'scaleX(-1)' }}
+      >
         <img src="/bookpagerose.png" alt="" className="w-full h-full object-cover" />
       </div>
 
@@ -237,111 +239,79 @@ export const BookingPaymentPage = () => {
         <img src="/bookpagerose.png" alt="" className="w-full h-full object-cover" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 relative z-10">
-        <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6 sm:gap-8 items-start">
-          <div className="pr-4">
-            <div className="rounded-2xl overflow-hidden shadow-lg bg-gradient-to-b from-amber-50 to-yellow-50 border border-amber-200/50">
-              <div className="bg-white px-8 py-6 text-center border-b border-amber-100">
-                <div className="text-4xl mb-2">🍽️</div>
-                <h3 className="text-amber-900 font-serif text-sm tracking-widest uppercase font-semibold">LUXE RESERVE / YOUR RESERVATION</h3>
+      <main className="relative z-10 mx-auto w-full max-w-6xl px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+        <div className="grid items-start gap-6 lg:grid-cols-12">
+          <div className="lg:col-span-6 space-y-3.5">
+            {/* <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-100/60 px-3 py-1">
+              <Sparkles size={14} className="text-amber-700" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-amber-800">
+                Booking Review
+              </span>
+            </div> */}
+
+            <h1 className="font-serif text-3xl leading-[1.05] text-zinc-900 sm:text-4xl lg:text-5xl">
+              Review Your <br />
+              <span className="italic text-amber-700">Secure Payment</span>
+            </h1>
+
+            <div className="rounded-2xl border border-amber-300/30 bg-amber-100/10 p-3">
+              <p className="text-xs leading-relaxed text-amber-900/85">
+                Your reservation details are locked in. Complete the payment step to confirm the booking and send the final confirmation.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-amber-200/60 bg-amber-50/80 p-4 shadow-[0_18px_40px_rgba(126,89,36,0.12)] backdrop-blur-sm">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-700">
+                  Booking Summary
+                </h3>
+                <span className="rounded-full border border-amber-200 bg-white/70 px-2.5 py-1 text-[10px] font-semibold text-amber-900/75">
+                  Step {step} of 3
+                </span>
               </div>
 
-              <div className="px-8 py-8">
-                <div className="space-y-5">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
-                      <Calendar size={20} className="text-amber-700" />
-                    </div>
-                    <div>
-                      <p className="text-amber-900/60 text-xs font-medium uppercase">Date</p>
-                      <p className="text-amber-900 font-medium">{formatDate(selectedDate)}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
-                      <Clock size={20} className="text-amber-700" />
-                    </div>
-                    <div>
-                      <p className="text-amber-900/60 text-xs font-medium uppercase">Time</p>
-                      <p className="text-amber-900 font-medium">{formatTime(selectedTime)}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
-                      <Users size={20} className="text-amber-700" />
-                    </div>
-                    <div>
-                      <p className="text-amber-900/60 text-xs font-medium uppercase">Party Size</p>
-                      <p className="text-amber-900 font-medium">{selectedGuests} {selectedGuests === 1 ? 'Guest' : 'Guests'}</p>
-                    </div>
-                  </div>
-                  <div className="pt-3 border-t border-amber-200 space-y-3">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-amber-700/20 flex items-center justify-center flex-shrink-0">
-                        <span className="text-amber-700 font-bold text-lg">£</span>
-                      </div>
-                      <div>
-                        <p className="text-amber-900/60 text-xs font-medium uppercase">Reservation Deposit</p>
-                        <p className="text-amber-700 font-serif text-xl font-semibold">{formatCurrency(baseDepositAmount)}</p>
-                      </div>
-                    </div>
-
-                    {hasPreOrder && (
-                      <div className="flex items-center justify-between rounded-lg border border-amber-200/70 bg-white/65 px-3 py-2">
-                        <p className="text-amber-900/75 text-xs font-semibold uppercase">Pre-order Dishes ({cartItemCount})</p>
-                        <p className="text-amber-900 font-semibold">{formatCurrency(cartSubtotal)}</p>
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between rounded-lg border border-amber-300/80 bg-amber-100/70 px-3 py-2">
-                      <p className="text-amber-900 text-xs font-bold uppercase tracking-wide">Total Charge Now</p>
-                      <p className="text-amber-900 font-serif text-xl font-semibold">{formatCurrency(totalChargeNow)}</p>
-                    </div>
-                  </div>
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between gap-4 rounded-xl bg-white/35 px-3 py-2 text-[12px]">
+                  <span className="font-medium text-zinc-800">Date</span>
+                  <span className="font-mono text-amber-800">{formatDate(selectedDate)}</span>
                 </div>
 
-                <button
-                  onClick={() => {
-                    setSelectedTable(null);
-                    navigate('/booking');
-                  }}
-                  className="w-full mt-8 px-4 py-2.5 rounded-lg border border-amber-700 text-amber-700 hover:bg-amber-50 font-medium transition-all text-sm"
-                >
-                  Change Selection
-                </button>
-              </div>
+                <div className="flex items-center justify-between gap-4 rounded-xl bg-white/35 px-3 py-2 text-[12px]">
+                  <span className="font-medium text-zinc-800">Time</span>
+                  <span className="font-mono text-amber-800">{formatTime(selectedTime)}</span>
+                </div>
 
-              <div className="bg-amber-100/50 px-8 py-6 border-t border-amber-200">
-                <div className="flex items-center justify-center gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= 1 ? 'bg-amber-700 text-white' : 'bg-amber-200 text-amber-700'}`}>
-                      1
+                <div className="flex items-center justify-between gap-4 rounded-xl bg-white/35 px-3 py-2 text-[12px]">
+                  <span className="font-medium text-zinc-800">Guests</span>
+                  <span className="font-mono text-amber-800">
+                    {selectedGuests} {selectedGuests === 1 ? 'Guest' : 'Guests'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-4 rounded-xl bg-white/35 px-3 py-2 text-[12px]">
+                  <span className="font-medium text-zinc-800">Table</span>
+                  <span className="font-mono text-amber-800">{selectedTable ? `T${selectedTable.tableNumber}` : '—'}</span>
+                </div>
+
+                <div className="mt-1 border-t border-amber-200/60 pt-2.5 space-y-2">
+                  
+
+                  {hasPreOrder && (
+                    <div className="flex items-center justify-between gap-4 text-[12px]">
+                      <span className="font-medium text-zinc-800">Pre-order</span>
+                      <span className="font-mono text-amber-800">{formatCurrency(cartSubtotal)}</span>
                     </div>
-                    <p className={`text-xs mt-2 font-medium ${step >= 1 ? 'text-amber-900' : 'text-amber-700/60'}`}>Details</p>
-                  </div>
+                  )}
 
-                  <div className={`flex-1 h-0.5 ${step >= 2 ? 'bg-amber-700' : 'bg-amber-200'}`} />
-
-                  <div className="flex flex-col items-center">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= 2 ? 'bg-amber-700 text-white' : 'bg-amber-200 text-amber-700'}`}>
-                      2
-                    </div>
-                    <p className={`text-xs mt-2 font-medium ${step >= 2 ? 'text-amber-900' : 'text-amber-700/60'}`}>Payment</p>
-                  </div>
-
-                  <div className={`flex-1 h-0.5 ${step >= 3 || isConfirmed ? 'bg-amber-700' : 'bg-amber-200'}`} />
-
-                  <div className="flex flex-col items-center">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= 3 || isConfirmed ? 'bg-amber-700 text-white' : 'bg-amber-200 text-amber-700'}`}>
-                      3
-                    </div>
-                    <p className={`text-xs mt-2 font-medium ${step >= 3 || isConfirmed ? 'text-amber-900' : 'text-amber-700/60'}`}>Confirm</p>
+                  <div className="flex items-center justify-between gap-4 rounded-2xl border border-amber-300/50 bg-amber-100/50 px-3.5 py-2 text-[12px]">
+                    <span className="font-semibold text-zinc-900">Pay Now</span>
+                    <span className="font-serif text-lg text-amber-900">{formatCurrency(totalChargeNow)}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-amber-50/60 px-8 py-5 border-t border-black/10">
-                <p className="text-xs text-amber-900/70 leading-relaxed">
+              <div className="mt-3 rounded-2xl border border-amber-300/50 bg-amber-100/45 p-3">
+                <p className="text-[10px] leading-relaxed text-amber-900/85">
                   <span className="font-semibold">Note:</span>{' '}
                   {hasPreOrder
                     ? `${formatCurrency(baseDepositAmount)} deposit + ${formatCurrency(cartSubtotal)} pre-order will be charged now.`
@@ -352,11 +322,15 @@ export const BookingPaymentPage = () => {
             </div>
           </div>
 
-          <div className="rounded-3xl overflow-hidden border border-amber-200/70 bg-[linear-gradient(180deg,rgba(255,252,245,0.95),rgba(255,247,231,0.9))] shadow-[0_18px_40px_rgba(85,54,21,0.16)] h-fit sticky top-6">
-            <div className="px-8 py-6 text-center border-b border-amber-200/70 bg-[linear-gradient(130deg,rgba(44,26,15,0.95),rgba(73,45,22,0.96),rgba(27,23,30,0.95))]">
-              <h3 className="text-[#FFF8EE] font-serif text-[1.7rem] leading-none tracking-[0.01em]">Complete Your Details</h3>
-              <p className="text-amber-200/80 text-[11px] mt-2 tracking-[0.18em] uppercase">Secure Checkout</p>
-              <div className="mt-4 flex items-center justify-center gap-2">
+          <div className="h-fit rounded-3xl border border-amber-200/70 bg-[linear-gradient(180deg,rgba(255,252,245,0.95),rgba(255,247,231,0.9))] shadow-[0_18px_40px_rgba(85,54,21,0.16)] lg:col-span-6 sticky top-20 overflow-hidden">
+            <div className="border-b border-amber-200/70 bg-[linear-gradient(130deg,rgba(44,26,15,0.95),rgba(73,45,22,0.96),rgba(27,23,30,0.95))] px-5 py-3.5 text-center">
+              <h3 className="font-serif text-lg leading-none tracking-[0.01em] text-[#FFF8EE]">
+                Complete Your Details
+              </h3>
+              <p className="mt-1 text-[9px] uppercase tracking-[0.18em] text-amber-200/80">
+                Secure Checkout
+              </p>
+              <div className="mt-2 flex items-center justify-center gap-2">
                 <span className={`h-2 w-8 rounded-full transition-colors ${step >= 1 ? 'bg-amber-300' : 'bg-white/30'}`} />
                 <span className={`h-2 w-8 rounded-full transition-colors ${step >= 2 ? 'bg-amber-300' : 'bg-white/30'}`} />
                 <span className={`h-2 w-8 rounded-full transition-colors ${step >= 3 || isConfirmed ? 'bg-amber-300' : 'bg-white/30'}`} />
@@ -364,24 +338,28 @@ export const BookingPaymentPage = () => {
             </div>
 
             {step === 2 && (
-              <div className="px-8 py-8">
-                <h3 className="font-serif text-[1.8rem] text-amber-950 mb-2 leading-none">Payment Details</h3>
-                <p className="text-sm text-amber-900/70 mb-4">Review and pay your reservation charges securely.</p>
+              <div className="px-5 py-3.5">
+                <h3 className="mb-0.5 font-serif text-lg leading-none text-amber-950">Payment Details</h3>
+                <p className="mb-2.5 text-[11px] text-amber-900/70">
+                  Review and pay your reservation charges securely.
+                </p>
 
-                <div className="mb-6 rounded-xl border border-amber-200/80 bg-white/80 p-4 text-sm">
+                <div className="mb-3 rounded-xl border border-amber-200/80 bg-white/80 p-3 text-[12px]">
                   <div className="flex items-center justify-between text-amber-900/80">
                     <span>Reservation deposit</span>
                     <span className="font-semibold">{formatCurrency(baseDepositAmount)}</span>
                   </div>
                   {hasPreOrder && (
-                    <div className="mt-2 flex items-center justify-between text-amber-900/80">
-                      <span>Pre-order menu ({cartItemCount} item{cartItemCount === 1 ? '' : 's'})</span>
+                    <div className="mt-1.5 flex items-center justify-between text-amber-900/80">
+                      <span>
+                        Pre-order menu ({cartItemCount} item{cartItemCount === 1 ? '' : 's'})
+                      </span>
                       <span className="font-semibold">{formatCurrency(cartSubtotal)}</span>
                     </div>
                   )}
-                  <div className="mt-3 flex items-center justify-between border-t border-amber-200 pt-3 text-amber-950">
-                    <span className="font-semibold uppercase tracking-wide text-xs">Pay Now</span>
-                    <span className="font-serif text-xl font-semibold">{formatCurrency(totalChargeNow)}</span>
+                  <div className="mt-1.5 flex items-center justify-between border-t border-amber-200 pt-1.5 text-amber-950">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide">Pay Now</span>
+                    <span className="font-serif text-base font-semibold">{formatCurrency(totalChargeNow)}</span>
                   </div>
                 </div>
 
@@ -389,13 +367,11 @@ export const BookingPaymentPage = () => {
                   <PaymentForm onSuccess={handlePaymentSuccess} amount={totalChargeNow} />
                 </Elements>
 
-                {saveError && (
-                  <p className="mt-4 text-center text-sm text-red-600 font-semibold">{saveError}</p>
-                )}
+                {saveError && <p className="mt-2 text-center text-[12px] font-semibold text-red-600">{saveError}</p>}
 
                 <button
                   onClick={() => navigate('/booking/details')}
-                  className="w-full text-center text-amber-700 hover:text-amber-900 transition-colors mt-4 font-semibold"
+                  className="mt-2 w-full text-center text-xs font-semibold text-amber-700 transition-colors hover:text-amber-900"
                 >
                   Back to details
                 </button>
@@ -403,24 +379,18 @@ export const BookingPaymentPage = () => {
             )}
 
             {isConfirmed && (
-              <div className="px-8 py-12 text-center">
-                <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
-                  <Check size={32} className="text-emerald-600" />
+              <div className="px-5 py-6 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20">
+                  <Check size={24} className="text-emerald-600" />
                 </div>
-                <h3 className="font-serif text-2xl text-amber-900 mb-2">
-                  Booking Confirmed!
-                </h3>
-                <p className="text-amber-700 mb-2 text-sm font-medium">
-                  Your reservation is secure.
-                </p>
-                <p className="text-amber-600 text-xs">
-                  Redirecting to your confirmation page...
-                </p>
+                <h3 className="mb-1 font-serif text-lg text-amber-900">Booking Confirmed!</h3>
+                <p className="mb-1 text-xs font-medium text-amber-700">Your reservation is secure.</p>
+                <p className="text-[11px] text-amber-600">Redirecting to your confirmation page...</p>
               </div>
             )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

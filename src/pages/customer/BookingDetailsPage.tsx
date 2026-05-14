@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -34,6 +34,7 @@ export const BookingDetailsPage = () => {
   } = useBookingStore();
 
   const { items: cartItems } = useMenuCartStore();
+  const { selectedTable } = useTableStore();
 
   const [formData, setFormData] = useState({
     firstName: '',

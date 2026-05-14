@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Calendar as DateCalendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useBookingStore, useCustomerAuthStore, useMenuCartStore, useTableStore } from '@/store';
+import type { RestaurantTable } from '@/types';
 import { formatDate, formatTime, generateBookingId, findOptimalTable, formatCurrency } from '@/mockData';
 import { saveBooking, getAvailableTables } from '@/backendBookingApi';
 import { sendBookingConfirmationEmail } from '@/bookingEmailApi';
@@ -141,7 +142,6 @@ export const BookingPage = () => {
   const location = useLocation();
   const { customer } = useCustomerAuthStore();
   const { 
-    bookings,
     selectedDate, 
     selectedTime, 
     selectedGuests, 
@@ -687,7 +687,7 @@ export const BookingPage = () => {
                             <button
                               key={table.id}
                               type="button"
-                              onClick={() => setSelectedTable(table)}
+                              onClick={() => setSelectedTable(table as RestaurantTable)}
                               className={`rounded-2xl border px-3 py-3 text-left transition-all ${selectedTable?.id === table.id
                                 ? 'border-amber-700 bg-amber-100 shadow-md ring-2 ring-amber-200'
                                 : 'border-amber-200 bg-amber-50/70 hover:border-amber-400 hover:bg-amber-50'

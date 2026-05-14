@@ -77,21 +77,25 @@ export const Navigation = () => {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-4">
           <Link to="/" onClick={handleHomeClick} className="group inline-flex items-center gap-3">
-            <img
-              src="/logo1.png"
-              alt="Singh's Dining logo"
-              className="h-12 w-12 shrink-0 object-contain drop-shadow-[0_6px_18px_rgba(0,0,0,0.45)] sm:h-14 sm:w-14"
-              loading="eager"
-              draggable={false}
-            />
-            <div className="leading-none">
-              <span className="block font-serif text-[18px] tracking-wide text-[#F4F6FA] sm:text-[21px]">
-                Singh&apos;s Dining
-              </span>
-              <span className="mt-1 block text-[10px] uppercase tracking-[0.32em] text-[#D4A23A]/85">
-                LuxeReserve
-              </span>
-            </div>
+             <div className="relative flex items-center">
+                <img
+                  src="/logo1.png"
+                  alt="Singh's Dining logo"
+                  className="absolute -left-7 sm:-left-8 top-1/2 h-14 w-14 sm:h-16 sm:w-16 -translate-y-1/2 object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)] transition-transform group-hover:scale-[1.02]"
+                  loading="eager"
+                  draggable={false}
+                />
+                <div className="relative z-10 pl-6 sm:pl-7 leading-none">
+                  <div className="flex items-end gap-1.5 sm:gap-2">
+                    <span className="font-serif text-[20px] sm:text-[22px] tracking-wide text-[#F4F6FA]">Singh&apos;s</span>
+                    <span className="inline-block h-3.5 w-px sm:h-4 sm:w-px bg-[#D4A23A]/70" />
+                    <span className="pb-0.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.3em] text-[#D4A23A]">Dining</span>
+                  </div>
+                  <span className="pt-1.5 sm:pt-2 block text-[9px] sm:text-[10px] uppercase tracking-[0.25em] text-[#AFB8C8]/90">
+                    By Rangrez
+                  </span>
+                </div>
+              </div>
           </Link>
 
           <nav className="hidden items-center gap-8 xl:flex">

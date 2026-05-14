@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
+  Users,
   Calendar,
   Clock,
   Users,
@@ -14,7 +15,8 @@ import {
 
 import { Calendar as DateCalendar } from '@/components/ui/calendar';
 import { useBookingStore, useMenuCartStore, useTableStore } from '@/store';
-import { formatCurrency, formatDate, formatTime } from '@/mockData';
+import type { RestaurantTable } from '@/types';
+import { formatCurrency } from '@/mockData';
 import { getAvailableTables } from '@/backendBookingApi';
 
 const baseSlotTimes = [
@@ -27,6 +29,38 @@ const baseSlotTimes = [
   '20:00', '20:30',
   '21:00', '21:30',
 ];
+const DAYS_OF_WEEK = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+
+const openingTimes = [
+  { day: 'Monday',    time: '11:30am - 9:30pm'  },
+  { day: 'Tuesday',   time: '11:30am - 9:30pm'  },
+  { day: 'Wednesday', time: '11:30am - 9:30pm'  },
+  { day: 'Thursday',  time: '11:30am - 9:30pm'  },
+  { day: 'Friday',    time: '11:30am - 10:00pm' },
+  { day: 'Saturday',  time: '11:30am - 10:00pm' },
+  { day: 'Sunday',    time: '11:30am - 8:00pm'  },
+];
+
+const getUpcomingSlot = () => {
+  const now = new Date();
+  const h = now.getHours();
+  const m = now.getMinutes();
+  const allSlots = [...LUNCH_SLOTS, ...DINNER_SLOTS];
+  return (
+    allSlots.find((t) => {
+      const [sh, sm] = t.split(':').map(Number);
+      if (sh > h) return true;
+      if (sh === h && sm > m + 25) return true;
+      return false;
+    }) ?? allSlots[0]
+  );
+};
+
+type Step = 0 | 1 | 2 | 3;
+type Period = 'lunch' | 'dinner';
+type MenuCartItem = ReturnType<typeof useMenuCartStore.getState>['items'][number];
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export const BookingSelectionPage = () => {
   const navigate = useNavigate();
@@ -44,7 +78,7 @@ export const BookingSelectionPage = () => {
 
   const { items: cartItems } = useMenuCartStore();
 
-  const params = new URLSearchParams(location.search);
+  const params            = new URLSearchParams(location.search);
   const skipSelectionFlag = Boolean(params.get('skipSelection'));
 
   const [activeSection, setActiveSection] = useState<'guests' | 'date' | 'time' | null>('date');
@@ -102,6 +136,7 @@ export const BookingSelectionPage = () => {
     hasInitializedSelectionRef.current = false;
   }, [location.search]);
 
+  // ── Init store values ──
   useEffect(() => {
     if (hasInitializedSelectionRef.current) {
       return;
@@ -214,13 +249,9 @@ export const BookingSelectionPage = () => {
   );
 
   useEffect(() => {
-    if (!selectedSlotTime) {
-      setAvailableTables([]);
-      setFetchError(null);
-      return;
-    }
-
-    const fetchTables = async () => {
+    if (!draftTime) { setAvailableTables([]); return; }
+    let active = true;
+    const run = async () => {
       setIsLoadingTables(true);
 
       setFetchError(null);
@@ -243,6 +274,9 @@ export const BookingSelectionPage = () => {
 
       setIsLoadingTables(false);
     };
+    const t = setTimeout(run, 300);
+    return () => { active = false; clearTimeout(t); };
+  }, [draftTime, guests, selectedBookingDate]);
 
     const debounceTimer = setTimeout(fetchTables, 300);
 
@@ -269,11 +303,12 @@ export const BookingSelectionPage = () => {
     setSelectedTable,
   ]);
 
-  const handleTimeFilterSelect = (time: string) => {
-    setDraftTimeFilter(time);
+  const goStep = (n: Step) => setStep(n);
 
-    if (time === 'All Times') {
-      setSelectedSlotTime('');
+  const handleConfirm = () => {
+    if (!draftTime || !guests) return;
+    if (!selectedTable) {
+      setTableRequiredError('Please select a table before proceeding.');
       return;
     }
 
@@ -743,6 +778,172 @@ export const BookingSelectionPage = () => {
           </motion.div>
         </div>
       </main>
+    </div>
+
+    <div className="p-3.5 rounded-2xl bg-amber-100/40 border border-amber-300/50">
+      <p className="text-[11px] text-amber-900/85 leading-relaxed">
+        <span className="font-semibold">Note:</span> A small deposit of £5 secures your reservation and helps us reduce no-shows. Fully refundable with 24 hours notice.
+      </p>
+    </div>
+  </motion.div>
+);
+
+const RightColumn = ({ children }: { children: ReactNode }) => (
+  <motion.div
+    initial={{ y: 20, opacity: 0 }}
+    animate={{ y: 0, opacity: 1 }}
+    className="lg:col-span-6 flex justify-end"
+  >
+    <div className="w-full max-w-[460px] bg-white/70 backdrop-blur-2xl rounded-3xl border border-white/80 shadow-xl overflow-hidden sticky top-20">
+      {children}
+    </div>
+  </motion.div>
+);
+
+const PanelHeader = ({ icon, subtitle }: { icon: string; subtitle: string }) => (
+  <div className="bg-gradient-to-r from-amber-100/60 to-amber-50/60 p-4.5 text-center border-b border-amber-200/40 backdrop-blur-sm">
+    <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-amber-200/40 border border-amber-300/60 mb-2.5">
+      <span className="text-lg">{icon}</span>
+    </div>
+    <h2 className="text-lg font-serif tracking-[0.25em] uppercase text-amber-900 italic">Singh's
+Dining
+By Rangrez</h2>
+    <p className="text-[11px] text-amber-800/70 mt-1.5 uppercase tracking-[0.2em]">{subtitle}</p>
+  </div>
+);
+
+const StepPanel = ({ children }: { children: ReactNode }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -6 }}
+    transition={{ duration: 0.2 }}
+    className="p-4 space-y-0"
+  >
+    {children}
+  </motion.div>
+);
+
+const StepLabel = ({ children, className = '' }: { children: ReactNode; className?: string }) => (
+  <p className={`text-[10px] uppercase tracking-[0.2em] font-bold text-amber-500 mb-2.5 ${className}`}>
+    {children}
+  </p>
+);
+
+const StepCTA = ({
+  children,
+  disabled,
+  onClick,
+}: {
+  children: ReactNode;
+  disabled: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-800 hover:to-amber-700 disabled:bg-zinc-300 disabled:text-zinc-500 text-white text-[13px] font-semibold uppercase tracking-wide transition-all shadow-lg shadow-amber-700/20 disabled:cursor-not-allowed"
+  >
+    {children}
+  </button>
+);
+
+const DepositNote = () => (
+  <div className="flex items-center gap-2.5 rounded-xl bg-amber-100/40 border border-amber-300/40 px-3 py-2 mb-3.5">
+    <ShieldCheck size={14} className="text-amber-700 shrink-0" />
+    <p className="text-[11px] text-amber-900/75 leading-snug">
+      <strong className="text-amber-800 font-semibold">£5 deposit</strong> secures your table — fully refundable with 24 hrs notice.
+    </p>
+  </div>
+);
+
+// ─── Mini Calendar ────────────────────────────────────────────────────────────
+
+const MiniCalendar = ({
+  value,
+  calDate,
+  onChange,
+  onPrev,
+  onNext,
+}: {
+  value: Date;
+  calDate: Date;
+  onChange: (d: Date) => void;
+  onPrev: () => void;
+  onNext: () => void;
+}) => {
+  const today     = new Date(); today.setHours(0, 0, 0, 0);
+  const year      = calDate.getFullYear();
+  const month     = calDate.getMonth();
+  const daysCount = getDaysInMonth(calDate);
+  const firstDow  = getDay(startOfMonth(calDate)); // 0=Sun
+  const startOffset = firstDow === 0 ? 6 : firstDow - 1; // Mo-first grid
+
+  return (
+    <div className="mb-3.5 bg-white/70 backdrop-blur-sm rounded-2xl p-3.5 border border-white/80">
+      {/* Month nav */}
+      <div className="flex items-center justify-between mb-2.5">
+        <button onClick={onPrev} className="p-1.5 rounded-lg hover:bg-amber-100/40 text-amber-700 transition-colors">
+          <ChevronLeft size={16} />
+        </button>
+        <span className="font-serif italic text-amber-900 text-[13px] font-medium">
+          {MONTHS[month]} {year}
+        </span>
+        <button onClick={onNext} className="p-1.5 rounded-lg hover:bg-amber-100/40 text-amber-700 transition-colors">
+          <ChevronRight size={16} />
+        </button>
+      </div>
+
+      {/* Day-of-week headers */}
+      <div className="grid grid-cols-7 mb-1">
+        {DAYS_OF_WEEK.map((d) => (
+          <div key={d} className="text-center text-[10px] font-bold text-amber-800/70 uppercase py-0.5">
+            {d}
+          </div>
+        ))}
+      </div>
+
+      {/* Days */}
+      <div className="grid grid-cols-7 gap-y-1">
+        {Array.from({ length: startOffset }).map((_, i) => (
+          <div key={`empty-${i}`} />
+        ))}
+        {Array.from({ length: daysCount }, (_, i) => i + 1).map((d) => {
+          const date    = new Date(year, month, d);
+          const isPast  = date < today;
+          const isToday = date.toDateString() === today.toDateString();
+          const isSel   = value.toDateString() === date.toDateString();
+          const hasAvail = !isPast && d % 3 !== 0; // demo: most days have availability
+
+          return (
+            <button
+              key={d}
+              disabled={isPast}
+              onClick={() => onChange(date)}
+              className={[
+                'relative flex flex-col items-center justify-center rounded-lg h-7 text-[11px] transition-all',
+                isPast
+                  ? 'text-zinc-400 cursor-not-allowed'
+                  : isSel
+                  ? 'bg-amber-600 text-white font-semibold shadow-md'
+                  : isToday
+                  ? 'text-amber-800 font-bold bg-amber-100/50'
+                  : 'text-zinc-800 hover:bg-amber-100/40 cursor-pointer',
+              ].join(' ')}
+            >
+              {d}
+              {hasAvail && !isSel && (
+                <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-600 opacity-80" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      <p className="text-[10px] text-zinc-600 mt-1.5 flex items-center gap-1">
+        <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-600 opacity-80" />
+        Dates with availability shown
+      </p>
     </div>
   );
 };
