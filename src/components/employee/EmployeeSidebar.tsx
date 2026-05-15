@@ -142,7 +142,7 @@ export const EmployeeSidebar = () => {
                   className="flex-shrink-0"
                 />
 
-                {(!isCollapsed || true) && (
+                {!isCollapsed && (
                   <span className="text-sm font-medium truncate">
                     {item.label}
                   </span>
@@ -154,7 +154,7 @@ export const EmployeeSidebar = () => {
 
         {/* ================= FOOTER ================= */}
         <div className="border-t border-amber-200 p-4 bg-white">
-          {(!isCollapsed || true) && (
+          {!isCollapsed && (
             <div className="mb-4 px-1">
               <p className="text-sm font-semibold text-amber-900 truncate">
                 {user?.firstName} {user?.lastName}
@@ -182,7 +182,7 @@ export const EmployeeSidebar = () => {
           >
             <LogOut size={20} />
 
-            {(!isCollapsed || window.innerWidth < 768) && (
+            {( !isCollapsed || (typeof window !== 'undefined' && window.innerWidth < 768) ) && (
               <span className="text-sm font-medium">
                 Logout
               </span>

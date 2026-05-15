@@ -68,16 +68,6 @@ export const createBooking = async (input: {
     throw new AppError(500, 'Restaurant settings not configured');
   }
 
-  const table = input.tableId
-    ? await prisma.restaurantTable.findUnique({ where: { id: input.tableId } })
-    : input.tableNumber
-      ? await prisma.restaurantTable.findUnique({ where: { tableNumber: input.tableNumber } })
-      : null;
-
-  if (table && table.capacity < input.guests) {
-    throw new AppError(400, 'Selected table cannot fit the guest count');
-  }
-
   // compute booking times
   const start = toDateTime(input.bookingDate, normalizeTime(input.bookingTime));
   const duration = getDiningDurationMinutes(input.guests);
@@ -107,79 +97,6 @@ export const createBooking = async (input: {
 
   // transactional create with conflict check
   const booking = await prisma.$transaction(async (transaction: Prisma.TransactionClient) => {
-    // if a specific table requested, verify availability
-    let assignedTable = table;
-
-    if (assignedTable) {
-      // load existing bookings for this table on the date
-      const existing = await transaction.booking.findMany({
-        where: {
-          tableId: assignedTable.id,
-          bookingDate: new Date(`${input.bookingDate}T00:00:00.000Z`),
-          status: { in: [BookingStatus.confirmed, BookingStatus.arrived, BookingStatus.seated] },
-        },
-        select: { bookingStart: true, bookingEnd: true, releaseTime: true, durationMinutes: true, tableId: true },
-      });
-
-      const selectedEndWithBuffer = release; // release already includes cleaning buffer
-      for (const ex of existing) {
-        const exStart: Date = ex.bookingStart ? new Date(ex.bookingStart) : toDateTime(input.bookingDate, '00:00');
-        const duration: number = ex.durationMinutes !== null && ex.durationMinutes !== undefined ? ex.durationMinutes : getDiningDurationMinutes(2);
-        const exEnd: Date = ex.bookingEnd ? new Date(ex.bookingEnd) : addMinutes(exStart, duration);
-        const exEndWithBuffer: Date = ex.releaseTime ? new Date(ex.releaseTime) : addMinutes(exEnd, cleaningBuffer);
-
-        // overlap rule: selectedStart < existingEndWithBuffer AND selectedEndWithBuffer > existingStart
-        if (start < exEndWithBuffer && selectedEndWithBuffer > exStart) {
-          throw new AppError(409, 'Selected table is not available for the chosen time');
-        }
-      }
-    } else {
-      // find an available table that fits the party and has no overlap
-      const candidateTables = await transaction.restaurantTable.findMany({ where: { capacity: { gte: input.guests }, status: { not: TableStatus.blocked } }, orderBy: { capacity: 'asc' } });
-
-      let found: typeof table | null = null;
-
-      const occupyingStatuses = [BookingStatus.confirmed, BookingStatus.arrived, BookingStatus.seated];
-
-      for (const t of candidateTables) {
-        const existing = await transaction.booking.findMany({
-          where: {
-            tableId: t.id,
-            bookingDate: new Date(`${input.bookingDate}T00:00:00.000Z`),
-            status: { in: occupyingStatuses },
-          },
-          select: { bookingStart: true, bookingEnd: true, releaseTime: true, durationMinutes: true, tableId: true },
-        });
-
-
-        let conflict = false;
-        const selectedEndWithBuffer = release; // release already includes cleaning buffer
-        for (const ex of existing) {
-          const exStart: Date = ex.bookingStart ? new Date(ex.bookingStart) : toDateTime(input.bookingDate, '00:00');
-          const duration: number = ex.durationMinutes !== null && ex.durationMinutes !== undefined ? ex.durationMinutes : getDiningDurationMinutes(2);
-          const exEnd: Date = ex.bookingEnd ? new Date(ex.bookingEnd) : addMinutes(exStart, duration);
-          const exEndWithBuffer: Date = ex.releaseTime ? new Date(ex.releaseTime) : addMinutes(exEnd, cleaningBuffer);
-
-          // overlap rule: selectedStart < existingEndWithBuffer AND selectedEndWithBuffer > existingStart
-          if (start < exEndWithBuffer && selectedEndWithBuffer > exStart) {
-            conflict = true;
-            break;
-          }
-        }
-
-        if (!conflict) {
-          found = t;
-          break;
-        }
-      }
-
-      if (!found) {
-        throw new AppError(409, 'No tables available for selected time');
-      }
-
-      assignedTable = found;
-    }
-
     const created = await transaction.booking.create({
       data: {
         id: input.id ?? undefined,
@@ -195,8 +112,8 @@ export const createBooking = async (input: {
         durationMinutes: duration,
         graceExpiresAt: null,
         guests: input.guests,
-        tableId: assignedTable?.id ?? input.tableId ?? null,
-        tableNumber: assignedTable?.tableNumber ?? input.tableNumber ?? null,
+        tableId: input.tableId ?? null,
+        tableNumber: input.tableNumber ?? null,
         status: BookingStatus.confirmed,
         specialRequests: input.specialRequests,
         depositAmount: settings.defaultDepositAmount,
@@ -204,13 +121,6 @@ export const createBooking = async (input: {
         customerId: input.customerId,
       },
     });
-
-    if (assignedTable) {
-      await transaction.restaurantTable.update({
-        where: { id: assignedTable.id },
-        data: { status: TableStatus.booked, timeSlot: normalizeTime(input.bookingTime) },
-      });
-    }
 
     return created;
   });

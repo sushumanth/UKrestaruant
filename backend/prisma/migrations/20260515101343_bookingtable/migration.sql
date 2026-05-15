@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "Booking" ALTER COLUMN "tableId" SET DEFAULT 'table',
+ALTER COLUMN "tableNumber" SET DEFAULT 0,
+ALTER COLUMN "bookingEnd" SET DATA TYPE DATE,
+ALTER COLUMN "bookingStart" SET DATA TYPE DATE,
+ALTER COLUMN "durationMinutes" SET DEFAULT 0,
+ALTER COLUMN "releaseTime" SET DATA TYPE DATE;

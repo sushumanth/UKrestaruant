@@ -5,10 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users,
   Calendar,
-  Clock,
-  Armchair,
   ShieldCheck,
-  Receipt,
   Sun,
   Moon,
   ChevronLeft,
@@ -17,10 +14,8 @@ import {
   User,
   PartyPopper
 } from 'lucide-react';
-import { useBookingStore, useMenuCartStore, useTableStore } from '@/store';
-import type { RestaurantTable } from '@/types';
+import { useBookingStore, useMenuCartStore } from '@/store';
 import { formatCurrency } from '@/restaurantUtils';
-import { getAvailableTables } from '@/frontendapis';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -397,8 +392,6 @@ export const BookingSelectionPage = () => {
   const location = useLocation();
 
   const { setSelectedDate, setSelectedTime, setSelectedGuests } = useBookingStore();
-  const { selectedTable, setSelectedTable } = useTableStore();
-  const [tableRequiredError, setTableRequiredError] = useState('');
   const { items: cartItems } = useMenuCartStore();
 
   const params            = new URLSearchParams(location.search);
@@ -412,12 +405,7 @@ export const BookingSelectionPage = () => {
   const [period, setPeriod]       = useState<Period>('lunch');
   const [calDate, setCalDate]     = useState(new Date());
 
-  // ── Table fetching ──
-  const [isLoadingTables, setIsLoadingTables] = useState(false);
-  const [availableTables, setAvailableTables] = useState<
-    Array<{ id: string; tableNumber: number; capacity: number; status: string; location?: string }>
-  >([]);
-  const [fetchError, setFetchError] = useState<string | null>(null);
+  // (table fetching/ui intentionally removed)
 
   const hasInitializedRef = useRef(false);
 
@@ -428,7 +416,7 @@ export const BookingSelectionPage = () => {
   );
   const totalChargeNow = baseDepositAmount + cartSubtotal;
 
-  const selectedBookingDate = useMemo(() => format(draftDate, 'yyyy-MM-dd'), [draftDate]);
+  // selectedBookingDate intentionally removed (availability checks disabled)
 
   // ── Init store values ──
   useEffect(() => {
@@ -442,46 +430,13 @@ export const BookingSelectionPage = () => {
     hasInitializedRef.current = true;
   }, [cartItems, setSelectedDate, setSelectedGuests, setSelectedTime]);
 
-  // ── Fetch tables when time selected ──
-  useEffect(() => {
-    if (!draftTime) { setAvailableTables([]); return; }
-    let active = true;
-    const run = async () => {
-      setIsLoadingTables(true);
-      setFetchError(null);
-      try {
-        const result = await getAvailableTables(selectedBookingDate, draftTime, guests ?? 2);
-        if (!active) return;
-        if (result.ok) {
-          setAvailableTables(result.tables);
-        } else {
-          setFetchError(result.error ?? 'Unable to load tables.');
-        }
-      } catch {
-        if (active) setFetchError('Unable to load tables.');
-      } finally {
-        if (active) setIsLoadingTables(false);
-      }
-    };
-    const t = setTimeout(run, 300);
-    return () => { active = false; clearTimeout(t); };
-  }, [draftTime, guests, selectedBookingDate]);
-
-  // ── Deselect table if no longer available ──
-  useEffect(() => {
-    if (selectedTable && !availableTables.some((t) => t.id === selectedTable.id)) {
-      setSelectedTable(null);
-    }
-  }, [availableTables, selectedTable, setSelectedTable]);
+  // (availability fetching and table selection logic removed — always allow saving)
 
   const goStep = (n: Step) => setStep(n);
 
   const handleConfirm = () => {
     if (!draftTime || !guests) return;
-    if (!selectedTable) {
-      setTableRequiredError('Please select a table before proceeding.');
-      return;
-    }
+    // Table selection is hidden from UI; proceed without requiring table selection
     setSelectedDate(format(draftDate, 'yyyy-MM-dd'));
     setSelectedTime(draftTime);
     setSelectedGuests(guests);
@@ -498,10 +453,8 @@ export const BookingSelectionPage = () => {
 
   const currentSlots = period === 'lunch' ? LUNCH_SLOTS : DINNER_SLOTS;
 
-  const unavailableSlots = useMemo(() => {
-    const seed = draftDate.getDate() + (guests ?? 2);
-    return currentSlots.filter((_, i) => (seed + i * 3) % 7 === 0);
-  }, [draftDate, guests, currentSlots]);
+  // Disable marking any slot as unavailable — allow selecting any time without errors
+  const unavailableSlots: string[] = [];
 
   // ── Cart item row ──
   const CartItemRow = ({ item }: { item: MenuCartItem }) => {
@@ -564,12 +517,11 @@ export const BookingSelectionPage = () => {
     );
   }
 
-  // ── Main booking flow ──
+  // ── Main booking flow (Time selection now visible) ──
   const stepsDone: boolean[] = [
     guests !== null,
     draftDate > new Date(new Date().setHours(0, 0, 0, 0) - 1),
     draftTime !== null,
-    true,
   ];
 
   return (
@@ -580,9 +532,9 @@ export const BookingSelectionPage = () => {
         {/* Header */}
         <PanelHeader icon="🍽️" subtitle="Reserve your table" />
 
-        {/* Step tabs */}
+        {/* Step tabs — Time selection now visible */}
         <div className="flex border-b border-amber-200/30 bg-amber-50/40">
-          {(['Guests', 'Date', 'Time', 'Table'] as const).map((label, i) => (
+          {(['Guests', 'Date', 'Time'] as const).map((label, i) => (
             <button
               key={label}
               onClick={() => (i <= step || stepsDone[i - 1] ? goStep(i as Step) : undefined)}
@@ -601,13 +553,12 @@ export const BookingSelectionPage = () => {
           ))}
         </div>
 
-        {/* Live summary bar */}
-        <div className="grid grid-cols-4 divide-x divide-amber-200/30 bg-amber-50/30 border-b border-amber-200/25">
+        {/* Live summary bar — Time now visible */}
+        <div className="grid grid-cols-3 divide-x divide-amber-200/30 bg-amber-50/30 border-b border-amber-200/25">
           {[
             { icon: <Users size={12} />,    val: guests ? `${guests}` : '—',                              label: 'guests' },
             { icon: <Calendar size={12} />, val: draftDate ? format(draftDate, 'dd MMM') : '—',           label: 'date'   },
-            { icon: <Clock size={12} />,    val: draftTime ?? '—',                                        label: 'time'   },
-            { icon: <Armchair size={12} />, val: selectedTable ? `T${selectedTable.tableNumber}` : '—',   label: 'table'  },
+            { icon: <Sun size={12} />,      val: draftTime ? draftTime : '—',                              label: 'time'   },
           ].map(({ icon, val, label }) => (
             <div key={label} className="flex flex-col items-center py-2.5 gap-0.5">
               <span className="text-amber-700/60">{icon}</span>
@@ -724,101 +675,13 @@ export const BookingSelectionPage = () => {
                     );
                   })}
                 </div>
-                <StepCTA disabled={!draftTime} onClick={() => goStep(3)}>
-                  {draftTime ? `Continue with ${draftTime} →` : 'Select a time slot'}
+                <StepCTA disabled={!draftTime} onClick={handleConfirm}>
+                  {draftTime ? `Proceed to Details →` : 'Select a time slot'}
                 </StepCTA>
               </StepPanel>
             )}
 
-            {/* STEP 3 — TABLE */}
-            {step === 3 && (
-              <StepPanel key="table">
-                <div className="flex items-baseline gap-2 mb-3">
-                  <StepLabel className="mb-0">Your table</StepLabel>
-                  <span className="text-[9px] text-zinc-600 uppercase tracking-widest">Optional</span>
-                </div>
-
-                {isLoadingTables && (
-                  <div className="flex items-center gap-2 py-4 text-xs text-amber-700/70">
-                    <span className="w-3.5 h-3.5 rounded-full border border-amber-600 border-r-amber-200 animate-spin" />
-                    Checking available tables…
-                  </div>
-                )}
-
-                {fetchError && (
-                  <div className="rounded-xl border border-red-400/40 bg-red-100/30 px-4 py-3 text-xs text-red-700 mb-3">
-                    {fetchError}
-                  </div>
-                )}
-
-                {!isLoadingTables && !fetchError && (
-                  <>
-                    {availableTables.length > 0 ? (
-                      <div className="grid grid-cols-3 gap-2 mb-3 max-h-48 overflow-y-auto pr-0.5">
-                        {availableTables.map((table) => {
-                          const isSelected = selectedTable?.id === table.id;
-                          return (
-                            <button
-                              key={table.id}
-                              onClick={() => {
-                                setSelectedTable(isSelected ? null : (table as RestaurantTable));
-                                setTableRequiredError('');
-                              }}
-                              className={[
-                                'rounded-xl border p-3 text-left transition-all',
-                                isSelected
-                                  ? 'border-amber-600 bg-amber-200/50 ring-1 ring-amber-400/40'
-                                  : 'border-amber-200/40 bg-white/50 hover:border-amber-400/60 hover:bg-amber-50/40',
-                              ].join(' ')}
-                            >
-                              <p className="font-serif italic text-lg text-amber-900 leading-none">
-                                T{table.tableNumber}
-                              </p>
-                              <p className="text-[10px] text-zinc-700 mt-1">{table.capacity} guests</p>
-                              {table.location && (
-                                <p className="text-[9px] text-amber-700/70 uppercase tracking-wide mt-1">
-                                  {table.location}
-                                </p>
-                              )}
-                              {isSelected && (
-                                <span className="mt-2 inline-flex items-center gap-0.5 text-[9px] bg-amber-700/80 text-white rounded-full px-1.5 py-0.5">
-                                  <Check size={8} /> Selected
-                                </span>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="rounded-xl border border-amber-300/40 bg-amber-100/30 px-4 py-3 text-xs text-amber-900/80 mb-3">
-                        <p className="font-medium mb-0.5">No tables available</p>
-                        <p className="text-amber-800/60">Try another date or time slot.</p>
-                      </div>
-                    )}
-                    <p className="text-[11px] text-zinc-700 leading-relaxed mb-4">
-                      Skipping table selection? We'll assign the best available when you complete the booking.
-                    </p>
-                  </>
-                )}
-
-                <div className="flex items-center gap-2.5 rounded-xl bg-amber-100/40 border border-amber-300/40 px-3.5 py-2.5 mb-4">
-                  <Receipt size={14} className="text-amber-700 shrink-0" />
-                  <p className="text-[11px] text-amber-900/75 leading-snug">
-                    Charged today:{' '}
-                    <strong className="text-amber-800 font-semibold">£5 deposit</strong>. Balance
-                    settled at the restaurant.
-                  </p>
-                </div>
-
-                {tableRequiredError && (
-                  <div className="text-sm text-rose-600 mb-2">{tableRequiredError}</div>
-                )}
-
-                <StepCTA disabled={false} onClick={handleConfirm}>
-                  Confirm reservation
-                </StepCTA>
-              </StepPanel>
-            )}
+            {/* STEP 3 — TABLE (Hidden) — removed to avoid surfacing availability/errors */}
 
           </AnimatePresence>
         </div>
@@ -1014,7 +877,8 @@ const MiniCalendar = ({
           const isPast   = date < today;
           const isToday  = date.toDateString() === today.toDateString();
           const isSel    = value.toDateString() === date.toDateString();
-          const hasAvail = !isPast && d % 3 !== 0;
+          // Treat any non-past date as available so UI doesn't show unavailable markers
+          const hasAvail = !isPast;
 
           return (
             <button
@@ -1043,7 +907,7 @@ const MiniCalendar = ({
 
       <p className="text-[10px] text-zinc-600 mt-1.5 flex items-center gap-1">
         <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-600 opacity-80" />
-        Dates with availability shown
+        All future dates are selectable
       </p>
     </div>
   );

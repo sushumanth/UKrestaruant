@@ -735,12 +735,22 @@ export const updateRestaurantSettings = async (payload: {
 	cancellationDeadlineHours: number;
 	autoReleaseMinutes: number;
 }): Promise<RestaurantSettings> => {
-	const response = await backendRequest<PublicOperationalDataResponse['settings']>('/restaurants/settings', {
+	const response = await backendRequest<
+		PublicOperationalDataResponse['settings'] | { settings: PublicOperationalDataResponse['settings'] } | null
+	>('/restaurants/settings', {
 		method: 'PUT',
 		body: payload,
 	});
 
-	return mapBackendSettings(response as any);
+	const settings = response && typeof response === 'object' && 'settings' in response
+		? response.settings
+		: response;
+
+	if (!settings) {
+		throw new Error('Unable to update restaurant settings.');
+	}
+
+	return mapBackendSettings(settings);
 };
 
 // ---------- backendBookingApi.ts contents ----------
@@ -819,12 +829,14 @@ type PendingOnlineOrder = {
 	updatedAt: string;
 };
 
-const mapBooking = (booking: BookingResponse['booking'] | CustomerBookingsResponse['items'][number]): Booking => {
+const mapBooking = (
+	booking: NonNullable<BookingResponse['booking'] | CustomerBookingsResponse['items'][number]>,
+): Booking => {
 	if (!booking) {
 		throw new Error('Invalid booking payload.');
 	}
 
-	return mapBackendBooking(booking as any);
+	return mapBackendBooking(booking);
 };
 
 export interface SaveResult {
@@ -844,28 +856,30 @@ export interface OccupiedTableResult {
 
 export const saveBooking = async (booking: Booking): Promise<SaveResult> => {
 	try {
+		const payload = {
+			id: booking.id,
+			bookingId: booking.bookingId,
+			customerName: booking.customerName,
+			customerEmail: booking.customerEmail,
+			customerPhone: booking.customerPhone,
+			bookingDate: booking.date,
+			bookingTime: booking.time,
+			guests: booking.guests,
+			status: booking.status,
+			depositAmount: booking.depositAmount,
+			paymentStatus: booking.paymentStatus,
+			createdAt: booking.createdAt,
+			updatedAt: booking.updatedAt,
+			...(booking.tableId ? { tableId: booking.tableId } : {}),
+			...(booking.tableNumber ? { tableNumber: booking.tableNumber } : {}),
+			...(booking.specialRequests ? { specialRequests: booking.specialRequests } : {}),
+			...(booking.stripePaymentIntentId ? { stripePaymentIntentId: booking.stripePaymentIntentId } : {}),
+		};
+
 		const response = await backendRequest<BookingResponse>('/bookings', {
 			method: 'POST',
 			auth: false,
-			body: {
-				id: booking.id,
-				bookingId: booking.bookingId,
-				customerName: booking.customerName,
-				customerEmail: booking.customerEmail,
-				customerPhone: booking.customerPhone,
-				bookingDate: booking.date,
-				bookingTime: booking.time,
-				guests: booking.guests,
-				tableId: booking.tableId ?? null,
-				tableNumber: booking.tableNumber ?? null,
-				status: booking.status,
-				specialRequests: booking.specialRequests ?? null,
-				depositAmount: booking.depositAmount,
-				paymentStatus: booking.paymentStatus,
-				stripePaymentIntentId: booking.stripePaymentIntentId ?? null,
-				createdAt: booking.createdAt,
-				updatedAt: booking.updatedAt,
-			},
+			body: payload,
 		});
 
 		if (!response.booking) {

@@ -1,6 +1,8 @@
 import type { Booking, RestaurantTable } from '@/types';
 
 export const generateTimeSlots = (_date: string): { time: string; available: boolean; availableTables: number }[] => {
+  // parameter intentionally unused in this helper; mark as used to satisfy linter
+  void _date;
   const slots: { time: string; available: boolean; availableTables: number }[] = [];
 
   const windows = [

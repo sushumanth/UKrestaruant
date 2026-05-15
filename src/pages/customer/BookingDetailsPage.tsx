@@ -4,7 +4,7 @@ import { Calendar, Clock, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useBookingStore, useCustomerAuthStore, useMenuCartStore, useTableStore } from '@/store';
+import { useBookingStore, useCustomerAuthStore, useMenuCartStore } from '@/store';
 import { formatCurrency, formatDate, formatTime } from '@/restaurantUtils';
 
 export const BookingDetailsPage = () => {
@@ -19,7 +19,6 @@ export const BookingDetailsPage = () => {
     setSelectedGuests,
   } = useBookingStore();
   const { items: cartItems } = useMenuCartStore();
-  const { selectedTable } = useTableStore();
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -127,15 +126,6 @@ export const BookingDetailsPage = () => {
                     </p>
                   </div>
 
-                    <div className="flex items-center justify-between gap-4 rounded-lg bg-white/30 px-3 py-2">
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100">
-                          <span className="text-base font-bold text-amber-700">#</span>
-                        </div>
-                        <p className="text-[11px] font-medium uppercase tracking-wide text-amber-900/60">Table</p>
-                      </div>
-                      <p className="text-right font-medium text-amber-900">{selectedTable ? `T${selectedTable.tableNumber}` : '—'}</p>
-                    </div>
 
                   <div className="border-t border-amber-200 pt-2.5 space-y-2">
                     <div className="flex items-center justify-between gap-4 rounded-lg bg-white/25 px-3 py-2">

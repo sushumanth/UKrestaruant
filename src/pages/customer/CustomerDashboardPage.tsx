@@ -338,7 +338,7 @@ function BookingCard({ booking, index }: { booking: Booking; index: number }) {
             { icon: <Calendar size={13} />, value: formatDate(booking.date) },
             { icon: <Clock3 size={13} />, value: formatTime(booking.time) },
             { icon: <Users size={13} />, value: `${booking.guests} ${booking.guests === 1 ? 'guest' : 'guests'}` },
-            { icon: <MapPin size={13} />, value: booking.tableNumber ? `Table ${booking.tableNumber}` : 'Table pending' },
+            { icon: <MapPin size={13} />, value: booking.tableNumber ? `Table ${booking.tableNumber}` : 'Table Pending' },
           ].map(({ icon, value }, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ color: 'rgba(91,58,30,0.45)', flexShrink: 0 }}>{icon}</div>

@@ -128,13 +128,13 @@ model Booking {
 
   bookingDate           DateTime          @db.Date
 
-  bookingStart          DateTime
-  bookingEnd            DateTime
+  bookingStart          DateTime          @db.Date
+  bookingEnd            DateTime          @db.Date
 
   // includes cleaning buffer
-  releaseTime           DateTime
+  releaseTime           DateTime          @db.Date
 
-  durationMinutes       Int
+  durationMinutes       Int               @default(0)
 
   graceExpiresAt        DateTime?
 

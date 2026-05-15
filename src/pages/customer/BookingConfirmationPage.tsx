@@ -44,7 +44,7 @@ export const BookingConfirmationPage = () => {
       `Date: ${formatDate(activeBooking.date)}`,
       `Time: ${formatTime(activeBooking.time)}`,
       `Guests: ${activeBooking.guests}`,
-      `Table: ${activeBooking.tableNumber ? `Table ${activeBooking.tableNumber}` : 'To be assigned'}`,
+      `Table: ${activeBooking.tableNumber ? `Table ${activeBooking.tableNumber}` : 'Table Pending'}`,
       `Paid: ${formatCurrency(paidAmount)}`,
     ].join('\n');
 
@@ -101,7 +101,7 @@ export const BookingConfirmationPage = () => {
       ['Date', formatDate(booking.date)],
       ['Time', formatTime(booking.time)],
       ['Party Size', `${booking.guests} ${booking.guests === 1 ? 'guest' : 'guests'}`],
-      ['Table', booking.tableNumber ? `Table ${booking.tableNumber}` : 'To be assigned'],
+      ['Table', booking.tableNumber ? `Table ${booking.tableNumber}` : 'Table Pending'],
       ['Amount Paid', `${formatCurrency(paidAmount)} (${booking.paymentStatus})`],
     ];
 
@@ -330,7 +330,7 @@ export const BookingConfirmationPage = () => {
                       <div className="min-w-0">
                         <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#f9f8f8]">Table</p>
                         <p className="truncate text-[12px] font-semibold text-[#4f3017] sm:text-[13px]">
-                          {booking.tableNumber ? `Table ${booking.tableNumber}` : 'To be assigned'}
+                          {booking.tableNumber ? `Table ${booking.tableNumber}` : 'Table Pending'}
                         </p>
                       </div>
                     </div>

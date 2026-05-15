@@ -4,8 +4,8 @@ import { Check, CreditCard, Shield, LockKeyhole, BadgeCheck } from 'lucide-react
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { Button } from '@/components/ui/button';
-import { useBookingStore, useCustomerAuthStore, useMenuCartStore, useTableStore } from '@/store';
-import { formatCurrency, formatDate, formatTime, generateBookingId, findOptimalTable } from '@/restaurantUtils';
+import { useBookingStore, useCustomerAuthStore, useMenuCartStore } from '@/store';
+import { formatCurrency, formatDate, formatTime, generateBookingId } from '@/restaurantUtils';
 import { saveBooking, sendBookingConfirmationEmail } from '@/frontendapis';
 import type { Booking } from '@/types';
 
@@ -122,7 +122,6 @@ export const BookingPaymentPage = () => {
   const { customer } = useCustomerAuthStore();
   const { selectedDate, selectedTime, selectedGuests } = useBookingStore();
   const { items: cartItems, clearCart } = useMenuCartStore();
-  const { tables, selectedTable, setSelectedTable } = useTableStore();
 
   const formData = (location.state as BookingFormData | undefined) ?? {
     firstName: customer?.firstName ?? '',
@@ -150,11 +149,6 @@ export const BookingPaymentPage = () => {
   const handlePaymentSuccess = async (): Promise<{ ok: boolean; error?: string }> => {
     setSaveError('');
 
-    const chosenTable =
-      selectedTable && selectedTable.capacity >= selectedGuests && selectedTable.status !== 'blocked'
-        ? selectedTable
-        : findOptimalTable(selectedGuests, tables, [], selectedDate, selectedTime);
-
     const newBooking: Booking = {
       id: `booking-${Date.now()}`,
       bookingId: generateBookingId(),
@@ -164,8 +158,6 @@ export const BookingPaymentPage = () => {
       date: selectedDate,
       time: selectedTime,
       guests: selectedGuests,
-      tableId: chosenTable?.id,
-      tableNumber: chosenTable?.tableNumber,
       status: 'confirmed',
       specialRequests: formData.specialRequests,
       depositAmount: totalChargeNow,
@@ -182,12 +174,6 @@ export const BookingPaymentPage = () => {
       return { ok: false, error: errorMessage };
     }
 
-    if (chosenTable) {
-      const timeSlot = new Date(`${selectedDate}T${selectedTime}:00`).toISOString();
-      setSelectedTable(chosenTable);
-      void timeSlot;
-    }
-
     void sendBookingConfirmationEmail(newBooking).then((result) => {
       if (!result.ok) {
         console.warn('Booking confirmation email was not sent:', result.error);
@@ -195,7 +181,6 @@ export const BookingPaymentPage = () => {
     });
 
     setIsConfirmed(true);
-    setSelectedTable(null);
     clearCart();
 
     navigate('/confirmation', {
@@ -285,11 +270,6 @@ export const BookingPaymentPage = () => {
                   <span className="font-mono text-amber-800">
                     {selectedGuests} {selectedGuests === 1 ? 'Guest' : 'Guests'}
                   </span>
-                </div>
-
-                <div className="flex items-center justify-between gap-4 rounded-xl bg-white/35 px-3 py-2 text-[12px]">
-                  <span className="font-medium text-zinc-800">Table</span>
-                  <span className="font-mono text-amber-800">{selectedTable ? `T${selectedTable.tableNumber}` : '—'}</span>
                 </div>
 
                 <div className="mt-1 border-t border-amber-200/60 pt-2.5 space-y-2">
