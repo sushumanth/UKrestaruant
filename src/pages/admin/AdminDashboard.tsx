@@ -10,9 +10,9 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useBookingStore, useTableStore, useAnalyticsStore } from '@/store';
-import { formatCurrency, formatDate, statusColors, statusLabels } from '@/mockData';
+import { formatCurrency, formatDate, statusColors, statusLabels } from '@/restaurantUtils';
 import { Button } from '@/components/ui/button';
-import { fetchStaffOperationalData } from '@/adminApi';
+import { fetchStaffOperationalData } from '@/frontendapis';
 
 import {
   LineChart,

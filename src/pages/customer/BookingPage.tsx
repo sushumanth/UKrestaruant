@@ -19,9 +19,8 @@ import { Calendar as DateCalendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useBookingStore, useCustomerAuthStore, useMenuCartStore, useTableStore } from '@/store';
 import type { RestaurantTable } from '@/types';
-import { formatDate, formatTime, generateBookingId, findOptimalTable, formatCurrency } from '@/mockData';
-import { saveBooking, getAvailableTables } from '@/backendBookingApi';
-import { sendBookingConfirmationEmail } from '@/bookingEmailApi';
+import { formatDate, formatTime, generateBookingId, findOptimalTable, formatCurrency } from '@/restaurantUtils';
+import { saveBooking, getAvailableTables, sendBookingConfirmationEmail } from '@/frontendapis';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 

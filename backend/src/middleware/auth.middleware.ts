@@ -24,14 +24,9 @@ export const authenticate: RequestHandler = async (request, _response, next) => 
       id: user.id,
       email: user.email,
       role: user.role,
-      isBlocked: user.isBlocked,
       firstName: user.firstName,
       lastName: user.lastName,
     };
-
-    if (user.isBlocked) {
-      throw new AppError(403, 'Account is blocked');
-    }
 
     return next();
   } catch (error) {

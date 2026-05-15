@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { asyncHandler } from '../utils/async-handler';
-import { loginSchema, registerSchema, createStaffSchema, updateStaffSchema, staffBlockSchema } from '../validations/auth.validation';
-import { deleteStaffMember, getCurrentUser, listStaffMembers, loginUser, registerUser, createStaffMember, setStaffBlockedState, updateStaffMember } from '../services/auth.service';
+import { loginSchema, registerSchema, createStaffSchema, updateStaffSchema } from '../validations/auth.validation';
+import { deleteStaffMember, getCurrentUser, listStaffMembers, loginUser, registerUser, createStaffMember, updateStaffMember } from '../services/auth.service';
 
 export const register = asyncHandler(async (request: Request, response: Response) => {
   const payload = registerSchema.parse(request.body);
@@ -38,16 +38,6 @@ export const listStaff = asyncHandler(async (_request: Request, response: Respon
 export const updateStaff = asyncHandler(async (request: Request, response: Response) => {
   const payload = updateStaffSchema.parse(request.body);
   const item = await updateStaffMember(String(request.params.id), payload);
-  return response.status(200).json({ item });
-});
-
-export const blockStaff = asyncHandler(async (request: Request, response: Response) => {
-  const payload = staffBlockSchema.parse(request.body);
-  if (request.user?.id === String(request.params.id)) {
-    return response.status(400).json({ message: 'You cannot block your own account.' });
-  }
-
-  const item = await setStaffBlockedState(String(request.params.id), payload.isBlocked);
   return response.status(200).json({ item });
 });
 

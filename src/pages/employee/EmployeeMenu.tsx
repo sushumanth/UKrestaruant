@@ -11,7 +11,7 @@ import {
   fetchMenuCategories as fetchMenuCategoriesOnBackend,
   upsertMenuItem as upsertMenuItemOnBackend,
   uploadMenuImage as uploadMenuImageOnBackend,
-} from '@/adminApi';
+} from '@/frontendapis';
 import type { MenuItem } from '@/types';
 
 type MenuFormState = {

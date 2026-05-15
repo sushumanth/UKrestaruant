@@ -10,8 +10,8 @@ import {
 } from 'lucide-react';
 
 import { useBookingStore } from '@/store';
-import { formatDate, statusColors, statusLabels } from '@/mockData';
-import { fetchStaffOperationalData } from '@/adminApi';
+import { formatDate, statusColors, statusLabels } from '@/restaurantUtils';
+import { fetchStaffOperationalData } from '@/frontendapis';
 
 import { Input } from '@/components/ui/input';
 

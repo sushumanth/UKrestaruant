@@ -16,7 +16,7 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, nex
   }
 
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
-    return response.status(400).json({ message: error.message, code: error.code });
+    return response.status(400).json({ message: 'Unable to create account right now.' });
   }
 
   if (error instanceof AppError) {
@@ -24,7 +24,7 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, nex
   }
 
   const statusCode = 500;
-  const message = env.NODE_ENV === 'production' ? 'Internal server error' : error instanceof Error ? error.message : 'Unknown error';
+  const message = env.NODE_ENV === 'production' ? 'Internal server error' : 'Unable to create account right now.';
 
   return response.status(statusCode).json({ message });
 };

@@ -11,8 +11,8 @@ import {
 } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { CalendarIcon, Check } from 'lucide-react';
-import { generateBookingId, findOptimalTable } from '@/mockData';
-import { saveBooking } from '@/backendBookingApi';
+import { generateBookingId, findOptimalTable } from '@/restaurantUtils';
+import { saveBooking } from '@/frontendapis';
 
 const timeSlots = [
   '17:00', '17:30', '18:00', '18:30', 

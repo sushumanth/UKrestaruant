@@ -2,7 +2,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { Leaf, Minus, Plus, Search, ShoppingBag } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { formatCurrency } from '@/lib/mockData';
+import { formatCurrency } from '@/restaurantUtils';
 import { getVisibleMenuItems } from '@/lib/menuUtils';
 import { useMenuCartStore, useMenuStore } from '@/store';
 

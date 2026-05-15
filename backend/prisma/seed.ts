@@ -115,6 +115,12 @@ async function main() {
   if (bookingCount === 0) {
     const table = await prisma.restaurantTable.findFirst();
     if (table) {
+      const bookingStart = new Date();
+      bookingStart.setHours(19, 0, 0, 0);
+      const durationMinutes = 90;
+      const bookingEnd = new Date(bookingStart.getTime() + durationMinutes * 60 * 1000);
+      const releaseTime = new Date(bookingEnd.getTime() + 15 * 60 * 1000);
+
       await prisma.booking.create({
         data: {
           bookingCode: 'BK-DEMO-001',
@@ -122,7 +128,10 @@ async function main() {
           customerEmail: 'customer@example.com',
           customerPhone: '+44 7000 000000',
           bookingDate: new Date(),
-          bookingTime: '19:00',
+          bookingStart,
+          bookingEnd,
+          releaseTime,
+          durationMinutes,
           guests: 2,
           tableId: table.id,
           tableNumber: table.tableNumber,

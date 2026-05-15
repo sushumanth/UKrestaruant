@@ -2,7 +2,7 @@ import { Minus, Plus, ShoppingBag, Trash2, ChevronLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
 import { useCustomerAuthStore } from '@/store';
-import { formatCurrency } from '@/mockData';
+import { formatCurrency } from '@/restaurantUtils';
 import { useMenuCartStore } from '@/store';
 
 export const CartPage = () => {

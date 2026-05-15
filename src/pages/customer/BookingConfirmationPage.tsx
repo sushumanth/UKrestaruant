@@ -12,7 +12,7 @@ import {
   Home,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { formatDate, formatTime, formatCurrency } from '@/mockData';
+import { formatDate, formatTime, formatCurrency } from '@/restaurantUtils';
 import { jsPDF } from 'jspdf';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';

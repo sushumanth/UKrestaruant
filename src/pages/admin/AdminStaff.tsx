@@ -23,7 +23,7 @@ import {
   deleteStaffMember,
   fetchStaffMembers,
   updateStaffMember,
-} from '@/adminApi';
+} from '@/frontendapis';
 
 import { useAuthStore } from '@/store';
 

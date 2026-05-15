@@ -18,10 +18,9 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useBookingStore } from '@/store';
 import { useTableStore } from '@/store';
-import { formatTime, generateTimeSlots } from '@/mockData';
+import { formatTime, generateTimeSlots } from '@/restaurantUtils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { backendClient } from '@/supabase';
-import { getAvailableSlots, getOccupiedTableIds } from '@/backendBookingApi';
+import { getAvailableSlots, getOccupiedTableIds } from '@/frontendapis';
 import type { BookingCardProps } from '@/types';
 
 const guestOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -190,31 +189,18 @@ export const BookingCard = ({ compact = false }: BookingCardProps) => {
   }, [date, guests, occupancyRefreshTick, time]);
 
   useEffect(() => {
-    const client = backendClient;
-
-    if (!client) {
+    if (!date || !time) {
       return;
     }
 
-    const channel = client
-      .channel('booking-feed')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'bookings' },
-        (payload) => {
-          if (payload.eventType === 'INSERT') {
-            setRecentBookings((prev) => Math.min(prev + 1, 40));
-          }
-
-          setOccupancyRefreshTick((prev) => prev + 1);
-        }
-      )
-      .subscribe();
+    const refreshTimer = window.setInterval(() => {
+      setOccupancyRefreshTick((prev) => prev + 1);
+    }, 30000);
 
     return () => {
-      void client.removeChannel(channel);
+      window.clearInterval(refreshTimer);
     };
-  }, []);
+  }, [date, time]);
 
   useEffect(() => {
     if (!date) {

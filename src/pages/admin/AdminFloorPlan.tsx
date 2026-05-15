@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Clock3, List, Map as MapIcon, MapPin, RotateCcw, Search, Sparkles, Users } from 'lucide-react';
 import { useTableStore, useBookingStore } from '@/store';
-import { statusColors, statusLabels } from '@/mockData';
+import { statusColors, statusLabels } from '@/restaurantUtils';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { createRestaurantTable, fetchStaffOperationalData } from '@/adminApi';
-import { getOccupiedTableIds } from '@/backendBookingApi';
+import { createRestaurantTable, fetchStaffOperationalData, getOccupiedTableIds } from '@/frontendapis';
 import { DateTimeFilter } from '@/components/admin/DateTimeFilter';
 import { TableGrid } from '@/components/admin/TableGrid';
 import type { RestaurantTable, TableStatus } from '@/types';

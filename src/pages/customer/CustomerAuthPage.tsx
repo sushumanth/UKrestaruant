@@ -4,9 +4,12 @@ import { Eye, EyeOff, Lock, Mail, Phone, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCustomerAuthStore } from '@/store';
-import { signInCustomer, signUpCustomer } from '@/customerApi';
+import { signInCustomer, signUpCustomer } from '@/frontendapis';
 
 type AuthMode = 'sign-in' | 'sign-up';
+
+const PASSWORD_RULE_TEXT = 'Password must be at least 8 characters and include both letters and numbers.';
+const PASSWORD_PATTERN = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
 export const CustomerAuthPage = () => {
   const navigate = useNavigate();
@@ -51,6 +54,12 @@ export const CustomerAuthPage = () => {
     setIsLoading(true);
 
     if (mode === 'sign-up') {
+      if (!PASSWORD_PATTERN.test(formData.password)) {
+        setError(PASSWORD_RULE_TEXT);
+        setIsLoading(false);
+        return;
+      }
+
       const result = await signUpCustomer({
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -232,6 +241,9 @@ export const CustomerAuthPage = () => {
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
                 </div>
+                {mode === 'sign-up' && (
+                  <p className="mt-2 text-xs text-amber-800/80">{PASSWORD_RULE_TEXT}</p>
+                )}
               </div>
 
               {error && <p className="rounded-xl border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">{error}</p>}

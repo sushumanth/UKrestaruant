@@ -1,5 +1,5 @@
 import type { RestaurantTable, Booking } from '@/types';
-import { statusColors } from '@/mockData';
+import { statusColors } from '@/restaurantUtils';
 
 interface TableCardProps {
   table: RestaurantTable;

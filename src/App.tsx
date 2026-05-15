@@ -4,13 +4,12 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useAuthStore, useCustomerAuthStore } from '@/store';
 import { useTableStore, useBookingStore, useSettingsStore, useAnalyticsStore, useMenuStore } from '@/store';
-import { backendClient } from '@/supabase';
 import {
   fetchPublicOperationalData,
   fetchStaffOperationalData,
   resolveCurrentStaffUser,
-} from '@/adminApi';
-import { resolveCurrentCustomer } from '@/customerApi';
+} from '@/frontendapis';
+import { resolveCurrentCustomer } from '@/frontendapis';
 
 // Layouts
 import { CustomerLayout } from '@/layouts/CustomerLayout';
@@ -195,11 +194,9 @@ function App() {
   ]);
 
   useEffect(() => {
-    if (!backendClient || !isAuthenticated || !user || !['admin', 'employee'].includes(user.role)) {
+    if (!isAuthenticated || !user || !['admin', 'employee'].includes(user.role)) {
       return;
     }
-
-    const client = backendClient;
 
     const refreshAll = async () => {
       try {
@@ -219,24 +216,14 @@ function App() {
       }
     };
 
-    const channel = backendClient
-      .channel('ops-realtime-sync')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
-        void refreshAll();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'restaurant_tables' }, () => {
-        void refreshAll();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'restaurant_settings' }, () => {
-        void refreshAll();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_items' }, () => {
-        void refreshAll();
-      })
-      .subscribe();
+    void refreshAll();
+
+    const refreshTimer = window.setInterval(() => {
+      void refreshAll();
+    }, 60000);
 
     return () => {
-      void client.removeChannel(channel);
+      window.clearInterval(refreshTimer);
     };
   }, [isAuthenticated, setBookings, setMenuItems, setReports, setSettings, setTables, user]);
 

@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, ShoppingBag, User, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCustomerAuthStore, useMenuCartStore } from '@/store';
-import { signOutCustomer } from '@/customerApi';
+import { signOutCustomer } from '@/frontendapis';
 
 export const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

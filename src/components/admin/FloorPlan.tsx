@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { statusColors } from '@/mockData';
+import { statusColors } from '@/restaurantUtils';
 
 interface FloorPlanProps {
   tables?: RestaurantTable[];

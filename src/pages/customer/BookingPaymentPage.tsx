@@ -5,9 +5,8 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 import { loadStripe } from '@stripe/stripe-js';
 import { Button } from '@/components/ui/button';
 import { useBookingStore, useCustomerAuthStore, useMenuCartStore, useTableStore } from '@/store';
-import { formatCurrency, formatDate, formatTime, generateBookingId, findOptimalTable } from '@/mockData';
-import { saveBooking } from '@/backendBookingApi';
-import { sendBookingConfirmationEmail } from '@/bookingEmailApi';
+import { formatCurrency, formatDate, formatTime, generateBookingId, findOptimalTable } from '@/restaurantUtils';
+import { saveBooking, sendBookingConfirmationEmail } from '@/frontendapis';
 import type { Booking } from '@/types';
 
 const stripePromise = loadStripe('pk_test_your_publishable_key');

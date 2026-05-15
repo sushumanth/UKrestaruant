@@ -9,7 +9,6 @@ declare global {
         role: AppUserRole;
         firstName: string;
         lastName: string;
-        isBlocked?: boolean;
       };
     }
   }

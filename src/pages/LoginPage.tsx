@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 import { useAuthStore } from '@/store';
-import { signInStaffPortal } from '@/adminApi';
+import { signInStaffPortal } from '@/frontendapis';
 
 export const LoginPage = () => {
   const navigate = useNavigate();

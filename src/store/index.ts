@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { updateBookingStatus, updateTableStatus } from '@/adminApi';
+import { updateBookingStatus, updateTableStatus } from '@/frontendapis';
 import type { 
   User, 
   CustomerAccount,

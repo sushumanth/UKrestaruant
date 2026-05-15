@@ -42,7 +42,6 @@ export const registerUser = async (input: {
       email: input.email.toLowerCase().trim(),
       passwordHash: await hashPassword(input.password),
       role: 'customer',
-      isBlocked: false,
       firstName: input.firstName.trim(),
       lastName: input.lastName.trim(),
       phone: input.phone?.trim(),
@@ -63,10 +62,6 @@ export const loginUser = async (input: { email: string; password: string }) => {
 
   if (!passwordMatches) {
     throw new AppError(401, 'Invalid email or password');
-  }
-
-  if (user.isBlocked) {
-    throw new AppError(403, 'This account is blocked');
   }
 
   return buildTokenResponse(user);
@@ -100,7 +95,6 @@ export const createStaffMember = async (input: {
       email: input.email.toLowerCase().trim(),
       passwordHash: await hashPassword(input.password),
       role: 'employee',
-      isBlocked: false,
       firstName: input.firstName.trim(),
       lastName: input.lastName.trim(),
       phone: input.phone?.trim(),
@@ -124,7 +118,7 @@ export const updateStaffMember = async (staffId: string, input: {
   password?: string;
   firstName?: string;
   lastName?: string;
-  phone?: string;
+  phone?: string | null;
 }) => {
   const existing = await prisma.user.findUnique({ where: { id: staffId } });
 
@@ -139,23 +133,8 @@ export const updateStaffMember = async (staffId: string, input: {
       passwordHash: input.password ? await hashPassword(input.password) : undefined,
       firstName: input.firstName?.trim(),
       lastName: input.lastName?.trim(),
-      phone: input.phone === undefined ? undefined : input.phone.trim() || null,
+      phone: input.phone === undefined ? undefined : input.phone === null ? null : input.phone.trim() || null,
     },
-  });
-
-  return serializeUser(updated);
-};
-
-export const setStaffBlockedState = async (staffId: string, isBlocked: boolean) => {
-  const existing = await prisma.user.findUnique({ where: { id: staffId } });
-
-  if (!existing || !staffRoles.includes(existing.role)) {
-    throw new AppError(404, 'Staff member not found');
-  }
-
-  const updated = await prisma.user.update({
-    where: { id: staffId },
-    data: { isBlocked },
   });
 
   return serializeUser(updated);

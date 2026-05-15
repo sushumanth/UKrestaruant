@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store';
-import { signOutStaffPortal } from '@/adminApi';
+import { signOutStaffPortal } from '@/frontendapis';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin' },

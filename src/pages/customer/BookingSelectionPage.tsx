@@ -19,8 +19,8 @@ import {
 } from 'lucide-react';
 import { useBookingStore, useMenuCartStore, useTableStore } from '@/store';
 import type { RestaurantTable } from '@/types';
-import { formatCurrency } from '@/mockData';
-import { getAvailableTables } from '@/backendBookingApi';
+import { formatCurrency } from '@/restaurantUtils';
+import { getAvailableTables } from '@/frontendapis';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -853,12 +853,17 @@ const LeftColumn = ({ variant }: { variant: 'default' | 'preorder' }) => (
       <h3 className="text-[11px] uppercase tracking-[0.3em] font-bold text-amber-400 mb-3">Opening Hours</h3>
       <div className="space-y-1.5">
         {openingTimes.map((item) => (
-          <div key={item.day} className="flex justify-between gap-4 text-[13px]">
-            <span className="font-medium text-white/80">{item.day}</span>
-            <span className="font-mono text-amber-300 text-right">{item.time}</span>
-          </div>
-        ))}
-      </div>
+    <div key={item.day} className="flex justify-between gap-4 text-[13px]">
+      <span className="font-serif font-semibold tracking-wide text-white/85">
+        {item.day}
+      </span>
+
+      <span className="font-serif italic tracking-wide text-amber-300 text-right">
+        {item.time}
+      </span>
+    </div>
+  ))}
+</div>
     </div>
 
     <div className="p-3.5 rounded-2xl bg-amber-950/40 border border-amber-400/25 backdrop-blur-sm">

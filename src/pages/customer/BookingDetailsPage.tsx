@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useBookingStore, useCustomerAuthStore, useMenuCartStore, useTableStore } from '@/store';
-import { formatCurrency, formatDate, formatTime } from '@/mockData';
+import { formatCurrency, formatDate, formatTime } from '@/restaurantUtils';
 
 export const BookingDetailsPage = () => {
   const navigate = useNavigate();

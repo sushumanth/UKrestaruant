@@ -6,7 +6,6 @@ export const serializeUser = (user: User) => ({
   id: user.id,
   email: user.email,
   role: user.role,
-  isBlocked: user.isBlocked,
   firstName: user.firstName,
   lastName: user.lastName,
   phone: user.phone,
@@ -65,7 +64,7 @@ export const serializeBooking = (booking: Booking) => ({
   customerPhone: booking.customerPhone,
   bookingDate: booking.bookingDate,
   // provide a bookingTime string for legacy clients (HH:mm)
-  bookingTime: booking.bookingStart ? new Date(booking.bookingStart).toISOString().slice(11, 16) : (booking.bookingTime ?? ''),
+  bookingTime: booking.bookingStart ? new Date(booking.bookingStart).toISOString().slice(11, 16) : '',
   guests: booking.guests,
   tableId: booking.tableId,
   tableNumber: booking.tableNumber,
