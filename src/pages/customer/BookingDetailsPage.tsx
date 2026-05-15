@@ -66,7 +66,7 @@ export const BookingDetailsPage = () => {
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-[#faf8f3] via-[#f5f2ed] to-[#f0eae0] text-zinc-900 pt-20 pb-4">
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <img src="/bookfirstpage.png" className="w-full h-full object-cover opacity-8" alt="" />
+        <img src="/bookpayment.png" className="w-full h-full object-cover opacity-8" alt="" />
         <div className="absolute inset-0 bg-gradient-to-tr from-[#faf8f3]/40 via-transparent to-[#f5f2ed]/30" />
       </div>
 
@@ -74,11 +74,11 @@ export const BookingDetailsPage = () => {
         className="absolute inset-y-0 -left-32 w-[450px] opacity-15 pointer-events-none"
         style={{ transform: 'scaleX(-1)' }}
       >
-        <img src="/bookpagerose.png" alt="" className="w-full h-full object-cover" />
+        <img src="/bookpayment.png" alt="" className="w-full h-full object-cover" />
       </div>
 
       <div className="absolute inset-y-0 -right-32 w-[450px] opacity-15 pointer-events-none">
-        <img src="/bookpagerose.png" alt="" className="w-full h-full object-cover" />
+        <img src="/bookpayment.png" alt="" className="w-full h-full object-cover" />
       </div>
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-3 sm:px-6 sm:py-4 lg:px-8">

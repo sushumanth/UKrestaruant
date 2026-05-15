@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import {
   Check,
@@ -14,6 +14,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { formatDate, formatTime, formatCurrency } from '@/mockData';
 import { jsPDF } from 'jspdf';
+import confetti from 'canvas-confetti';
+import { toast } from 'sonner';
 import type { Booking } from '@/types';
 
 interface BookingCharges {
@@ -33,10 +35,11 @@ export const BookingConfirmationPage = () => {
   const saveError = location.state?.saveError as string | undefined;
 
   const [actionMessage, setActionMessage] = useState<string>('');
+  const hasCelebratedRef = useRef(false);
 
   const getShareText = (activeBooking: Booking, paidAmount: number) =>
     [
-      `LuxeReserve Booking Confirmed (${activeBooking.bookingId})`,
+      `Singhs Dining Booking Confirmed (${activeBooking.bookingId})`,
       `Name: ${activeBooking.customerName}`,
       `Date: ${formatDate(activeBooking.date)}`,
       `Time: ${formatTime(activeBooking.time)}`,
@@ -56,13 +59,13 @@ export const BookingConfirmationPage = () => {
 
     doc.setFont('times', 'bold');
     doc.setFontSize(28);
-    doc.text('LuxeReserve Booking Confirmation', marginX, y);
+    doc.text('Singhs Dining Booking Confirmation', marginX, y);
 
     y += 34;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(12);
     doc.setTextColor(80, 80, 80);
-    doc.text('Thank you for booking with LuxeReserve. Your reservation details are below.', marginX, y);
+    doc.text('Thank you for booking with Singhs Dining. Your reservation details are below.', marginX, y);
 
     y += 36;
     doc.setDrawColor(220, 220, 220);
@@ -139,7 +142,7 @@ export const BookingConfirmationPage = () => {
     y += 14;
     doc.text('Cancellations with at least 24 hours notice are fully refundable.', marginX, y);
 
-    doc.save(`LuxeReserve-${booking.bookingId}.pdf`);
+    doc.save(`SinghsDining-${booking.bookingId}.pdf`);
     setActionMessage('PDF downloaded successfully.');
   };
 
@@ -148,7 +151,7 @@ export const BookingConfirmationPage = () => {
 
     const shareText = getShareText(booking, charges?.totalPaid ?? booking.depositAmount);
     const shareData: ShareData = {
-      title: `LuxeReserve Booking ${booking.bookingId}`,
+      title: `Singhs Dining Booking ${booking.bookingId}`,
       text: shareText,
     };
 
@@ -176,6 +179,38 @@ export const BookingConfirmationPage = () => {
       navigate('/');
     }
   }, [booking, navigate]);
+
+  useEffect(() => {
+    if (!booking || hasCelebratedRef.current) {
+      return;
+    }
+
+    hasCelebratedRef.current = true;
+    toast('Payment confirmed. Your reservation is booked.');
+
+    const fire = (x: number, y: number) => {
+      confetti({
+        particleCount: 70,
+        spread: 85,
+        origin: { x, y },
+        shapes: ['square'],
+        scalar: 0.85,
+        zIndex: 3000,
+        disableForReducedMotion: true,
+      });
+    };
+
+    fire(0.2, 0.6);
+    fire(0.8, 0.6);
+    fire(0.5, 0.45);
+
+    const timer = window.setTimeout(() => {
+      fire(0.25, 0.55);
+      fire(0.75, 0.55);
+    }, 250);
+
+    return () => window.clearTimeout(timer);
+  }, [booking]);
 
   if (!booking) return null;
 
